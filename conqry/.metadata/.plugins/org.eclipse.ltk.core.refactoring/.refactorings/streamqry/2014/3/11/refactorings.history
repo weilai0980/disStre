@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Move element &apos;&apos; to &apos;bolts.gridStatisBolt.cleanup()&apos;&#x0A;- Original project: &apos;streamqry&apos;&#x0A;- Destination element: &apos;bolts.gridStatisBolt.cleanup()&apos;&#x0A;- Original element: &apos;bolts.gridStatisBolt.correGrid(...)&apos;&#x0A;- Textual move only&#x0A;- Update references to refactored element" description="Move method" destination="/src&lt;bolts{gridStatisBolt.java[gridStatisBolt~cleanup" element1="/src&lt;bolts{gridStatisBolt.java[gridStatisBolt~correGrid~I~D~QArrayList\&lt;QString;&gt;;" flags="589830" id="org.eclipse.jdt.ui.move" members="1" policy="org.eclipse.jdt.ui.moveMembers" stamp="1394838243971" version="1.0"/>
+</session>

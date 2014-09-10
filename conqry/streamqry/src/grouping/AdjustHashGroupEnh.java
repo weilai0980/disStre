@@ -1,0 +1,638 @@
+package grouping;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import main.TopologyMain;
+import backtype.storm.generated.GlobalStreamId;
+import backtype.storm.grouping.CustomStreamGrouping;
+import backtype.storm.task.TopologyContext;
+import backtype.storm.task.WorkerTopologyContext;
+import backtype.storm.tuple.Fields;
+
+public class AdjustHashGroupEnh implements CustomStreamGrouping {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	// private Map _map;
+	// private TopologyContext _ctx;
+	// private Fields _fields;
+	private List<Integer> _tasks;
+
+	public static int groupid = 0;
+	public int localgid = 0;
+
+	public double curtstamp = TopologyMain.winSize - 1; // need modification
+
+	public int[] tmpGridCoor = new int[TopologyMain.winSize + 5];
+	public int[] TaskCoor = new int[TopologyMain.winSize + 5];
+
+	public int[] tmpBroadCoor = new int[TopologyMain.winSize + 5];
+
+	public int[] dimSign = new int[TopologyMain.winSize + 5];
+
+	public int[] dimSignBound = new int[TopologyMain.winSize + 5];
+
+	public double ts = 0.0;
+	public String coorstr = new String();
+
+	public ArrayList<Integer> tasklist = new ArrayList<Integer>();
+
+	// public int diviNum = (int) Math.floor(Math.getExponent(Math
+	// .log(TopologyMain.approBoltNum) / TopologyMain.winSize)); // division on
+	// each dimension
+
+	public double diviNum = Math.exp(Math.log(TopologyMain.calBoltNum)
+			/ TopologyMain.winSize); // division on each dimension
+	
+	
+	public double subDivNum = 2;
+	
+//	Math.exp(Math.log(TopologyMain.calBoltNum)
+//			/ TopologyMain.winh); // division on each dimension
+	
+
+//	public double taskRange = 2.0 / diviNum;
+	public double taskRange = 2.0 / subDivNum;
+	
+	public double disThre = 2 - 2 * TopologyMain.thre;
+
+	public int gridRange = (int) Math.ceil(1.0 / Math.sqrt(disThre));
+	// public int taskGridMax=2*gridRange-1;
+
+	public double taskGridCap = taskRange / Math.sqrt(disThre);
+
+	// public int taskGridCap = (int) Math.ceil(taskRange / Math.sqrt(disThre));
+	// // each
+	// task
+	// space
+	// includes
+	// how
+	// many
+	// grid
+
+	public int gridcnt = 0;
+	public int taskCnt = 0;
+	public int broadcnt = 0;
+
+	public int emittask = 0;
+
+	// ................test..................//
+	// String adjList=new String();
+	// int pivotId=0;
+	// String pivotVec=new String();
+	// //
+	// public int ta=3,tb=8;
+	// public double tt=21;
+	// ......................................//
+
+	@Override
+	public void prepare(WorkerTopologyContext context, GlobalStreamId stream,
+			List<Integer> targetTasks) {
+		// TODO Auto-generated method stub
+
+		_tasks = targetTasks;
+		taskCnt = _tasks.size();
+
+		localgid = groupid;
+		groupid++;
+
+		// Math.e
+		// System.out.printf("-------- %f  %f  %d  \n",
+		// diviNum,taskRange,gridRange);
+	}
+
+	public void coorAna(String str, int coor[]) {
+		int l = str.length();
+		int pre = 0, tmpcoor = 0, cnt = 0;
+
+		for (int i = 0; i < l; ++i) {
+			if (str.charAt(i) == ',') {
+				tmpcoor = Integer.valueOf(str.substring(pre, i));
+				// coor[cnt++] = tmpcoor;
+
+				coor[cnt++] = tmpcoor + gridRange + 1; // coordinate
+														// transposition to
+														// positive range
+
+				pre = i + 1;
+			}
+		}
+		return;
+	}
+
+	// public int adjIdx(String orgstr) {
+	//
+	// int len = orgstr.length();
+	// int pre = 0;
+	// int tmpid;
+	// for (int i = 0; i < len; ++i) {
+	// if (orgstr.charAt(i) == ',') {
+	// tmpid = Integer.valueOf(orgstr.substring(pre, i));
+	//
+	// if(tmpid==ta || tmpid==tb)
+	// {
+	// return tmpid;
+	// }
+	//
+	// pre = i + 1;
+	// }
+	// }
+	// return -1;
+	// }
+
+	public void locateTask() {
+		int tmpTaskCoor = 0;
+
+		int tmpUpBound2 = 0, tmpLowBound2 = 0;
+		
+		//.......still needed................// 
+		
+		// tmpUpBound1 = (int) Math.ceil((double) (tmpGridCoor[j] + 1)
+		// / taskGridCap);
+		// tmpLowBound1 = (int) Math.ceil((double) (tmpGridCoor[j] - 1)
+		// / taskGridCap);
+
+		int intDivinum = (int) Math.ceil(diviNum);
+
+		for (int j = 0; j < TopologyMain.winSize; ++j) {
+
+			dimSign[j] = 0;
+			dimSignBound[j] = 0;
+
+			tmpTaskCoor = (int) Math
+					.ceil((double) tmpGridCoor[j] / taskGridCap);
+
+			TaskCoor[j] = tmpTaskCoor;
+
+			// tmpUpBound1 = (int) Math.ceil((double) (tmpGridCoor[j] + 1)
+			// / taskGridCap);
+			// tmpLowBound1 = (int) Math.ceil((double) (tmpGridCoor[j] - 1)
+			// / taskGridCap);
+
+			tmpUpBound2 = (int) Math.ceil((double) (tmpGridCoor[j] + 2) // modification
+					/ taskGridCap);
+			
+			// tmpLowBound2 = (int) Math.ceil((double) (tmpGridCoor[j] - 2)
+			// / taskGridCap);
+
+			tmpLowBound2 = (int) Math.ceil((double) (tmpGridCoor[j] - 2) // modification
+					/ taskGridCap);
+			
+				
+			
+//			 if (tmpUpBound2 > intDivinum) {
+//				 dimSign[j] = 0;
+//				 dimSignBound[j] = 0;
+//				
+//				 } 
+//				 
+//				 if (tmpLowBound2 < 1) {
+//					dimSign[j] = 0;
+//					dimSignBound[j] = 0;
+//				} 
+				 
+//				 else {
+			
+//			if (tmpUpBound2 > tmpTaskCoor && tmpUpBound2 <= intDivinum) {
+//					if (tmpUpBound2 > tmpTaskCoor && tmpUpBound2 <= diviNum) { // ++ modified 
+						
+						if (tmpUpBound2 > tmpTaskCoor && tmpUpBound2 <= subDivNum) {
+
+						dimSign[j] = 1;
+						dimSignBound[j] = 1;
+					}
+					if (tmpLowBound2 < tmpTaskCoor && tmpLowBound2 >= 1) {
+
+						if (dimSign[j] == 1) {
+							dimSign[j] = 2;
+							dimSignBound[j] = 2;
+						} else {
+							dimSign[j] = -1;
+							dimSignBound[j] = 1;
+						}
+					}
+//				}
+			
+			
+//			 if (tmpUpBound2 > intDivinum) {
+//			 dimSign[j] = 0;
+//			 dimSignBound[j] = 0;
+//			
+//			 } 
+//			 
+//			 if (tmpLowBound2 < 1) {
+//				dimSign[j] = 0;
+//				dimSignBound[j] = 0;
+//			} 
+//			 
+////			 else {
+//				if (tmpUpBound2 > tmpTaskCoor) {
+//
+//					dimSign[j] = 1;
+//					dimSignBound[j] = 1;
+//				}
+//				if (tmpLowBound2 < tmpTaskCoor) {
+//
+//					if (dimSign[j] == 1) {
+//						dimSign[j] = 2;
+//						dimSignBound[j] = 2;
+//					} else {
+//						dimSign[j] = -1;
+//						dimSignBound[j] = 1;
+//					}
+//				}
+////			}
+
+		}
+		// System.out.printf("\n");
+		// tasklist.add(_tasks.get(taskid));
+
+		return;
+	}
+
+	public ArrayList<Integer> emitStack = new ArrayList<Integer>();
+	
+	public Set <Integer> taskSet = new HashSet<Integer>();
+	
+	public int[] direcVec = { -1, 0, 1 };
+
+	public void broadcastEmitNoRecur(int orgiCoord[]) {
+
+		int curlay = 0;
+		int[] tmpCoor = new int[TopologyMain.winSize + 5];
+
+		int stkSize = 0, curdir = -1, tmpdir = 0;
+		double tmptaskId = 0.0;
+
+		// .....ini....................//
+		if (dimSignBound[curlay] == 0) {
+			tmpCoor[curlay] = orgiCoord[curlay];
+
+			emitStack.add(0);
+			stkSize++;
+		} else if (dimSignBound[curlay] == 1) {
+
+			tmpdir = curdir + 1;
+			tmpCoor[curlay] = orgiCoord[curlay] + tmpdir * dimSign[curlay];
+//			tmpCoor[curlay] = orgiCoord[curlay] +  dimSign[curlay];
+
+			emitStack.add(0);
+			stkSize++;
+		} else if (dimSignBound[curlay] == 2) {
+
+			tmpdir = curdir + 1;
+			tmpCoor[curlay] = orgiCoord[curlay] + direcVec[tmpdir];
+
+			emitStack.add(0);
+			stkSize++;
+		}
+
+		curlay++;
+		curdir = -1;
+		// ...........................//
+
+		int popflag=0;
+		
+		while (emitStack.size() != 0) {
+			
+			if(popflag==1)
+			{
+				curdir = emitStack.get(stkSize - 1);
+				emitStack.remove(stkSize - 1);
+				stkSize--;
+				curlay--;
+				
+				popflag=0;
+			}
+			
+			if (curlay >= TopologyMain.winSize) {
+
+				tmptaskId = tmpCoor[0];
+				for (int j = 1; j < TopologyMain.winSize; ++j) {
+					tmptaskId = tmptaskId + (tmpCoor[j] - 1)
+							* Math.pow(diviNum, j);
+				}
+
+				if (Math.ceil(tmptaskId) > taskCnt) {
+					tmptaskId = taskCnt;
+				}
+
+				emittask = (int) Math.ceil(tmptaskId) - 1;
+
+				if (emittask < 0)
+					emittask = 0;
+
+				
+				taskSet.add(_tasks.get(emittask));	
+//				tasklist.add(_tasks.get(emittask));
+				
+				
+//				curdir = emitStack.get(stkSize - 1);
+//				emitStack.remove(stkSize - 1);
+//				stkSize--;
+//				curlay--;
+				
+				popflag=1;
+
+			} else {
+
+				if (curdir + 1 > dimSignBound[curlay]) {
+
+//					curdir = emitStack.get(stkSize - 1);
+//					emitStack.remove(stkSize - 1);
+//					stkSize--;
+//					curlay--;
+					
+					
+					popflag=1;
+
+					continue;
+				} else {
+
+					if (dimSignBound[curlay] == 0) {
+						tmpCoor[curlay] = orgiCoord[curlay];
+
+						emitStack.add(0);
+						stkSize++;
+
+					} else if (dimSignBound[curlay] == 1) {
+
+						tmpdir = curdir + 1;
+						tmpCoor[curlay] = orgiCoord[curlay] + tmpdir*dimSign[curlay];
+
+						emitStack.add(tmpdir);
+						stkSize++;
+
+					} else if (dimSignBound[curlay] == 2) {
+
+						tmpdir = curdir + 1;
+						tmpCoor[curlay] = orgiCoord[curlay] + direcVec[tmpdir];
+
+						emitStack.add(tmpdir);
+						stkSize++;
+					}
+
+					curlay++;
+					curdir = -1;
+				}
+			}
+		}
+
+		return;
+	}
+	public void broadcastEmitNoRecurSubDim(int orgiCoord[]) {
+
+		int curlay = 0;
+		int[] tmpCoor = new int[TopologyMain.winSize + 5];
+
+		int stkSize = 0, curdir = -1, tmpdir = 0;
+		double tmptaskId = 0.0;
+
+		// .....ini....................//
+		if (dimSignBound[curlay] == 0) {
+			tmpCoor[curlay] = orgiCoord[curlay];
+
+			emitStack.add(0);
+			stkSize++;
+		} else if (dimSignBound[curlay] == 1) {
+
+			tmpdir = curdir + 1;
+			tmpCoor[curlay] = orgiCoord[curlay] + tmpdir * dimSign[curlay];
+//			tmpCoor[curlay] = orgiCoord[curlay] +  dimSign[curlay];
+
+			emitStack.add(0);
+			stkSize++;
+		} else if (dimSignBound[curlay] == 2) {
+
+			tmpdir = curdir + 1;
+			tmpCoor[curlay] = orgiCoord[curlay] + direcVec[tmpdir];
+
+			emitStack.add(0);
+			stkSize++;
+		}
+
+		curlay++;
+		curdir = -1;
+		// ...........................//
+
+		int popflag=0;
+		
+		while (emitStack.size() != 0) {
+			
+			if(popflag==1)
+			{
+				curdir = emitStack.get(stkSize - 1);
+				emitStack.remove(stkSize - 1);
+				stkSize--;
+				curlay--;
+				
+				popflag=0;
+			}
+			
+			if (curlay >= TopologyMain.winh) {
+
+				tmptaskId = tmpCoor[0];
+				for (int j = 1; j < TopologyMain.winh; ++j) {
+					tmptaskId = tmptaskId + (tmpCoor[j] - 1)
+							* Math.pow(subDivNum, j);
+				}
+
+				if (Math.ceil(tmptaskId) > taskCnt) {
+					tmptaskId = taskCnt;
+				}
+
+				emittask = (int) Math.ceil(tmptaskId) - 1;
+
+				if (emittask < 0)
+					emittask = 0;
+
+				taskSet.add(_tasks.get(emittask));	
+//				tasklist.add(_tasks.get(emittask));
+				
+				
+//				curdir = emitStack.get(stkSize - 1);
+//				emitStack.remove(stkSize - 1);
+//				stkSize--;
+//				curlay--;
+				
+				popflag=1;
+
+			} else {
+
+				if (curdir + 1 > dimSignBound[curlay]) {
+
+//					curdir = emitStack.get(stkSize - 1);
+//					emitStack.remove(stkSize - 1);
+//					stkSize--;
+//					curlay--;
+					
+					popflag=1;
+
+					continue;
+				} else {
+
+					if (dimSignBound[curlay] == 0) {
+						tmpCoor[curlay] = orgiCoord[curlay];
+
+						emitStack.add(0);
+						stkSize++;
+
+					} else if (dimSignBound[curlay] == 1) {
+
+						tmpdir = curdir + 1;
+						tmpCoor[curlay] = orgiCoord[curlay] + tmpdir*dimSign[curlay];
+
+						emitStack.add(tmpdir);
+						stkSize++;
+
+					} else if (dimSignBound[curlay] == 2) {
+
+						tmpdir = curdir + 1;
+						tmpCoor[curlay] = orgiCoord[curlay] + direcVec[tmpdir];
+
+						emitStack.add(tmpdir);
+						stkSize++;
+					}
+
+					curlay++;
+					curdir = -1;
+				}
+			}
+		}
+
+		return;
+	}
+
+	public void broadcastTask(int curdim, double tmptaskId) {
+
+		if (curdim == TopologyMain.winSize) {
+
+			broadcnt++;
+
+			if (Math.ceil(tmptaskId) > taskCnt) {
+				tmptaskId = taskCnt;
+			}
+
+			emittask = (int) Math.ceil(tmptaskId) - 1;
+
+			tasklist.add(_tasks.get(emittask));
+
+			return;
+		}
+
+		int tmpcoor = 0;
+		if (curdim == 0) {
+			tmpcoor = (TaskCoor[curdim]);
+		} else {
+			tmpcoor = (TaskCoor[curdim] - 1);
+		}
+
+		if (dimSign[curdim] == 0) {
+
+			tmpBroadCoor[curdim] = TaskCoor[curdim];
+			broadcastTask(curdim + 1,
+					tmptaskId + tmpcoor * Math.pow(diviNum, curdim));
+
+		} else if (dimSign[curdim] == 1) {
+
+			tmpBroadCoor[curdim] = TaskCoor[curdim] + 1;
+
+			broadcastTask(curdim + 1,
+					tmptaskId + (tmpcoor + 1) * Math.pow(diviNum, curdim));
+
+			tmpBroadCoor[curdim] = TaskCoor[curdim];
+			broadcastTask(curdim + 1,
+					tmptaskId + tmpcoor * Math.pow(diviNum, curdim));
+
+		} else if (dimSign[curdim] == -1) {
+
+			tmpBroadCoor[curdim] = TaskCoor[curdim] - 1;
+			broadcastTask(curdim + 1,
+					tmptaskId + (tmpcoor - 1) * Math.pow(diviNum, curdim));
+
+			tmpBroadCoor[curdim] = TaskCoor[curdim];
+			broadcastTask(curdim + 1,
+					tmptaskId + tmpcoor * Math.pow(diviNum, curdim));
+		} else if (dimSign[curdim] == 2) {
+
+			tmpBroadCoor[curdim] = TaskCoor[curdim] - 1;
+			broadcastTask(curdim + 1,
+					tmptaskId + (tmpcoor - 1) * Math.pow(diviNum, curdim));
+
+			tmpBroadCoor[curdim] = TaskCoor[curdim];
+			broadcastTask(curdim + 1,
+					tmptaskId + tmpcoor * Math.pow(diviNum, curdim));
+
+			tmpBroadCoor[curdim] = TaskCoor[curdim] + 1;
+			broadcastTask(curdim + 1,
+					tmptaskId + (tmpcoor + 1) * Math.pow(diviNum, curdim));
+		}
+
+	}
+
+	@Override
+	public List<Integer> chooseTasks(int taskId, List<Object> values) {
+		// TODO Auto-generated method stub
+
+		// declarer.declareStream("interStre", new Fields("pidx", "pivotvec",
+		// "adjaffine", "adjidx", "coord", "ts", "bolt"));
+
+		coorstr = values.get(4).toString();
+		ts = Double.valueOf(values.get(5).toString());
+
+		coorAna(coorstr, tmpGridCoor);
+		tasklist.clear();
+
+		gridcnt++;
+
+		if (ts > curtstamp) {
+
+			locateTask();
+
+			emitStack.clear();
+			taskSet.clear();
+			
+			broadcastEmitNoRecurSubDim(TaskCoor);
+//			broadcastEmitNoRecur(TaskCoor);
+			
+			
+			for (Integer tmp : taskSet) {
+				tasklist.add(tmp);
+			}
+			
+			curtstamp = ts;
+			
+			return tasklist;
+
+		} else if (ts < curtstamp) {
+			System.out
+					.printf("!!!!!!!!!!!!! inter AdjustGroup time sequence disorder at %f %f\n",
+							ts, curtstamp);
+
+			return tasklist;
+
+		} else {
+
+			locateTask();
+
+			emitStack.clear();
+			taskSet.clear();
+			
+			broadcastEmitNoRecurSubDim(TaskCoor);
+//			broadcastEmitNoRecur(TaskCoor);
+		
+			for (Integer tmp : taskSet) {
+				tasklist.add(tmp);
+			}
+
+			return tasklist;
+
+		}
+
+	}
+}

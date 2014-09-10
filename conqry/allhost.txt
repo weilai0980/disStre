@@ -1,0 +1,6 @@
+root@lsir-cluster-01.epfl.ch
+root@lsir-cluster-02.epfl.ch
+root@lsir-cluster-03.epfl.ch
+root@lsir-cluster-04.epfl.ch
+root@lsir-cluster-05.epfl.ch
+
