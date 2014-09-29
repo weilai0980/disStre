@@ -25,12 +25,12 @@ public class robCalBolt extends BaseBasicBolt {
 
 	Double[][] vecData = new Double[TopologyMain.nstreBolt + 10][TopologyMain.winSize + 10];
 
-	public double[] cursqrexp = new double[TopologyMain.nstreBolt + 10],
+	 double[] cursqrexp = new double[TopologyMain.nstreBolt + 10],
 			curexp = new double[TopologyMain.nstreBolt + 10];
 
-	public int[] vecst = new int[TopologyMain.nstreBolt + 10];
-	public int[] veced = new int[TopologyMain.nstreBolt + 10];
-	public int queueLen = TopologyMain.winSize + 5;
+	 int[] vecst = new int[TopologyMain.nstreBolt + 10];
+	 int[] veced = new int[TopologyMain.nstreBolt + 10];
+	 int queueLen = TopologyMain.winSize + 5;
 
 	Integer[] streTaskCoor = new Integer[TopologyMain.nstreBolt + 10];
 
@@ -44,30 +44,16 @@ public class robCalBolt extends BaseBasicBolt {
 
 	HashMap<String, Integer> cellIdx = new HashMap<String, Integer>();
 	int cellIdxcnt = 0;
-
 	List<List<Integer>> cellHostStre = new ArrayList<List<Integer>>(
 			TopologyMain.gridIdxN + 5);
-
 	List<List<Integer>> cellNbStre = new ArrayList<List<Integer>>(
 			TopologyMain.gridIdxN + 5);
-
 	int[][] cellVecs = new int[TopologyMain.gridIdxN + 5][TopologyMain.winSize + 5];
+	ArrayList<String> resPair = new ArrayList<String>();
 
 	int locTaskId;
-	
-	public double disThre = 2 - 2 * TopologyMain.thre;
-	public double cellEps = Math.sqrt(disThre);
-
-	int correCalDis(double thre, int streid1, int streid2, int len) {
-		double dis = 0.0, tmp = 0.0;
-
-		for (int i = 0; i < len; ++i) {
-			tmp += ((vecData[streid1][i] - vecData[streid2][i]) * (vecData[streid1][i] - vecData[streid2][i]));
-		}
-		dis = tmp;
-
-		return (dis <= 2 - 2 * thre) ? 1 : 0;
-	}
+	 double disThre = 2 - 2 * TopologyMain.thre;
+	 double cellEps = Math.sqrt(disThre);
 
 	public void updateStreVec(int memidx, String vecdata) {
 
@@ -172,7 +158,7 @@ public class robCalBolt extends BaseBasicBolt {
 	void cellStreamMapping() {
 
 		int stre = 0, memidx = 0, k = 0, cellmemidx = 0, cellcoor = 0, veccnt = 0;
-		double var = 0.0, mean = 0.0, normcoor=0.0;
+		double var = 0.0, mean = 0.0, normcoor = 0.0;
 		String cellstr = new String();
 
 		int[] tmpvec = new int[TopologyMain.winSize + 5];
@@ -192,18 +178,15 @@ public class robCalBolt extends BaseBasicBolt {
 			}
 
 			while (k != veced[memidx]) {
-				
+
 				normcoor = (int) ((vecData[memidx][k] - mean) / Math.sqrt(var));
-				
-				if (normcoor>=0)
-				{
-					cellcoor =(int) Math.floor(normcoor/cellEps);
+
+				if (normcoor >= 0) {
+					cellcoor = (int) Math.floor(normcoor / cellEps);
+				} else {
+					cellcoor = -1 * (int) Math.ceil(-1 * normcoor / cellEps);
 				}
-				else
-				{
-					cellcoor =-1*(int)Math.ceil(-1*normcoor/cellEps);
-				}
-				
+
 				cellstr = Integer.toString(cellcoor) + ",";
 				tmpvec[veccnt++] = cellcoor;
 
@@ -225,19 +208,72 @@ public class robCalBolt extends BaseBasicBolt {
 
 	int cellVecCheck(int idx1, int idx2) {
 		for (int j = 0; j < TopologyMain.winSize; ++j) {
-			if (Math.abs(cellVecs[idx1][j]-cellVecs[idx2][j])>1 ) {
+			if (Math.abs(cellVecs[idx1][j] - cellVecs[idx2][j]) > 1) {
 				return 0;
 			}
 		}
 		return 1;
 	}
 
-	void corCal() {
+	int correCalDis(double thre, int streid1, int streid2) {
 
-		for (int i = 0; i < cellIdxcnt; ++i) {
-			for (int j = i + 1; j < cellIdxcnt; ++j) {
-				if (cellVecCheck(i, j) == 1) {
+		int memidx1 = streMem.get(streid1), memidx2 = streMem.get(streid2), k = vecst[memidx1];
+		double deno1 = Math.sqrt((cursqrexp[memidx1] - curexp[memidx1])
+				* TopologyMain.winSize), mean1 = curexp[memidx1];
+		double deno2 = Math.sqrt((cursqrexp[memidx2] - curexp[memidx2])
+				* TopologyMain.winSize), mean2 = curexp[memidx2];
 
+		double tmpres = 0.0;
+
+		while (k != veced[memidx1]) {
+
+			tmpres = tmpres + (vecData[memidx1][k] - mean1)
+					* (vecData[memidx2][k] - mean2);
+
+			k = (k + 1) % queueLen;
+		}
+		tmpres = tmpres / (deno1 * deno2);
+
+		return tmpres >= thre ? 1 : 0;
+
+	}
+
+	void cellWithinCal(int cellidx, ArrayList<String> res) {
+
+		int stre1 = 0, stre2 = 0;
+		for (int i = 0; i < cellHostStre.get(cellidx).size(); i++) {
+			for (int j = i + 1; j < cellHostStre.get(cellidx).size(); j++) {
+
+				stre1 = cellHostStre.get(cellidx).get(i);
+				stre2 = cellHostStre.get(cellidx).get(j);
+
+				if (correCalDis(TopologyMain.thre, stre1, stre2) == 1) {
+
+					if (stre1 > stre2)
+						res.add(Integer.toString(stre2) + ","
+								+ Integer.toString(stre1));
+					else
+						res.add(Integer.toString(stre1) + ","
+								+ Integer.toString(stre2));
+				}
+
+			}
+		}
+
+		for (int i = 0; i < cellHostStre.get(cellidx).size(); i++) {
+			for (int j = 0; j < cellNbStre.get(cellidx).size(); j++) {
+
+				stre1 = cellHostStre.get(cellidx).get(i);
+				stre2 = cellNbStre.get(cellidx).get(j);
+
+				if (correCalDis(TopologyMain.thre, stre1, stre2) == 1) {
+
+					if (stre1 > stre2)
+						res.add(Integer.toString(stre2) + ","
+								+ Integer.toString(stre1));
+					else
+						res.add(Integer.toString(stre1) + ","
+								+ Integer.toString(stre2));
 				}
 
 			}
@@ -246,78 +282,89 @@ public class robCalBolt extends BaseBasicBolt {
 		return;
 	}
 
-	public void localIdxRenew() {
+	void cellInterCal(int cellidx1, int cellidx2, ArrayList<String> res) {
 
-		// // stridcnt = 0;
-		// // stridMap.clear();
-		//
-		// gridIdx.clear();
-		// gridIdxcnt = 0;
-		//
-		// gridStre.clear();
-		// qualPair.clear();
+		int stre1 = 0, stre2 = 0, stre3 = 0, ini = 1;
+
+		for (int i = 0; i < cellHostStre.get(cellidx1).size(); i++) {
+
+			stre1 = cellHostStre.get(cellidx1).get(i);
+			for (int j = 0; j < cellHostStre.get(cellidx2).size(); j++) {
+
+				stre2 = cellHostStre.get(cellidx2).get(j);
+				if (correCalDis(TopologyMain.thre, stre1, stre2) == 1) {
+
+					if (stre1 > stre2)
+						res.add(Integer.toString(stre2) + ","
+								+ Integer.toString(stre1));
+					else
+						res.add(Integer.toString(stre1) + ","
+								+ Integer.toString(stre2));
+				}
+
+				if (ini == 1) {
+
+					for (int k = 0; k < cellNbStre.get(cellidx1).size(); k++) {
+						stre3 = cellHostStre.get(cellidx1).get(k);
+
+						if (correCalDis(TopologyMain.thre, stre2, stre3) == 1) {
+
+							if (stre3 > stre2)
+								res.add(Integer.toString(stre2) + ","
+										+ Integer.toString(stre3));
+							else
+								res.add(Integer.toString(stre3) + ","
+										+ Integer.toString(stre2));
+						}
+					}
+					ini = 0;
+				}
+			}
+		}
+
+		for (int i = 0; i < cellHostStre.get(cellidx1).size(); i++) {
+			for (int j = 0; j < cellNbStre.get(cellidx2).size(); j++) {
+
+				stre1 = cellHostStre.get(cellidx1).get(i);
+				stre2 = cellHostStre.get(cellidx2).get(j);
+
+				correCalDis(TopologyMain.thre, stre1, stre2);
+			}
+		}
 
 		return;
 	}
 
-//	public int correGrid(int gridNo, double thre,
-//			BasicOutputCollector collector, ArrayList<String> resPair) {
-//
-//		int rescnt = 0, i = 0, j = 0, tmpcnt = gridStre.get(gridNo).size();
-//		int stre1 = 0, stre2 = 0;
-//
-//		String Pair = new String();
-//
-//		for (i = 0; i < tmpcnt; ++i) {
-//
-//			stre1 = gridStre.get(gridNo).get(i);
-//
-//			for (j = i + 1; j < tmpcnt; ++j) {
-//
-//				stre2 = gridStre.get(gridNo).get(j);
-//
-//				// if (strlocal[stre1] == 0 && strlocal[stre2] == 0) {
-//				// } else {
-//
-//				if ((strlocal[stre1] == 1 && strlocal[stre2] == 0)
-//						|| (strlocal[stre1] == 0 && strlocal[stre2] == 1)) {
-//
-//					if (correCalDis(thre, stre1, stre2, TopologyMain.winSize) == 1) {
-//
-//						if (strid[stre1] > strid[stre2]) {
-//
-//							Pair = (Integer.toString(strid[stre2]) + "," + Integer
-//									.toString(strid[stre1]));
-//
-//							rescnt++;
-//							resPair.add(Pair);
-//
-//						} else {
-//
-//							Pair = (Integer.toString(strid[stre1]) + "," + Integer
-//									.toString(strid[stre2]));
-//
-//							rescnt++;
-//							resPair.add(Pair);
-//
-//						}
-//					}
-//				}
-//
-//			}
-//		}
-//
-//		return rescnt;
-//	}
+	void cellCorrCal() {
+
+		resPair.clear();
+
+		for (int i = 0; i < cellIdxcnt; ++i) {
+
+			cellWithinCal(i, resPair);
+			for (int j = i + 1; j < cellIdxcnt; ++j) {
+				if (cellVecCheck(i, j) == 1) {
+					cellInterCal(i, j, resPair);
+				}
+			}
+		}
+		return;
+	}
+
+	public void localIdxRenew() {
+
+		cellIdx.clear();
+		cellIdxcnt = 0;
+
+		cellHostStre.clear();
+		cellNbStre.clear();
+		resPair.clear();
+
+		return;
+	}
 
 	@Override
 	public void cleanup() {
-		// System.out.println("-- Word Counter [" + name + "-" + id + "] --");
-		// for (Map.Entry<String, Integer> entry : counters.entrySet()) {
-		// System.out.println(entry.getKey() + ": " + entry.getValue());
-		// }
-
-		// ....output stream........
 
 	}
 
@@ -354,18 +401,8 @@ public class robCalBolt extends BaseBasicBolt {
 
 		if (ts > curtstamp) {
 
-//			vecBatchAna();
-//			for (int i = 0; i < gridIdxcnt; ++i) {
-//				qualPair.clear();
-//				correGrid(i, TopologyMain.thre, collector, qualPair);
-//
-//				Iterator<String> it = qualPair.iterator();
-//				String tmp = new String();
-//				while (it.hasNext()) {
-//					tmp = it.next();
-//					collector.emit(new Values(curtstamp, tmp));
-//				}
-//			}
+			cellStreamMapping();
+			cellCorrCal();
 
 			localIdxRenew();
 

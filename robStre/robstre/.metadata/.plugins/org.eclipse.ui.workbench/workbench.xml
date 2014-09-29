@@ -33,58 +33,36 @@
 <part id="1"/>
 <part id="2"/>
 <part id="3"/>
-<part id="4"/>
-<part id="5"/>
-<part id="6"/>
-<part id="7"/>
 </presentation>
 </folder>
 </info>
 </editorArea>
-<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="streamReader.java" partName="streamReader.java" path="/home/guo/disStre/robStre/robstre/robStream/src/spouts/streamReader.java" title="streamReader.java" tooltip="robStream/src/spouts/streamReader.java" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/spouts/streamReader.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="5752" selectionTopPixel="1671"/>
-</editor>
 <editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="TopologyMain.java" partName="TopologyMain.java" path="/home/guo/disStre/robStre/robstre/robStream/src/main/TopologyMain.java" title="TopologyMain.java" tooltip="robStream/src/main/TopologyMain.java" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/main/TopologyMain.java"/>
 <editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="997" selectionTopPixel="208"/>
 </editor>
 <editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="robStripGroup.java" partName="robStripGroup.java" path="/home/guo/disStre/robStre/robstre/robStream/src/grouping/robStripGroup.java" title="robStripGroup.java" tooltip="robStream/src/grouping/robStripGroup.java" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/grouping/robStripGroup.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="48" selectionOffset="1336" selectionTopPixel="441"/>
+<editorState selectionHorizontalPixel="0" selectionLength="48" selectionOffset="1336" selectionTopPixel="0"/>
 </editor>
-<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="robPreBolt.java" partName="robPreBolt.java" path="/home/guo/disStre/robStre/robstre/robStream/src/bolts/robPreBolt.java" title="robPreBolt.java" tooltip="robStream/src/bolts/robPreBolt.java" workbook="DefaultEditorWorkbook">
+<editor activePart="true" focus="true" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="robPreBolt.java" partName="robPreBolt.java" path="/home/guo/disStre/robStre/robstre/robStream/src/bolts/robPreBolt.java" title="robPreBolt.java" tooltip="robStream/src/bolts/robPreBolt.java" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/bolts/robPreBolt.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="96" selectionOffset="1251" selectionTopPixel="277"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="5352" selectionTopPixel="2917"/>
 </editor>
-<editor activePart="true" focus="true" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="robCalBolt.java" partName="robCalBolt.java" path="/home/guo/disStre/robStre/robstre/robStream/src/bolts/robCalBolt.java" title="robCalBolt.java" tooltip="robStream/src/bolts/robCalBolt.java" workbook="DefaultEditorWorkbook">
+<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="robCalBolt.java" partName="robCalBolt.java" path="/home/guo/disStre/robStre/robstre/robStream/src/bolts/robCalBolt.java" title="robCalBolt.java" tooltip="robStream/src/bolts/robCalBolt.java" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/bolts/robCalBolt.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="874" selectionTopPixel="0"/>
-</editor>
-<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="gridPreBolt.java" partName="gridPreBolt.java" path="/home/guo/disStre/robStre/robstre/robStream/src/bolts/gridPreBolt.java" title="gridPreBolt.java" tooltip="robStream/src/bolts/gridPreBolt.java" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/bolts/gridPreBolt.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="0" selectionTopPixel="6272"/>
-</editor>
-<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="gridStatisBolt.java" partName="gridStatisBolt.java" path="/home/guo/disStre/robStre/robstre/robStream/src/bolts/gridStatisBolt.java" title="gridStatisBolt.java" tooltip="robStream/src/bolts/gridStatisBolt.java" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/bolts/gridStatisBolt.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="39" selectionOffset="2933" selectionTopPixel="1874"/>
-</editor>
-<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustApproBolt.java" partName="AdjustApproBolt.java" path="/home/guo/disStre/robStre/robstre/robStream/src/bolts/AdjustApproBolt.java" title="AdjustApproBolt.java" tooltip="robStream/src/bolts/AdjustApproBolt.java" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/bolts/AdjustApproBolt.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="39" selectionOffset="21942" selectionTopPixel="15108"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="874" selectionTopPixel="232"/>
 </editor>
 </editors>
 <views>
 <view id="org.eclipse.search.ui.views.SearchView" partName="Search">
 <viewState isPinned="false">
 <view IMemento.internal.id="" org.eclipse.search.lastActivation="0"/>
-<view IMemento.internal.id="org.eclipse.jdt.ui.JavaSearchResultPage" org.eclipse.jdt.search.resultpage.grouping="3" org.eclipse.jdt.search.resultpage.limit="1000" org.eclipse.jdt.search.resultpage.limit_enabled="TRUE" org.eclipse.jdt.search.resultpage.sorting="1" org.eclipse.search.lastActivation="1" org.eclipse.search.resultpage.layout="2"/>
 </viewState>
 </view>
 <view id="org.eclipse.ui.views.ProblemView" partName="Problems">
 <viewState PRIMARY_SORT_FIELD="org.eclipse.ui.ide.severityAndDescriptionField" categoryGroup="org.eclipse.ui.ide.severity" markerContentGenerator="org.eclipse.ui.ide.problemsGenerator" partName="Problems">
-<expanded>
-<category IMemento.internal.id="Warnings"/>
+<expanded>&#x0A;<category IMemento.internal.id="Warnings"/>
 <category IMemento.internal.id="Errors"/>
 </expanded>
 <columnWidths org.eclipse.ui.ide.locationField="0" org.eclipse.ui.ide.markerType="0" org.eclipse.ui.ide.pathField="0" org.eclipse.ui.ide.resourceField="0" org.eclipse.ui.ide.severityAndDescriptionField="0"/>
@@ -280,13 +258,9 @@
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/robStream/src/bolts/gridStatisBolt.java"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/robStream/src/bolts/AdjustApproBolt.java"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/robStream/src/bolts/robPreBolt.java"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/robStream/src/grouping/robStripGroup.java"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/robStream/src/bolts/robPreBolt.java"/>
 </editors>
-<item historyLabel="gridStatisBolt.java" index="2">
-<position info="not_deleted" x="2933" y="39"/>
-</item>
-<item historyLabel="robCalBolt.java" index="0">
-<position/>
-</item>
 <item historyLabel="gridStatisBolt.java" index="2">
 <position info="not_deleted" x="2933" y="39"/>
 </item>
@@ -428,8 +402,14 @@
 <item historyLabel="robPreBolt.java" index="4">
 <position info="not_deleted" x="1251" y="96"/>
 </item>
-<item active="true" historyLabel="robCalBolt.java" index="0">
+<item historyLabel="robCalBolt.java" index="0">
 <position info="not_deleted" x="1442" y="0"/>
+</item>
+<item historyLabel="robStripGroup.java" index="5">
+<position info="not_deleted" x="1336" y="48"/>
+</item>
+<item active="true" historyLabel="robPreBolt.java" index="6">
+<position info="not_deleted" x="1251" y="96"/>
 </item>
 </navigationHistory>
 <input factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/" type="8"/>
