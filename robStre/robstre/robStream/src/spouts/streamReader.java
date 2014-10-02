@@ -28,9 +28,6 @@ public class streamReader extends BaseRichSpout {
 
 	private SpoutOutputCollector collector;
 
-	// OutputCollectorBase _collector;
-	// private FileReader fileReader;
-
 	private boolean completed = false;
 
 	String foldername;
@@ -57,18 +54,11 @@ public class streamReader extends BaseRichSpout {
 	// ..........metric related...............//
 
 	public double tupTs = 0.0;
-//	public double tupTs =TopologyMain.winSize-1;
-	
-	public double curTs = 0.0;
+	// for long sliding window
+	// public double tupTs =TopologyMain.winSize-1;
 
 	public long lcnt = 0;
-
 	public double thputCnt = 0.0;
-
-	// ..............................................//
-
-	// FileWriter fstream;
-	// BufferedWriter out;
 
 	// ...............read from data files...................//
 	public int lastStreNum, lastRowNum;
@@ -78,12 +68,10 @@ public class streamReader extends BaseRichSpout {
 
 		foldername = fileFolder;
 		filter = fileFilter;
-
 		folder = new File(foldername);
 
 		File folder = new File(foldername);
 		getFiles(folder, list, filter);
-
 		Collections.sort(list);
 
 		// fstream = new FileWriter(outfile, true);
@@ -112,17 +100,15 @@ public class streamReader extends BaseRichSpout {
 	public int preRowData() throws IOException {
 
 		File curfile;
-		long filelen = 0;
 		int num = list.size();
 
-		if (curFileCnt >= num)
-		{
-//.............for loop reading files...........
-//			curFileCnt=0;
-			
+		if (curFileCnt >= num) {
+
+			// .............for loop reading files...........
+			// curFileCnt=0;
 			System.out.printf("file finished");
-//..............................................
-			
+			// ..............................................
+
 			return 0;
 		}
 
@@ -131,10 +117,9 @@ public class streamReader extends BaseRichSpout {
 		// FileReader
 		fr = new FileReader(curfile);
 		curbr = new BufferedReader(fr);
-		String line = "";
 
 		trowFile = 0;
-		line = curbr.readLine();
+		String line = curbr.readLine();
 
 		return 1;
 	}
@@ -193,40 +178,15 @@ public class streamReader extends BaseRichSpout {
 	public void realDataEmission() {
 		double[] streRow = new double[TopologyMain.nstream + 10];
 
-		// System.out.printf("----timestamp:  %f\n",tupTs);
-
-		// this.collector.emit(new Values(tupTs, tupTs,
-		// 1),Double.toString(tupTs));
-
-		// if (completed) {
-		// try {
-		// Thread.sleep(1000);
-		// } catch (InterruptedException e) {
-		// // Do nothing
-		// }
-		// return;
-		// }
-		// try {
-
-		// for (int i = 0; i <= 1; ++i) {
-		//
-		// this.collector.emit(new Values(i, tupTs, 2.1),
-		// Integer.toString(i) + ',' + Double.toString(tupTs));
-		// }
-
 		try {
 			if (nextRowData(streRow) == 1) {
 
 				for (int i = 0; i < TopologyMain.nstream; ++i) {
 
-					this.collector.emit(new Values(i, tupTs, streRow[i]),
+					this.collector.emit("dataStre", new Values(i, tupTs,
+							streRow[i]),
 							Integer.toString(i) + ',' + Double.toString(tupTs));
-
-					// System.out.printf("----timestamp:  %f\n",streRow[i]);
 				}
-
-				// System.out.printf("----timestamp:  %f\n",tupTs);
-
 			} else {
 				if (preRowData() == 1) {
 					nextRowData(streRow);
@@ -234,17 +194,19 @@ public class streamReader extends BaseRichSpout {
 					for (int i = 0; i < TopologyMain.nstream; ++i) {
 
 						this.collector.emit(
+								"dataStre",
 								new Values(i, tupTs, streRow[i]),
 								Integer.toString(i) + ','
 										+ Double.toString(tupTs));
 					}
 				} else {
-					// System.out
-					// .printf("!!!!!!!!!!!!!! All files are finished!\n");
 					completed = true;
 				}
 
 			}
+
+			collector.emit("contrStre", new Values("done"));
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -261,22 +223,18 @@ public class streamReader extends BaseRichSpout {
 
 	public void synDataEmission(int stren) {
 
-		for (int i = 0; i < stren; ++i) {
+		int i = 0;
+		for (i = 0; i < stren; ++i) {
 			curStreRand[i] += Math.random() * 5000;
 
-			// collector.emit(new Values(i, tupTs, curStreRand[i] - tupTs
-			// * curStreBias[i] + curStreConst[i]));
-
-			collector.emit(new Values(i, tupTs, curStreRand[i] - tupTs
-					* curStreBias[i] + curStreConst[i]));
-
-			// collector.emit(new Values(i, tupTs, curStreRand[i] - tupTs
-			// * curStreBias[i] + curStreConst[i]), Integer.toString(i)
-			// + ',' + Double.toString(tupTs));
+			collector.emit("dataStre", new Values(i, tupTs, curStreRand[i]
+					- tupTs * curStreBias[i] + curStreConst[i]));
 		}
+
+		collector.emit("contrStre", new Values("done"+Double.toString(tupTs)));
+
 		return;
 	}
-
 
 	public void synDataIni(int stren) {
 		for (int i = 0; i < stren; ++i) {
@@ -294,32 +252,7 @@ public class streamReader extends BaseRichSpout {
 	@Override
 	public void ack(Object msgId) {
 
-		// System.out.printf("----------------------ack\n");
-
 		thputCnt++;
-		// System.out.println("OK:" + msgId);
-
-		// msgAna(msgId.toString(), parats, parasn);
-		// long tmp = 0;
-		// if (Math.abs(parats[0] - curTs) < 1e-3) {
-		// ackcnt++;
-		//
-		// if (ackcnt == TopologyMain.nstream) {
-		//
-		// ackcnt = 0;
-		// tmp = System.nanoTime();
-		// // System.out.printf(
-		// // "Latency for tuple %f : %f ms------------------------\n",
-		// // curTs, (double)(System.nanoTime() - lcnt)/(1e+6));
-		//
-		// curTs++;
-		//
-		// lcnt = tcQueue[tcqSt];
-		// tcqSt = (tcqSt + 1) % tcqSize;
-		// }
-		// } else {
-		//
-		// }
 
 	}
 
@@ -344,13 +277,12 @@ public class streamReader extends BaseRichSpout {
 
 		// .........data emission................//
 
-
-//		try {
-//			Thread.sleep(TopologyMain.tinterval);
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		try {
+			Thread.sleep(TopologyMain.tinterval);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		if (TopologyMain.datasrc == 0) {
 
@@ -358,91 +290,7 @@ public class streamReader extends BaseRichSpout {
 		} else {
 			realDataEmission();
 		}
-
-		// // Utils.sleep(TopologyMain.tinterval);
-		// ....................................//
-
-		// final double tmpts = tupTs;
-		// final int a = 1;
-		// final double b = 2.0;
-		//
-		// collector.emit(new Values(a, tmpts, b));
-
-		// this.collector.emit(new Values(1, tupTs, 2323.2), Integer.toString(2)
-		// + ',' + Double.toString(tupTs));
-
-		// ......................................//
-
-		// double[] streRow = new double[TopologyMain.nstream + 10];
-		//
-		// // System.out.printf("----timestamp:  %f\n",tupTs);
-		//
-		// // this.collector.emit(new Values(tupTs, tupTs,
-		// // 1),Double.toString(tupTs));
-		//
-		// // if (completed) {
-		// // try {
-		// // Thread.sleep(1000);
-		// // } catch (InterruptedException e) {
-		// // // Do nothing
-		// // }
-		// // return;
-		// // }
-		// // try {
-		//
-		// // for (int i = 0; i <= 1; ++i) {
-		// //
-		// // this.collector.emit(new Values(i, tupTs, 2.1),
-		// // Integer.toString(i) + ',' + Double.toString(tupTs));
-		// // }
-		//
-		// try {
-		// if (nextRowData(streRow) == 1) {
-		//
-		// for (int i = 0; i < TopologyMain.nstream; ++i) {
-		//
-		// this.collector.emit(new Values(i, tupTs, streRow[i]),
-		// Integer.toString(i) + ',' + Double.toString(tupTs));
-		//
-		// // System.out.printf("----timestamp:  %f\n",streRow[i]);
-		// }
-		//
-		// // System.out.printf("----timestamp:  %f\n",tupTs);
-		//
-		// } else {
-		// if (preRowData() == 1) {
-		// nextRowData(streRow);
-		//
-		// for (int i = 0; i < TopologyMain.nstream; ++i) {
-		//
-		// this.collector.emit(
-		// new Values(i, tupTs, streRow[i]),
-		// Integer.toString(i) + ','
-		// + Double.toString(tupTs));
-		// }
-		// } else {
-		// // System.out
-		// // .printf("!!!!!!!!!!!!!! All files are finished!\n");
-		// completed = true;
-		// }
-		//
-		// }
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-
-		long tmp = System.nanoTime();
-		// tcQueue[tcqEd] = tmp;
-		// tcqEd = (tcqEd + 1) % tcqSize;
-
 		tupTs++;
-
-		// } catch (Exception e) {
-		// throw new RuntimeException("Error reading tuple", e);
-		// } finally {System.out.printf("----------------------open\n");
-		// // completed = true;
-		// }
 	}
 
 	/**
@@ -476,7 +324,6 @@ public class streamReader extends BaseRichSpout {
 		}
 
 		collector = coll;
-		// this.collector = collector;
 	}
 
 	/**
@@ -485,7 +332,7 @@ public class streamReader extends BaseRichSpout {
 
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("sn", "ts", "value"));
-		// declarer.de
+		declarer.declareStream("dataStre", new Fields("sn", "ts", "value"));
+		declarer.declareStream("contrStre", new Fields("command"));
 	}
 }

@@ -20,13 +20,13 @@ public class TopologyMain {
 
 	// .................local parallelism record...........................//
 	public static int datasrc = 1; // 0: synthetic 1: real
-
 	public static int nstreBolt = 20;
-	public static double thre = 0.9;
 	public static int nstream = 20;
-	public static int winSize = 3;
 	public static int gridIdxN = 500;
 
+	
+	public static int winSize = 3;
+	public static double thre = 0.9;
 	public static int tinterval = 1000;
 	public static int wokernum = 2;
 
@@ -35,13 +35,7 @@ public class TopologyMain {
 	public static int aggreBoltNum = 1;
 
 	public static int tasknum = 2;
-	
 	public static int cellTask = 2;
-	
-
-	
-	
-
 
 	// ..............real data set para................................//
 
@@ -97,8 +91,6 @@ public class TopologyMain {
 	// naive: 1350 1240 1160(1130) 1050 1000 930 830
 	// gbc:
 	// aps: 7600
-
-	
 
 	public static void main(String[] args) throws InterruptedException,
 			IOException, AlreadyAliveException, InvalidTopologyException {
@@ -200,7 +192,37 @@ public class TopologyMain {
 						builderAdjust.createTopology());
 			}
 
-		} else if (appro == 10) {
+		} else if (appro == 3) {
+
+			String runenv = args[1];
+
+			TopologyBuilder builderRob = new TopologyBuilder();
+			builderRob.setSpout("sreader", new streamReader());
+
+			builderRob.setBolt("robPre", new robPreBolt(), preBoltNum)
+					.fieldsGrouping("sreader", "dataStre", new Fields("sn"))
+					.allGrouping("sreader", "contrStre");
+
+			builderRob
+					.setBolt("robCal", new robCalBolt(), calBoltNum)
+					.customGrouping("robPre", "streamData", new robStripGroup())
+					.allGrouping("robPre", "calCommand");
+
+//			builderRob.setBolt("robAggre", new robAggreBolt(), calBoltNum)
+//					.fieldsGrouping("robCal", new Fields("pair"));
+
+			if (runenv.compareTo("local") == 0) {
+				cluster.submitTopology("strqry", conf,
+						builderRob.createTopology());
+				Thread.sleep(2000);
+			} else if (runenv.compareTo("cluster") == 0) {
+				StormSubmitter.submitTopology("conqry", conf,
+						builderRob.createTopology());
+			}
+
+		}
+
+		else if (appro == 10) {
 
 			dataGene dataProd = new dataGene();
 			dataProd.generate();

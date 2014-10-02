@@ -17,29 +17,33 @@ public class robStripGroup implements CustomStreamGrouping {
 	/**
 	 * 
 	 */
+
+	// ...............choose task. ...........................//
 	private static final long serialVersionUID = 1L;
 	// private Map _map;
 	// private TopologyContext _ctx;
 	// private Fields _fields;
-	private List<Integer> _tasks;
 
-	public double curtstamp = TopologyMain.winSize - 1; // need modification
-	public int[] TaskCoor = new int[TopologyMain.winSize + 5];
+	private List<Integer> _tasks;
+	
+	public ArrayList<Integer> tasklist = new ArrayList<Integer>();
+	public Set<Integer> taskSet = new HashSet<Integer>();
+
+	// ..............time order.............................//
 	public double ts = 0.0;
 
-	public ArrayList<Integer> tasklist = new ArrayList<Integer>();
+	// ...........computation parameter....................//
+	public final double disThre = 2 - 2 * TopologyMain.thre;
+	public final double cellEps = Math.sqrt(disThre);
+	public final int hSpaceTaskNum = (int) Math.floor(1.0 / cellEps)
+			* TopologyMain.cellTask + 1;
+	public final int hSpaceCellNum = (int) Math.ceil(1.0 / cellEps);
 
-	public double disThre = 2 - 2 * TopologyMain.thre;
-	public double cellEps = Math.sqrt(disThre);
+	// ............tuple data......................//
 
-	public int taskCnt = 0;
-	
-	public int repType;  
+	public int repType;
 	public int taskcoor;
 	public int gap;
-	
-	public int taskBound = (int) Math.floor(1.0/cellEps)*TopologyMain.cellTask+1; 
-	
 
 	@Override
 	public void prepare(WorkerTopologyContext context, GlobalStreamId stream,
@@ -47,77 +51,79 @@ public class robStripGroup implements CustomStreamGrouping {
 		// TODO Auto-generated method stub
 
 		_tasks = targetTasks;
-		taskCnt = _tasks.size();
-
 	}
 
-	public Set <Integer> taskSet = new HashSet<Integer>();
-
 	public void broadcastTask(int taskcoor, int gap, int type) {
-		
-		int tmpcoor=0;
-		
-		if(type==0)
-		{
-			for(int i=0;i<TopologyMain.cellTask;i++)
-			{
-				tmpcoor=taskcoor+i;
-				
-				if(taskcoor+i< 2*taskBound)
-				{
-				taskSet.add(_tasks.get(tmpcoor));
+
+		int tmpcoor = 0;
+
+		if (type == 0) {
+			for (int i = 0; i < TopologyMain.cellTask; i++) {
+				tmpcoor = taskcoor + i;
+
+				if (taskcoor + i < 2 * hSpaceTaskNum) {
+					taskSet.add(_tasks.get(tmpcoor));
 				}
 			}
-		}
-		else if(type == -1)
-		{
-		
-			for(int i=0;i<gap;i++)
-			{
-				tmpcoor=taskcoor+i;
-				
-				if(taskcoor+i< 2*taskBound)
-				{
-				taskSet.add(_tasks.get(tmpcoor));
+		} else if (type == -1) {
+
+			if (gap >= TopologyMain.cellTask) {
+				for (int i = 0; i < TopologyMain.cellTask; i++) {
+					tmpcoor = taskcoor + i;
+
+					if (taskcoor + i < 2 * hSpaceTaskNum) {
+						taskSet.add(_tasks.get(tmpcoor));
+					}
+				}
+			} else {
+
+				for (int i = 0; i < gap; i++) {
+					tmpcoor = taskcoor + i;
+
+					if (taskcoor + i < 2 * hSpaceTaskNum) {
+						taskSet.add(_tasks.get(tmpcoor));
+					}
 				}
 			}
-			
-		}
-		else if(type==-10)
-		{
-			
-			for(int i=gap;i<TopologyMain.cellTask;i++)
-			{
-				tmpcoor=taskcoor+i;
-				
-				if(taskcoor+i< 2*taskBound)
-				{
-				taskSet.add(_tasks.get(tmpcoor));
+
+		} else if (type == -10) {
+
+			for (int i = gap; i < TopologyMain.cellTask; i++) {
+				tmpcoor = taskcoor + i;
+
+				if (taskcoor + i < 2 * hSpaceTaskNum) {
+					taskSet.add(_tasks.get(tmpcoor));
 				}
 			}
-			
-		}
-		else if(type==1)
-		{
-			for(int i=TopologyMain.cellTask-gap;i<TopologyMain.cellTask;i++)
-			{
-				tmpcoor=taskcoor+i;
-				
-				if(taskcoor+i< 2*taskBound)
-				{
-				taskSet.add(_tasks.get(tmpcoor));
+
+		} else if (type == 1) {
+
+			if (gap >= TopologyMain.cellTask) {
+				for (int i = 0; i < gap; i++) {
+					tmpcoor = taskcoor + i;
+					if (taskcoor + i < 2 * hSpaceTaskNum) {
+						taskSet.add(_tasks.get(tmpcoor));
+					}
 				}
+
+			} else {
+				for (int i = TopologyMain.cellTask - gap; i < TopologyMain.cellTask; i++) {
+					tmpcoor = taskcoor + i;
+
+					if (taskcoor + i < 2 * hSpaceTaskNum) {
+						taskSet.add(_tasks.get(tmpcoor));
+					}
+				}
+
 			}
-		}
-		else if(type==10)
-		{
-			for(int i=0;i<TopologyMain.cellTask-gap;i++)
-			{
-				tmpcoor=taskcoor+i;
-				
-				if(taskcoor+i< 2*taskBound)
-				{
-				taskSet.add(_tasks.get(tmpcoor));
+
+		} else if (type == 10) {
+
+			for (int i = 0; i < TopologyMain.cellTask - gap; i++) {
+				tmpcoor = taskcoor + i;
+
+				if (taskcoor + i < 2 * hSpaceTaskNum) {
+					taskSet.add(_tasks.get(tmpcoor));
 				}
 			}
 		}
@@ -127,48 +133,24 @@ public class robStripGroup implements CustomStreamGrouping {
 	@Override
 	public List<Integer> chooseTasks(int taskId, List<Object> values) {
 		// TODO Auto-generated method stub
-	
-//		declarer.declare(new Fields("repType", "strevec", "ts", "taskCoor",
-//				"streId", "gap"));
-	
-		repType=Integer.valueOf(values.get(0).toString());
-		taskcoor=Integer.valueOf(values.get(3).toString());
-		gap=Integer.valueOf(values.get(5).toString());
+
+		// declarer.declare(new Fields("repType", "strevec", "ts", "taskCoor",
+		// "streId", "gap"));
+
+		repType = Integer.valueOf(values.get(0).toString());
+		taskcoor = Integer.valueOf(values.get(3).toString());
+		gap = Integer.valueOf(values.get(5).toString());
 		ts = Double.valueOf(values.get(2).toString());
 
 		tasklist.clear();
+		taskSet.clear();
 
-		if (ts > curtstamp) {
-			
-			taskSet.clear();
-			broadcastTask(taskcoor, gap, repType);
-			
-			for (Integer tmp : taskSet) {
-				tasklist.add(tmp);
-			}
-			
-			curtstamp = ts;
-			
-			return tasklist;
+		broadcastTask(taskcoor, gap, repType);
 
-		} else if (ts < curtstamp) {
-			System.out
-					.printf("!!!!!!!!!!!!! inter robStripGroup time sequence disorder at %f %f\n",
-							ts, curtstamp);
-
-			return tasklist;
-
-		} else {
-
-			taskSet.clear();
-			
-			broadcastTask(taskcoor, gap, repType);
-		
-			for (Integer tmp : taskSet) {
-				tasklist.add(tmp);
-			}
-
-			return tasklist;
+		for (Integer tmp : taskSet) {
+			tasklist.add(tmp);
 		}
+
+		return tasklist;
 	}
 }

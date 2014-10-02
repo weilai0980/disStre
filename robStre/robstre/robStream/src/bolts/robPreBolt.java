@@ -15,13 +15,7 @@ import backtype.storm.tuple.Values;
 
 public class robPreBolt extends BaseBasicBolt {
 
-	public static int gtaskId = 0;
-	public int taskId = 0;
-
-	public double curtstamp = TopologyMain.winSize - 1;
-	// public double ststamp = -TopologyMain.winSize+1;
-	public double ststamp = 0.0;
-
+	// .........memory management for sliding windows.................//
 	int declrNum = (int) (TopologyMain.nstreBolt / TopologyMain.preBoltNum + 10);
 	public double[][] strevec = new double[declrNum][TopologyMain.winSize + 6];
 	public double[][] normvec = new double[declrNum][TopologyMain.winSize + 6];
@@ -37,49 +31,75 @@ public class robPreBolt extends BaseBasicBolt {
 
 	public int iniFlag = 1;
 
-	public double disThre = 2 - 2 * TopologyMain.thre;
+	public double[] curexp = new double[TopologyMain.nstreBolt + 10],
+			cursqrsum = new double[TopologyMain.nstreBolt + 10];
 
-	public double cellEps = Math.sqrt(disThre);
-	public double taskEps = 1 / cellEps / TopologyMain.cellTask;
-	public double taskCoor;
+	// ...........computation parameter....................//
 
-	public int shufDim = 1;
-	public int[] preTaskCoor = new int[TopologyMain.nstreBolt + 10];
+	public final double disThre = 2 - 2 * TopologyMain.thre;
+	public final double cellEps = Math.sqrt(disThre);
+	public final double taskEps = cellEps / TopologyMain.cellTask;
+	public int shufDim = TopologyMain.winSize - 1;
 	public int hSpaceTaskNum;
+	public int hSpaceCellNum;
+
+	// ...........emitting streams....................//
 
 	public String ptOutputStr;
 	public String vecOutputStr;
+	public double taskCoor;
+	public int[] preTaskCoor = new int[TopologyMain.nstreBolt + 10];
+	public long localTaskId=0;
 
-	public double[] curexp = new double[TopologyMain.nstreBolt + 10],
-			curdev = new double[TopologyMain.nstreBolt + 10],
-			cursqr = new double[TopologyMain.nstreBolt + 10],
-			cursum = new double[TopologyMain.nstreBolt + 10];
+	// ............input time order..............//
 
-	public int calTaskCoor(int idx, int hspaceTask) {
-		int k = 0;
-		k = (shufDim + 1) % queueLen;
+	String streType = new String();
+	double ts = 0.0;
+	// for long sliding window
+	// public double curtstamp = TopologyMain.winSize - 1;
+	public double curtstamp = 0.0;
+	public double ststamp = 0.0;
+	String commandStr=new String(), preCommandStr=new String();
+
+	public int calTaskCoor(int idx, int hspaceTask, int hspaceCell) {
+		int k = shufDim;
 		int tmp = 0, taskc;
+
+		normvec[idx][k] = (strevec[idx][k] - curexp[idx])
+				/ Math.sqrt(cursqrsum[idx] - TopologyMain.winSize * curexp[idx]
+						* curexp[idx]);
 
 		if (normvec[idx][k] >= 0) {
 
 			tmp = (int) Math.ceil((double) normvec[idx][k] / cellEps);
 		} else {
-			tmp = -1 * (int) Math.ceil((double) -1 * normvec[idx][k] / cellEps);
+			tmp = (int) Math.ceil((double) -1 * normvec[idx][k] / cellEps);
 		}
 
-		if (normvec[idx][k] >= 0) {
+		if (tmp == hspaceCell) {
+			if (normvec[idx][k] >= 0) {
 
-			taskc = (int) Math.ceil((double) (normvec[idx][k] - tmp * cellEps)
-					/ taskEps);
-			
-			taskc=taskc + hspaceTask;
+				taskc = 2 * hspaceTask;
 
+			} else {
+				taskc = 1;
+			}
 		} else {
-			taskc = -1
-					* (int) Math.ceil((double) (-1 * normvec[idx][k] - tmp
-							* cellEps)
-							/ taskEps);
+
+			if (normvec[idx][k] >= 0) {
+
+				taskc = (int) Math.ceil((double) normvec[idx][k] / taskEps);
+				taskc = taskc + hspaceTask;
+
+			} else {
+				taskc = (int) Math
+						.ceil((double) -1 * normvec[idx][k] / taskEps);
+				taskc = hspaceTask - taskc + 1;
+
+			}
+
 		}
+		--taskc;
 
 		return taskc;
 	}
@@ -92,10 +112,10 @@ public class robPreBolt extends BaseBasicBolt {
 		}
 	}
 
-	public String AdaptiveUpdate(int idx, int taskcoor, int preTaskcoor) {
+	public String vectorUpdate(int idx, int taskcoor, int preTaskcoor) {
 
 		String coorstr = new String();
-		int k = 0;
+		int k = vecst[idx];
 		while (k != veced[idx]) {
 
 			coorstr = coorstr + Double.toString(strevec[idx][k]) + ",";
@@ -125,24 +145,26 @@ public class robPreBolt extends BaseBasicBolt {
 		if (vecflag[tmpsn] == 0) {
 
 			strevec[tmpsn][veced[tmpsn]] = val;
-			veced[tmpsn] = (veced[tmpsn] + 1) % queueLen;
-
 			oldval = strevec[tmpsn][vecst[tmpsn]];
 			newval = val;
-
 			vecst[tmpsn] = (vecst[tmpsn] + 1 * flag) % queueLen;
+			if (shufDim == (queueLen - 1)) {
+				if (vecst[tmpsn] < shufDim) {
+					shufDim = 0;
+				}
+			} else {
+				if (vecst[tmpsn] > shufDim) {
+					shufDim = veced[tmpsn];
+				}
+			}
+			veced[tmpsn] = (veced[tmpsn] + 1) % queueLen;
 
 			curexp[tmpsn] = curexp[tmpsn] - oldval / TopologyMain.winSize
 					* flag + newval / TopologyMain.winSize;
-			cursqr[tmpsn] = cursqr[tmpsn] - oldval * oldval * flag + newval
-					* newval;
-			cursum[tmpsn] = cursum[tmpsn] - oldval * flag + newval;
-			curdev[tmpsn] = cursqr[tmpsn] + TopologyMain.winSize
-					* curexp[tmpsn] * curexp[tmpsn] - 2 * cursum[tmpsn]
-					* curexp[tmpsn];
+			cursqrsum[tmpsn] = cursqrsum[tmpsn] - oldval * oldval * flag
+					+ newval * newval;
 
 			vecflag[tmpsn] = 1;
-
 		}
 	}
 
@@ -152,39 +174,38 @@ public class robPreBolt extends BaseBasicBolt {
 	 */
 	@Override
 	public void cleanup() {
-		// System.out.println("-- Word Counter [" + name + "-" + id + "] --");
-		// for (Map.Entry<String, Integer> entry : counters.entrySet()) {
-		// System.out.println(entry.getKey() + ": " + entry.getValue());
+
 	}
 
 	@Override
 	public void prepare(Map stormConf, TopologyContext context) {
 		// TODO Auto-generated method stub
 
-		taskId = gtaskId;
-		gtaskId++;
-		taskId = context.getThisTaskId();
-
 		for (int j = 0; j < TopologyMain.nstreBolt + 10; j++) {
 			vecst[j] = 0;
 			veced[j] = 0;
-			veced[j] = TopologyMain.winSize - 1;
+
+			// for long sliding window
+			// veced[j] = TopologyMain.winSize - 1;
 
 			vecflag[j] = 0;
 			streid[j] = 0;
 
 			curexp[j] = 0;
-			curdev[j] = 0;
-			cursqr[j] = 0;
-			cursum[j] = 0;
+			cursqrsum[j] = 0;
+
+			preTaskCoor[j] = -1;
 		}
 		taskCoor = 0.0;
 
 		hSpaceTaskNum = (int) Math.floor(1.0 / cellEps) * TopologyMain.cellTask
 				+ 1;
+		hSpaceCellNum = (int) Math.ceil(1.0 / cellEps);
 
 		ptOutputStr = new String();
 		vecOutputStr = new String();
+		
+		localTaskId=context.getThisTaskId();
 
 		return;
 	}
@@ -192,8 +213,10 @@ public class robPreBolt extends BaseBasicBolt {
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 
-		declarer.declare(new Fields("repType", "strevec", "ts", "taskCoor",
+		declarer.declareStream("streamData",new Fields("repType", "strevec", "ts", "taskCoor",
 				"streId", "gap"));
+		
+		declarer.declareStream("calCommand",new Fields("command","taskid"));
 		return;
 	}
 
@@ -201,74 +224,90 @@ public class robPreBolt extends BaseBasicBolt {
 	public void execute(Tuple input, BasicOutputCollector collector) {
 		// TODO Auto-generated method stub
 
-		double ts = input.getDoubleByField("ts");
-		double tmpval = input.getDoubleByField("value");
-		int sn = input.getIntegerByField("sn");
 		int i = 0, curTask = 0, tmpgap = 0;
+		streType = input.getSourceStreamId();
 
-		if (ts > curtstamp) {
+		if (streType.compareTo("dataStre") == 0) {
+
+			ts = input.getDoubleByField("ts");
+			double tmpval = input.getDoubleByField("value");
+			int sn = input.getIntegerByField("sn");
+
+			if (Math.abs(ts - curtstamp) <= 1e-3) {
+
+				idxNewTuple(sn, tmpval, 1 - iniFlag);
+			}
+		} else if (streType.compareTo("contrStre") == 0) {
+			
+			commandStr= input.getStringByField("command");
+			
+			if(commandStr.compareTo(preCommandStr)==0)
+			{
+				return;
+			}
 
 			if (ts - ststamp >= TopologyMain.winSize) {
 
 				ststamp++;
 
 				for (i = 0; i < streidCnt; ++i) {
-					curTask = calTaskCoor(i, hSpaceTaskNum);
+					curTask = calTaskCoor(i, hSpaceTaskNum, hSpaceCellNum);
 					tmpgap = Math.abs(curTask - preTaskCoor[i]);
 
 					ptOutputStr = recentPointUpdate(i);
 
 					if (curTask == preTaskCoor[i]) {
 
-						collector.emit(new Values(0, ptOutputStr, curtstamp,
+						collector.emit("streamData",new Values(0, ptOutputStr, curtstamp,
 								curTask, streid[i], 0));
 					} else {
 
-						vecOutputStr = AdaptiveUpdate(i, curTask,
-								preTaskCoor[i]);
+						vecOutputStr = vectorUpdate(i, curTask, preTaskCoor[i]);
 
-						if (curTask > preTaskCoor[i])
+						if (curTask > preTaskCoor[i]) {
+							if (tmpgap >= TopologyMain.cellTask) {
+								collector.emit("streamData",new Values(1, vecOutputStr,
+										curtstamp, curTask, streid[i], tmpgap));
+							} else {
+								collector.emit("streamData",new Values(1, vecOutputStr,
+										curtstamp, curTask, streid[i], tmpgap));
 
-						{
-							collector.emit(new Values(1, vecOutputStr,
-									curtstamp, curTask, streid[i], tmpgap));
+								collector.emit("streamData",new Values(10, ptOutputStr,
+										curtstamp, curTask, streid[i], tmpgap)); // need
+																					// skip
+							}
+						} else {
 
-							collector.emit(new Values(10, ptOutputStr,
-									curtstamp, curTask, streid[i], tmpgap)); // need
-																				// skip
-						}
+							if (tmpgap >= TopologyMain.cellTask) {
 
-						else {
+								collector.emit("streamData",new Values(-1, vecOutputStr,
+										curtstamp, curTask, streid[i], tmpgap));
+							} else {
+								collector.emit("streamData",new Values(-1, vecOutputStr,
+										curtstamp, curTask, streid[i], tmpgap));
 
-							collector.emit(new Values(-1, vecOutputStr,
-									curtstamp, curTask, streid[i], tmpgap));
-
-							collector.emit(new Values(-10, ptOutputStr,
-									curtstamp, curTask, streid[i], tmpgap));
+								collector.emit("streamData",new Values(-10, ptOutputStr,
+										curtstamp, curTask, streid[i], tmpgap));
+							}
 						}
 					}
 					preTaskCoor[i] = curTask;
 				}
 				iniFlag = 0;
+
 			}
+			
+			collector.emit("calCommand",new Values("done"+Double.toString(curtstamp),localTaskId));
 
 			// .....update for next tuple...............//
-			curtstamp = ts;
-
+			preCommandStr=commandStr;
+			
 			for (int j = 0; j < TopologyMain.nstreBolt + 5; ++j) {
 
 				vecflag[j] = 0;
 			}
-			idxNewTuple(sn, tmpval, 1 - iniFlag);
+			curtstamp = ts + 1;
 
-		} else if (ts < curtstamp) {
-			System.out
-					.printf("!!!!!!!!!!!!! AdjustPreBolt time sequence disorder\n");
-		} else if (Math.abs(ts - curtstamp) <= 1e-3) {
-
-			idxNewTuple(sn, tmpval, 1 - iniFlag);
 		}
-
 	}
-
 }
