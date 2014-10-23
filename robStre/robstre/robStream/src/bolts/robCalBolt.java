@@ -51,6 +51,7 @@ public class robCalBolt extends BaseBasicBolt {
 	TreeSet<Integer> avaiMem = new TreeSet<Integer>();
 	HashMap<Integer, Integer> streMem = new HashMap<Integer, Integer>();
 
+	
 	HashMap<String, Integer> cellIdx = new HashMap<String, Integer>();
 	int cellIdxcnt = 0;
 	List<List<Integer>> cellHostStre = new ArrayList<List<Integer>>(
@@ -124,6 +125,7 @@ public class robCalBolt extends BaseBasicBolt {
 		if (streSet.get(preset).contains(streid) == false) {
 			memidx = avaiMem.first();
 			avaiMem.remove(memidx);
+			
 			streMem.put(streid, memidx);
 
 			updateStreVec(memidx, vecdata);
@@ -172,29 +174,28 @@ public class robCalBolt extends BaseBasicBolt {
 
 	void cellStreamMapping() {
 
-		int stre = 0, memidx = 0, k = 0, cellmemidx = 0, cellcoor = 0, veccnt = 0;
-		double var = 0.0, mean = 0.0, normcoor = 0.0;
+		int  memidx = 0, k = 0, cellmemidx = 0, cellcoor = 0, veccnt = 0;
+		double denomi = 0.0, mean = 0.0, normcoor = 0.0;
 		String cellstr = new String();
 
 		int[] tmpvec = new int[TopologyMain.winSize + 5];
-
-		for (Map.Entry<Integer, Integer> entry : streMem.entrySet()) {
-
-			stre = entry.getKey();
-			memidx = entry.getValue();
+		
+		for (Integer stre : streSet.get(curSet)) {
+			
+			memidx = streMem.get(stre);
 
 			k = vecst[memidx];
-			var = (cursqrexp[memidx] - curexp[memidx]) * TopologyMain.winSize;
+			denomi = (cursqrexp[memidx] - curexp[memidx]) * TopologyMain.winSize;
 			mean = curexp[memidx];
 			veccnt = 0;
 
-			if (Math.abs(var - 0.0) < 1e-6) {
+			if (Math.abs(denomi - 0.0) < 1e-6) {
 				continue;
 			}
 
 			while (k != veced[memidx]) {
 
-				normcoor = (int) ((vecData[memidx][k] - mean) / Math.sqrt(var));
+				normcoor =  ((vecData[memidx][k] - mean) / Math.sqrt(denomi));
 
 				if (normcoor >= 0) {
 					cellcoor = (int) Math.floor(normcoor / cellEps);
@@ -264,10 +265,10 @@ public class robCalBolt extends BaseBasicBolt {
 
 				if (correCalDis(TopologyMain.thre, stre1, stre2) == 1) {
 
-					if (stre1 > stre2)
-						res.add(Integer.toString(stre2) + ","
-								+ Integer.toString(stre1));
-					else
+//					if (stre1 > stre2)
+//						res.add(Integer.toString(stre2) + ","
+//								+ Integer.toString(stre1));
+//					else
 						res.add(Integer.toString(stre1) + ","
 								+ Integer.toString(stre2));
 				}
@@ -283,10 +284,10 @@ public class robCalBolt extends BaseBasicBolt {
 
 				if (correCalDis(TopologyMain.thre, stre1, stre2) == 1) {
 
-					if (stre1 > stre2)
-						res.add(Integer.toString(stre2) + ","
-								+ Integer.toString(stre1));
-					else
+//					if (stre1 > stre2)
+//						res.add(Integer.toString(stre2) + ","
+//								+ Integer.toString(stre1));
+//					else
 						res.add(Integer.toString(stre1) + ","
 								+ Integer.toString(stre2));
 				}
@@ -304,15 +305,16 @@ public class robCalBolt extends BaseBasicBolt {
 		for (int i = 0; i < cellHostStre.get(cellidx1).size(); i++) {
 
 			stre1 = cellHostStre.get(cellidx1).get(i);
+			
 			for (int j = 0; j < cellHostStre.get(cellidx2).size(); j++) {
 
 				stre2 = cellHostStre.get(cellidx2).get(j);
 				if (correCalDis(TopologyMain.thre, stre1, stre2) == 1) {
 
-					if (stre1 > stre2)
-						res.add(Integer.toString(stre2) + ","
-								+ Integer.toString(stre1));
-					else
+//					if (stre1 > stre2)
+//						res.add(Integer.toString(stre2) + ","
+//								+ Integer.toString(stre1));
+//					else
 						res.add(Integer.toString(stre1) + ","
 								+ Integer.toString(stre2));
 				}
@@ -324,10 +326,10 @@ public class robCalBolt extends BaseBasicBolt {
 
 						if (correCalDis(TopologyMain.thre, stre2, stre3) == 1) {
 
-							if (stre3 > stre2)
-								res.add(Integer.toString(stre2) + ","
-										+ Integer.toString(stre3));
-							else
+//							if (stre3 > stre2)
+//								res.add(Integer.toString(stre2) + ","
+//										+ Integer.toString(stre3));
+//							else
 								res.add(Integer.toString(stre3) + ","
 										+ Integer.toString(stre2));
 						}
@@ -343,7 +345,12 @@ public class robCalBolt extends BaseBasicBolt {
 				stre1 = cellHostStre.get(cellidx1).get(i);
 				stre2 = cellHostStre.get(cellidx2).get(j);
 
-				correCalDis(TopologyMain.thre, stre1, stre2);
+				
+				if (correCalDis(TopologyMain.thre, stre1, stre2)==1)
+				{
+					res.add(Integer.toString(stre1) + ","
+							+ Integer.toString(stre2));
+				}
 			}
 		}
 
@@ -397,6 +404,11 @@ public class robCalBolt extends BaseBasicBolt {
 		streSet.add(set2);
 
 		locTaskId = context.getThisTaskIndex();
+		
+		for(int i=0;i<TopologyMain.nstreBolt + 10;++i)
+		{
+			avaiMem.add(i);
+		}
 
 		return;
 	}
@@ -433,10 +445,16 @@ public class robCalBolt extends BaseBasicBolt {
 
 			cellStreamMapping();
 			cellCorrCal();
+			
+			for(String pair:resPair)
+			{
+				collector.emit(new Values(curtstamp, pair)); 
+			}
 			localIdxRenew();
 
 			curSet = 1 - curSet;
 			streSet.get(curSet).clear();
+			
 			curtstamp = ts + 1;
 			preTaskIdx.clear();
 		}

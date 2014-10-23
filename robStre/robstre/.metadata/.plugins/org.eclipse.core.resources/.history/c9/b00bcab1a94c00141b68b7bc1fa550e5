@@ -1,0 +1,40 @@
+import java.io.IOException;
+
+
+
+public class coorGenerationTest {
+	
+	int[] direcVec = {-1,0,1};
+	int[] a = {1,2,3};
+	
+	void calCellCoor( int dftNum,int curCnt, String cellCoor) {
+
+		if(curCnt>=dftNum)
+		{
+			System.out.printf("%s\n", cellCoor);
+			
+			return;
+			
+		}
+		for(int i=0;i<3;++i)
+		{
+			cellCoor=cellCoor+ Integer.toString(a[curCnt]+direcVec[i])+",";
+			
+			calCellCoor(dftNum, curCnt+1, cellCoor);
+		
+		}
+	
+		return;
+	}
+
+	
+	public static void main(String[] args)  {
+		
+		String cell=new String();
+		coorGenerationTest obj=new coorGenerationTest();
+		calCellCoor( 3,0, cell);
+	
+	}
+	
+
+}

@@ -15,19 +15,16 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
 public class robAggreBolt extends BaseBasicBolt {
-	
-	
-	//.............aggregator....................//
 
-	HashSet<String> strePair=new HashSet<String>();
+	// .............aggregator....................//
+
+	HashSet<String> strePair = new HashSet<String>();
 	// ............input time order..............//
 
 	double ts = 0.0;
-	// for long sliding window
-	// public double curtstamp = TopologyMain.winSize - 1;
-	public double curtstamp = 0.0;
+
+	public double curtstamp = TopologyMain.winSize - 1;
 	public double ststamp = 0.0;
-	
 
 	/**
 	 * At the end of the spout (when the cluster is shutdown We will show the
@@ -54,11 +51,15 @@ public class robAggreBolt extends BaseBasicBolt {
 	@Override
 	public void execute(Tuple input, BasicOutputCollector collector) {
 		// TODO Auto-generated method stub
-		
+
 		double ts = input.getDoubleByField("ts");
 		String pairstr = input.getStringByField("pair");
 
 		if (ts > curtstamp) {
+			
+			
+
+			// .........update for the next sliding window..........//
 
 			curtstamp = ts;
 			strePair.clear();

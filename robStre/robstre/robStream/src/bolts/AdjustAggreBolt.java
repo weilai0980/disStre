@@ -35,14 +35,6 @@ public class AdjustAggreBolt extends BaseBasicBolt {
 	@Override
 	public void cleanup() {
 
-		// try {
-		// fstream = new FileWriter("naiveRes.txt", true);
-		// BufferedWriter out = new BufferedWriter(fstream);
-		// out.close();
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
 		return;
 	}
 

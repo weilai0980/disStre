@@ -246,7 +246,7 @@ public class robPreBolt extends BaseBasicBolt {
 				return;
 			}
 
-			if (ts - ststamp >= TopologyMain.winSize) {
+			if (ts - ststamp >= TopologyMain.winSize-1) {
 
 				ststamp++;
 

@@ -18,6 +18,12 @@ import java.util.ArrayList;
 
 public class TopologyMain {
 
+	
+	// .................DFT approach...........................//
+	
+	public static int dftN = 4;
+	
+	
 	// .................local parallelism record...........................//
 	public static int datasrc = 1; // 0: synthetic 1: real
 	public static int nstreBolt = 20;

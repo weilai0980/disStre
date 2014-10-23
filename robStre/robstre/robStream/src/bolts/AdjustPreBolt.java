@@ -18,9 +18,16 @@ public class AdjustPreBolt extends BaseBasicBolt {
 	public static int gtaskId = 0;
 	public int taskId = 0;
 
+	
+	// .........time order....................//
+	
 	public double curtstamp = TopologyMain.winSize-1;
 //	public double ststamp = -TopologyMain.winSize+1;
 	public double ststamp = 0.0;
+	String streType=new String();
+	String commandStr=new String(), preCommandStr=new String();
+	double ts=0.0;
+	// .........memory......................//
 
 	int declrNum=(int)(TopologyMain.nstreBolt/TopologyMain.preBoltNum+10);
 	public double[][] strevec = new double[declrNum][TopologyMain.winSize + 6];
@@ -37,8 +44,6 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 	public int iniFlag = 1;
 
-
-
 	// .........affine relation graph......................//
 
 	List<List<Integer>> graphmat = new ArrayList<List<Integer>>(
@@ -48,7 +53,7 @@ public class AdjustPreBolt extends BaseBasicBolt {
 			TopologyMain.nstreBolt + 5);
 	public int[] degree = new int[TopologyMain.nstreBolt + 10];
 
-	// ...................................................//
+	// ...........Computation parameter....................//
 
 	public double disThre = 2 - 2 * TopologyMain.thre;
 
@@ -404,7 +409,6 @@ public class AdjustPreBolt extends BaseBasicBolt {
 		gtaskId++;
 		
 		taskId= context.getThisTaskId();
-//		context.get
 
 
 		for (int j = 0; j < TopologyMain.nstreBolt + 10; j++) {
@@ -424,14 +428,18 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 		localBoltNo = adjustBoltNo;
 		adjustBoltNo++;
+		
 	}
 
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		declarer.declareStream("interStre", new Fields("pidx", "pivotvec",
-				"adjaffine", "adjidx", "coord", "ts", "bolt"));
+				"adjaffine", "adjidx", "coord", "ts", "bolt","taskid"));
 
 		declarer.declareStream("qualStre", new Fields("pair", "ts"));
+		
+		declarer.declareStream("calCommand", new Fields("command", "taskid"));
+		
 		return;
 	}
 
@@ -439,23 +447,35 @@ public class AdjustPreBolt extends BaseBasicBolt {
 	public void execute(Tuple input, BasicOutputCollector collector) {
 		// TODO Auto-generated method stub
 
-		double ts = input.getDoubleByField("ts");
-		double tmpval = input.getDoubleByField("value");
-		int sn = input.getIntegerByField("sn");
 		int i = 0, tmppivot = 0;
-
 		int[] pivotset = new int[TopologyMain.nstream + 5];
 		int pivotcnt = 0;
 
 		String coorStr = new String();
 		String[] streAffine = new String[4];
+		
+		streType=input.getSourceStreamId();
+		
+		if(streType.compareTo("dataStre")==0)
+		{
+			
+		    ts = input.getDoubleByField("ts");
+			double tmpval = input.getDoubleByField("value");
+			int sn = input.getIntegerByField("sn");
+			
+			idxNewTuple(sn, tmpval, 1 - iniFlag);
+		}
+		else if(streType.compareTo("contrStre")==0) 
+		{
+			commandStr = input.getStringByField("command");
 
-		if (ts > curtstamp) {
-
+			if (commandStr.compareTo(preCommandStr) == 0) {
+				return;
+			}
+			
 			if (ts - ststamp >= TopologyMain.winSize) {
 
 				ststamp++;
-				
 
 				graphCons(TopologyMain.thre, collector, curtstamp);
 				pivotcnt = affineSelec(pivotset);
@@ -492,7 +512,6 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 				// ............................................//
 
-			
 
 				for (i = 0; i < pivotcnt; ++i) {
 
@@ -530,15 +549,24 @@ public class AdjustPreBolt extends BaseBasicBolt {
 						
 					collector.emit("interStre", new Values(streid[tmppivot],
 							streAffine[0], streAffine[1], streAffine[2],
-							coorStr, curtstamp, localBoltNo)); // modification
+							coorStr, curtstamp, localBoltNo,taskId)); // modification
+					
+//					collector.emitDirect(i, streamId, tuple)
 					
 					iniFlag = 0;
+					
+				
 
 				}
 			}
 
+			collector
+			.emit("calCommand",
+					new Values("done" + Double.toString(curtstamp),
+							taskId));
 			// .....update for next tuple...............//
-			curtstamp = ts;
+			preCommandStr = commandStr;
+			curtstamp = ts+1;
 
 			graphmat.clear();
 			adjList.clear();
@@ -547,17 +575,8 @@ public class AdjustPreBolt extends BaseBasicBolt {
 				degree[j] = 0;
 
 				vecflag[j] = 0;
-			}
-			idxNewTuple(sn, tmpval, 1 - iniFlag);
-
-		} else if (ts < curtstamp) {
-			System.out
-					.printf("!!!!!!!!!!!!! AdjustPreBolt time sequence disorder\n");
-		} else if (Math.abs(ts - curtstamp) <= 1e-3) {
-
-			idxNewTuple(sn, tmpval, 1 - iniFlag);
+			}	
 		}
-
 	}
 
 }

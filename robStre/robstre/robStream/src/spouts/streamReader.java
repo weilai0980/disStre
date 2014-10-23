@@ -231,6 +231,14 @@ public class streamReader extends BaseRichSpout {
 					- tupTs * curStreBias[i] + curStreConst[i]));
 		}
 
+		
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		collector.emit("contrStre", new Values("done"+Double.toString(tupTs)));
 
 		return;

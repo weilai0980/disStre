@@ -18,10 +18,19 @@ import backtype.storm.tuple.Values;
 
 public class AdjustApproBolt extends BaseBasicBolt {
 
+	// ..........time order...........//
 	double curtstamp = TopologyMain.winSize - 1;
-
+	double ts = 0.0;
+	String streType = new String();
+	HashSet<Long> preTaskIdx = new HashSet<Long>();
+	String commandStr = new String();
+	long preTaskId = 0;
+	long srctask = 0;
+	// ..........memory................//
 	int[][] gridCoors = new int[TopologyMain.gridIdxN + 5][TopologyMain.winSize + 5];
 	double[][] pivotVec = new double[TopologyMain.gridIdxN + 5][TopologyMain.winSize + 5];
+
+	int[] srcTaskId = new int[TopologyMain.gridIdxN + 5];
 
 	int[] gridPivot = new int[TopologyMain.gridIdxN + 5];
 	int[] gridBolt = new int[TopologyMain.gridIdxN + 5];
@@ -43,16 +52,13 @@ public class AdjustApproBolt extends BaseBasicBolt {
 	public static int glAppBolt = 0;
 	public int locAppBolt = 0;
 
-	// for partition vector
+	// .........computation parameters...............//
 
 	public double subDivNum = 2;
 	public double taskRange = 2.0 / subDivNum;
-
 	public double disThre = 2 - 2 * TopologyMain.thre;
-
 	public int gridRange = (int) Math.ceil(1.0 / Math.sqrt(disThre));
 	// public int taskGridMax=2*gridRange-1;
-
 	public double taskGridCap = taskRange / Math.sqrt(disThre);
 	public int locTaskId;
 
@@ -168,120 +174,6 @@ public class AdjustApproBolt extends BaseBasicBolt {
 		return cnt;
 	}
 
-	// public double deviCal(double vec[], double exp, int l) {
-	// double sum = 0.0;
-	// for (int i = 0; i < l; ++i) {
-	// sum += ((vec[i] - exp) * (vec[i] - exp));
-	// }
-	//
-	// return sum / l;
-	// }
-	//
-	// public double expCal(double vec[], int l) {
-	// double sum = 0.0;
-	// for (int i = 0; i < l; ++i) {
-	// sum += vec[i];
-	// }
-	//
-	// return (double) sum / l;
-	// }
-
-	// int correCalDis(String str1, String str2, double thre, int streid1,
-	// int streid2, int gridno, double val[]) {
-	// double dis = 0.0, tmp = 0.0;
-	// double[] vec1 = new double[TopologyMain.winSize + 10];
-	// double[] vec2 = new double[TopologyMain.winSize + 10];
-	// int len = vecAna(str1, vec1);
-	// vecAna(str2, vec2);
-	//
-	// for (int i = 0; i < len; ++i) {
-	// tmp += ((vec1[i] - vec2[i]) * (vec1[i] - vec2[i]));
-	// }
-	// dis = tmp;
-	//
-	// // if(streid1==0 && streid2==1)
-	// // {
-	// //
-	// System.out.printf("timestamp %f:  stream 0 and 1 correlation: %f   in grid: %s \n",curtstamp,
-	// // Math.sqrt((2-dis)/2), gridIdx[gridno]);
-	// // }
-	// // val[0]=dis;
-	// val[0] = (2.0 - dis) / 2.0;
-	//
-	// return (dis <= 2 - 2 * thre) ? 1 : 0;
-	// }
-
-	// public int correGrid(int gridNo, double thre, String strePair[]) {
-	//
-	// int rescnt = 0, i = 0, j = 0, tmpcnt = gridStreCnt[gridNo];
-	// int stre1 = 0, stre2 = 0;
-	//
-	// String vecstr = new String();
-	// double [] cval=new double[2];
-	//
-	// for (i = 0; i < tmpcnt; ++i) {
-	//
-	// stre1 = gridStre[gridNo][i];
-	// vecstr = vecIdx[stre1];
-	//
-	// for (j = i + 1; j < tmpcnt; j++) {
-	//
-	// stre2 = gridStre[gridNo][j];
-	//
-	// if (correCalDis(vecstr, vecIdx[stre2],
-	// thre,strid[stre1],strid[stre2],gridNo,cval) == 1) {
-	// if (strid[stre1] > strid[stre2]) {
-	//
-	// strePair[rescnt++] = Integer.toString(strid[stre2])
-	// + "," + Integer.toString(strid[stre1])+","+Double.toString(cval[0]);
-	//
-	// // strePair[rescnt++] = Integer.toString(strid[stre2])
-	// // + "," + Integer.toString(strid[stre1]);
-	// } else {
-	//
-	// strePair[rescnt++] = Integer.toString(strid[stre1])
-	// + "," + Integer.toString(strid[stre2])+","+Double.toString(cval[0]);
-	//
-	//
-	// // strePair[rescnt++] = Integer.toString(strid[stre1])
-	// // + "," + Integer.toString(strid[stre2]);
-	// }
-	// }
-	// }
-	// }
-	//
-	// return rescnt;
-	// }
-
-	// public int localStreIdx(int hostid, String vecdata) {
-	// int i = 0;
-	// for (i = 0; i < stridcnt; ++i) {
-	// if (strid[i] == hostid) {
-	// break;
-	// }
-	// }
-	// if (i == stridcnt) {
-	// strid[stridcnt++] = hostid;
-	// }
-	// vecIdx[i] = vecdata;
-	// return i;
-	// }
-
-	// public int localGridIdx(String grid) {
-	//
-	// int i = 0;
-	// for (i = 0; i < gridIdxcnt; ++i) {
-	// if (grid.compareTo(gridIdx[i]) == 0) {
-	// break;
-	// }
-	// }
-	// if (i == gridIdxcnt) {
-	// gridIdx[gridIdxcnt++] = grid;
-	// }
-	// return i;
-	// }
-	//
-
 	public boolean localpStreIdx(int stre) {
 
 		if (pStreMap.containsKey(stre) == true) {
@@ -309,20 +201,16 @@ public class AdjustApproBolt extends BaseBasicBolt {
 		if (gridBolt[idx1] == gridBolt[idx2]) {
 			return 0;
 		}
-
-		if(gpTaskId[idx1] != locTaskId && gpTaskId[idx2] != locTaskId)
+		if (gpTaskId[idx1] != locTaskId && gpTaskId[idx2] != locTaskId) {
 			return 0;
-		
+		}
+
 		for (int j = 0; j < TopologyMain.winSize; ++j) {
-
 			if ((gridCoors[idx1][j] + 1) < gridCoors[idx2][j] - 1
-					|| (gridCoors[idx1][j] - 1) > gridCoors[idx2][j] + 1
-					) {
-
+					|| (gridCoors[idx1][j] - 1) > gridCoors[idx2][j] + 1) {
 				return 0;
 			}
 		}
-
 		return 1;
 	}
 
@@ -341,10 +229,6 @@ public class AdjustApproBolt extends BaseBasicBolt {
 
 		Iterator<Double> it1 = gridAffs.get(idx1).iterator();
 
-		// for (Integer i : gridAffs.get(idx1)) {
-
-		// while (gridAffs[idx1][i] != sentinel) {
-
 		while (it1.hasNext()) {
 
 			adjidx2 = 0;
@@ -353,10 +237,6 @@ public class AdjustApproBolt extends BaseBasicBolt {
 			w11 = it1.next();
 			w10 = it1.next();
 			er1 = it1.next();
-
-			// w11 = gridAffs[idx1][i];
-			// w10 = gridAffs[idx1][i + 1];
-			// er1 = gridAffs[idx1][i + 2];
 
 			tmpdis = 0.0;
 			for (k = 0; k < TopologyMain.winSize; ++k) {
@@ -370,44 +250,10 @@ public class AdjustApproBolt extends BaseBasicBolt {
 			}
 			tmpdis = Math.abs(Math.sqrt(tmpdis) - Math.sqrt(er1));
 
-			// ..............test..........................//
-
-			// if (curtstamp == tt) {
-			// if (gridPivot[idx2] == 17 && gridAdjIdx[idx1][adjidx1] == 18) {
-			// System.out
-			// .printf("-------------  correlation %f in bolt %d     %f\n",
-			// tmpdis, locAppBolt, sqrthre);
-			// }
-			// }
-
-			// ...........................................//
-
 			if (tmpdis <= sqrthre) {
 				cnt++;
 
-				// .........test.....................//
-				// String tmp = Integer.toString(gridAdjIdx[idx1][adjidx1]) +
-				// ","
-				// + Integer.toString(gridPivot[idx2]);
-				//
-				// if (tStamp == 45
-				// && (tmp.compareTo("17,18") == 0 || tmp
-				// .compareTo("18,17") == 0)) {
-				// System.out.printf("-------------  %s sent in bolt %d %f\n",
-				// tmp, locAppBolt, tStamp);
-				// }
-				// ..................................//
-
 				if (gridAdjIdx.get(idx1).get(adjidx1) < gridPivot[idx2]) {
-
-					// if (gridAdjIdx[idx1][adjidx1] < gridPivot[idx2]) {
-
-					// collector.emit(
-					// "interQualStre",
-					// new Values(tStamp, Integer
-					// .toString(gridAdjIdx[idx1][adjidx1])
-					// + ","
-					// + Integer.toString(gridPivot[idx2])));
 
 					collector.emit(
 							"interQualStre",
@@ -415,14 +261,6 @@ public class AdjustApproBolt extends BaseBasicBolt {
 									idx1).get(adjidx1))
 									+ "," + Integer.toString(gridPivot[idx2])));
 				} else {
-					// collector
-					// .emit("interQualStre",
-					// new Values(
-					// tStamp,
-					// Integer.toString(gridPivot[idx2])
-					// + ","
-					// + Integer
-					// .toString(gridAdjIdx[idx1][adjidx1])));
 
 					collector.emit(
 							"interQualStre",
@@ -436,52 +274,13 @@ public class AdjustApproBolt extends BaseBasicBolt {
 
 			}
 
-			// ................test..........................//
-
-			// if (curtstamp == tt) {
-			// if ((gridAdjIdx[idx1][adjidx1] == tb)
-			// || (gridAdjIdx[idx2][adjidx2] == ta)) {
-			// System.out.printf("!!!!!!!! appear in bolt %d\n\n",
-			// locAppBolt);
-			// }
-			// }
-
-			// ............................................//
-
 			Iterator<Double> it2 = gridAffs.get(idx2).iterator();
 
 			while (it2.hasNext()) {
 
-				// while (gridAffs[idx2][j] != sentinel) {
-
-				// ....................test..................................//
-				// if (curtstamp == tt) {
-				// if ((gridAdjIdx[idx1][adjidx1] == ta &&
-				// gridAdjIdx[idx2][adjidx2] == tb)
-				// || (gridAdjIdx[idx1][adjidx1] == tb &&
-				// gridAdjIdx[idx2][adjidx2] == ta)) {
-				// System.out.printf("!!!!!!!! appear in bolt %d\n\n",
-				// locAppBolt);
-				// }
-				// }
-
-				// if (curtstamp == tt) {
-				// if ((gridAdjIdx[idx1][adjidx1] == ta)
-				// || (gridAdjIdx[idx2][adjidx2] == ta)) {
-				// System.out.printf("!!!!!!!! appear in bolt %d\n\n",
-				// locAppBolt);
-				// }
-				// }
-
-				// ...........................................................//
-
 				w21 = it2.next();
 				w20 = it2.next();
 				er2 = it2.next();
-
-				// w21 = gridAffs[idx2][j];
-				// w20 = gridAffs[idx2][j + 1];
-				// er2 = gridAffs[idx2][j + 2];
 
 				tmpdis = 0.0;
 				tmpdis2 = 0.0;
@@ -497,32 +296,18 @@ public class AdjustApproBolt extends BaseBasicBolt {
 
 				}
 
-//				tmpdis = Math.abs(Math.sqrt(tmpdis) - Math.sqrt(er1)
-//						- Math.sqrt(er2));
-				
-				tmpdis = Math.sqrt(tmpdis) - Math.sqrt(er1)
-						- Math.sqrt(er2);
-				
-				tmpdis = Math.max(tmpdis, -Math.sqrt(tmpdis)  +  Math.abs(Math.sqrt(er1)
-						- Math.sqrt(er2)) );
-				
-				// Math.sqrt(tmpdis) - Math.sqrt(er1)
+				tmpdis = Math.sqrt(tmpdis) - Math.sqrt(er1) - Math.sqrt(er2);
+
+				tmpdis = Math.max(
+						tmpdis,
+						-Math.sqrt(tmpdis)
+								+ Math.abs(Math.sqrt(er1) - Math.sqrt(er2)));
 
 				if (tmpdis <= sqrthre) {
 					cnt++;
 
 					if (gridAdjIdx.get(idx1).get(adjidx1) < gridAdjIdx
-							.get(idx2).get(adjidx2))
-					// [idx1][adjidx1] < gridAdjIdx[idx2][adjidx2])
-					{
-						// collector
-						// .emit("interQualStre",
-						// new Values(
-						// tStamp,
-						// Integer.toString(gridAdjIdx[idx1][adjidx1])
-						// + ","
-						// + Integer
-						// .toString(gridAdjIdx[idx2][adjidx2])));
+							.get(idx2).get(adjidx2)) {
 
 						collector.emit(
 								"interQualStre",
@@ -532,14 +317,6 @@ public class AdjustApproBolt extends BaseBasicBolt {
 										+ Integer.toString(gridAdjIdx.get(idx2)
 												.get(adjidx2))));
 					} else {
-						// collector
-						// .emit("interQualStre",
-						// new Values(
-						// tStamp,
-						// Integer.toString(gridAdjIdx[idx2][adjidx2])
-						// + ","
-						// + Integer
-						// .toString(gridAdjIdx[idx1][adjidx1])));
 
 						collector.emit(
 								"interQualStre",
@@ -555,30 +332,6 @@ public class AdjustApproBolt extends BaseBasicBolt {
 
 				if (iniflag == 1) {
 					tmpdis2 = Math.abs(Math.sqrt(tmpdis2) - Math.sqrt(er2));
-
-					// ...................test.......................................//
-					// if (curtstamp == tt) {
-					// if (gridPivot[idx1] == 17
-					// && gridAdjIdx[idx2][adjidx2] == 18) {
-					// System.out
-					// .printf("-------------  correlation %f in bolt %d      %f\n",
-					// tmpdis2, locAppBolt, sqrthre);
-					// }
-					// }
-					// ...............................................................//
-
-					// .........test.....................//
-					// String tmp = Integer.toString(gridPivot[idx1]) + ","
-					// + Integer.toString(gridAdjIdx[idx2][adjidx2]);
-					//
-					// if (tStamp == 45
-					// && (tmp.compareTo("17,18") == 0 || tmp
-					// .compareTo("18,17") == 0)) {
-					// System.out.printf(
-					// "-------------  %s sent in bolt %d at %f\n",
-					// tmp, locAppBolt, tStamp);
-					// }
-					// ..................................//
 
 					if (tmpdis2 <= sqrthre) {
 
@@ -606,27 +359,6 @@ public class AdjustApproBolt extends BaseBasicBolt {
 
 						}
 
-						// if (gridPivot[idx1] < gridAdjIdx[idx2][adjidx2]) {
-						// collector
-						// .emit("interQualStre",
-						// new Values(
-						// tStamp,
-						// Integer.toString(gridPivot[idx1])
-						// + ","
-						// + Integer
-						// .toString(gridAdjIdx[idx2][adjidx2])));
-						// } else {
-						// collector
-						// .emit("interQualStre",
-						// new Values(
-						// tStamp,
-						// Integer.toString(gridAdjIdx[idx2][adjidx2])
-						// + ","
-						// + Integer
-						// .toString(gridPivot[idx1])));
-						//
-						// }
-
 					}
 				}
 
@@ -641,95 +373,27 @@ public class AdjustApproBolt extends BaseBasicBolt {
 		}
 
 		if (adjidx1 == 0) {
-			//
+
 			j = 0;
-			//
 
 			Iterator<Double> it2 = gridAffs.get(idx2).iterator();
 
 			while (it2.hasNext()) {
 
-				// while (gridAffs[idx2][j] != sentinel) {
-				//
-
 				w21 = it2.next();
 				w20 = it2.next();
 				er2 = it2.next();
 
-				// w21 = gridAffs[idx2][j];
-				// w20 = gridAffs[idx2][j + 1];
-				// er2 = gridAffs[idx2][j + 2];
-				//
-				// // tmpdis = 0.0;
 				tmpdis2 = 0.0;
 				for (k = 0; k < TopologyMain.winSize; ++k) {
-					// tmpscal = tmpvec[k] - w21 * pivotVec[idx2][k] - w20;
-					// tmpdis += (tmpscal * tmpscal);
-					//
-					// if (iniflag == 1) {
+
 					tmpscal2 = w21 * pivotVec[idx2][k] + w20
 							- pivotVec[idx1][k];
 					tmpdis2 += (tmpscal2 * tmpscal2);
-					// }
 
 				}
 
-				// tmpdis = Math.abs(Math.sqrt(tmpdis) - Math.sqrt(er1)
-				// - Math.sqrt(er2));
-				// Math.sqrt(tmpdis) - Math.sqrt(er1)
-
-				// if (tmpdis <= sqrthre) {
-				// cnt++;
-				//
-				// if (gridAdjIdx[idx1][adjidx1] < gridAdjIdx[idx2][adjidx2]) {
-				// collector
-				// .emit("interQualStre",
-				// new Values(
-				// tStamp,
-				// Integer.toString(gridAdjIdx[idx1][adjidx1])
-				// + ","
-				// + Integer
-				// .toString(gridAdjIdx[idx2][adjidx2])));
-				// } else {
-				// collector
-				// .emit("interQualStre",
-				// new Values(
-				// tStamp,
-				// Integer.toString(gridAdjIdx[idx2][adjidx2])
-				// + ","
-				// + Integer
-				// .toString(gridAdjIdx[idx1][adjidx1])));
-				//
-				// }
-				//
-				// }
-				//
-				// if (iniflag == 1) {
 				tmpdis2 = Math.abs(Math.sqrt(tmpdis2) - Math.sqrt(er2));
-
-				// ...................test.......................................//
-				// if (curtstamp == tt) {
-				// if (gridPivot[idx1] == 17
-				// && gridAdjIdx[idx2][adjidx2] == 18) {
-				// System.out
-				// .printf("-------------  correlation %f in bolt %d      %f\n",
-				// tmpdis2, locAppBolt, sqrthre);
-				// }
-				// }
-				// ...............................................................//
-
-				// .........test.....................//
-				// String tmp = Integer.toString(gridPivot[idx1]) + ","
-				// + Integer.toString(gridAdjIdx[idx2][adjidx2]);
-				//
-				// if (tStamp == 45
-				// && (tmp.compareTo("17,18") == 0 || tmp
-				// .compareTo("18,17") == 0)) {
-				// System.out.printf(
-				// "-------------  %s sent in bolt %d at %f\n", tmp,
-				// locAppBolt,tStamp);
-				// }
-				// ..................................//
 
 				if (tmpdis2 <= sqrthre) {
 					cnt++;
@@ -752,25 +416,6 @@ public class AdjustApproBolt extends BaseBasicBolt {
 
 					}
 
-					// if (gridPivot[idx1] < gridAdjIdx[idx2][adjidx2]) {
-					// collector
-					// .emit("interQualStre",
-					// new Values(
-					// tStamp,
-					// Integer.toString(gridPivot[idx1])
-					// + ","
-					// + Integer
-					// .toString(gridAdjIdx[idx2][adjidx2])));
-					// } else {
-					// collector.emit(
-					// "interQualStre",
-					// new Values(tStamp, Integer
-					// .toString(gridAdjIdx[idx2][adjidx2])
-					// + ","
-					// + Integer.toString(gridPivot[idx1])));
-					//
-					// }
-
 				}
 				j = j + 3;
 				adjidx2++;
@@ -792,18 +437,6 @@ public class AdjustApproBolt extends BaseBasicBolt {
 
 		}
 
-		// ......................test...............................//
-		// if(curtstamp==tt)
-		// {
-		// if( (gridPivot[idx1]==ta && gridPivot[idx2]==tb) ||
-		// (gridPivot[idx2]==ta && gridPivot[idx1]==tb) )
-		// {
-		// System.out.printf("------------------  pivot stream %d and %d : %f \n\n",
-		// gridPivot[idx1],gridPivot[idx2],tmpdis);
-		// }
-		// }
-		// ..........................................................//
-
 		if (tmpdis <= sqthre) {
 			if (gridPivot[idx1] < gridPivot[idx2]) {
 				collector.emit("interQualStre",
@@ -821,46 +454,8 @@ public class AdjustApproBolt extends BaseBasicBolt {
 		}
 	}
 
-	// public int corBtwAffPivot(int aff, int pivot, double sqthre) {
-	//
-	// int i = 0, cnt = 0, k = 0;
-	// double tmpdis = 0.0;
-	// double w11 = 0.0, w10 = 0.0, er1 = 0.0;// , w21=0.0,w20=0.0,er2=0.0;
-	// double tmpscal = 0.0;
-	//
-	// while (gridAffs[aff][i] != -10000) {
-	// // j = 0;
-	//
-	// w11 = gridAffs[aff][i];
-	// w10 = gridAffs[aff][i + 1];
-	// er1 = gridAffs[aff][i + 2];
-	//
-	// for (k = 0; k < TopologyMain.winSize; ++k) {
-	//
-	// tmpscal = w11 * pivotVec[aff][k] + w10 - pivotVec[pivot][k];
-	// tmpdis += (tmpscal * tmpscal);
-	//
-	// }
-	//
-	// tmpdis = Math.abs(tmpdis - er1);
-	//
-	// if (tmpdis < sqthre) {
-	// cnt++;
-	// }
-	// i = i + 3;
-	// }
-	//
-	// return cnt;
-	// }
-
 	@Override
 	public void cleanup() {
-		// System.out.println("-- Word Counter [" + name + "-" + id + "] --");
-		// for (Map.Entry<String, Integer> entry : counters.entrySet()) {
-		// System.out.println(entry.getKey() + ": " + entry.getValue());
-		// }
-
-		// ....output stream........
 
 	}
 
@@ -870,13 +465,14 @@ public class AdjustApproBolt extends BaseBasicBolt {
 
 		declarer.declareStream("interQualStre", new Fields("ts", "pair"));
 
+		declarer.declareStream("retriStre", new Fields("ts", "streId"));
+
 	}
 
 	@Override
 	public void prepare(Map stormConf, TopologyContext context) {
 
 		locAppBolt = glAppBolt++;
-
 		locTaskId = context.getThisTaskIndex();
 
 		return;
@@ -886,151 +482,26 @@ public class AdjustApproBolt extends BaseBasicBolt {
 	public void execute(Tuple input, BasicOutputCollector collector) {
 		// TODO Auto-generated method stub
 
-		double ts = input.getDoubleByField("ts");
-		String coordstr = input.getStringByField("coord");
-		String pivotstr = input.getStringByField("pivotvec");
-		int pivotId = input.getIntegerByField("pidx");
-		String affRelStr = input.getStringByField("adjaffine");
-		String affIdx = input.getStringByField("adjidx");
-		boltNo = input.getIntegerByField("bolt");
+		streType = input.getSourceStreamId();
 
-		int tmpid = 0;
-		int resnum = 0, i, j;
+		if (streType.compareTo("streamData") == 0) {
+			int tmpid = 0;
 
-		if (ts > curtstamp) {
+			ts = input.getDoubleByField("ts");
+			String coordstr = input.getStringByField("coord");
+			String pivotstr = input.getStringByField("pivotvec");
+			int pivotId = input.getIntegerByField("pidx");
+			String affRelStr = input.getStringByField("adjaffine");
+			String affIdx = input.getStringByField("adjidx");
+			boltNo = input.getIntegerByField("bolt");
 
-			for (i = 0; i < gridIdxcnt; ++i) {
-				for (j = i + 1; j < gridIdxcnt; ++j) {
-					if (checkGrids(i, j) == 1) {
-						resnum += corBtwAffInGrids(i, j,
-								2 - 2 * TopologyMain.thre, collector, curtstamp);
-						resnum += corBtwPivots(i, j, 2 - 2 * TopologyMain.thre,
-								collector, curtstamp);
-
-					}
-					// ..................test......................................//
-					// if (curtstamp == tt) {
-					// if ((gridPivot[i] == 17 && gridPivot[j] == 16)
-					// || (gridPivot[i] == 16 && gridPivot[j] == 17)) {
-					// System.out.printf(
-					// " **************  Appear %d in bolt %d \n",
-					// checkGrids(i, j), locAppBolt);
-					//
-					// // System.out.printf(
-					// // "------------------  pivot stream %d : ",
-					// // pivotId);
-					// // for (int k = 0; k < TopologyMain.winSize; ++k) {
-					// // System.out.printf(" %d  ", gridCoors[i][k]);
-					// // }
-					// // System.out.printf("\n");
-					// // for (int k = 0; k < TopologyMain.winSize; ++k) {
-					// // System.out.printf(" %d  ", gridCoors[j][k]);
-					// // }
-					// // System.out.printf("\n");
-					//
-					// }
-					// }
-					// ...........................................................//
-				}
-
-				// ....................test..................................//
-				// if (curtstamp == tt) {
-				// if( (gridPivot[i] == ta && gridPivot[j] == tb) ||
-				// (gridPivot[i] == tb && gridPivot[j] == ta) ) {
-				// System.out.printf("!!!!!!!! appear in bolt %d\n\n",
-				// locAppBolt);
-				// }
-				// }
-				// ...........................................................//
-
-			}
-
-			// ..........test....................//
-			// System.out.printf(
-			// "Number of qualifeid stream pairs at time %f:  %d\n",
-			// curtstamp, resnum);
-			// ..................................//
-
-			// for (int i = 0; i < resnum; ++i) {
-			// collector.emit("interQualStre", new Values(curtstamp, 1, 2));
-			// }
-			// ...........................................................//
-			localIdxRenew();
-			if (localpStreIdx(pivotId) == true) {
-				tmpid = gridIdxcnt++;
-
-				gridAffs.add(new ArrayList<Double>());
-				gridAdjIdx.add(new ArrayList<Integer>());
-
-				pivotVecAna(pivotstr, pivotVec, tmpid);
-				pivotCoor(coordstr, gridCoors, tmpid);
-
-				pivotAffs(affRelStr, tmpid);
-				// adjIdx(affIdx, gridAdjIdx, tmpid);
-				adjIdx(affIdx, tmpid);
-				gridBolt[tmpid] = boltNo;
-				gridPivot[tmpid] = pivotId;
-				gpTaskId[tmpid] = groupTaskId(gridCoors, tmpid,
-						TopologyMain.winh);
-			}
-
-			// ...................test...................................//
-
-			// if (ts == tt) {
-			//
-			// if ((pivotId == ta || pivotId == tb)) {
-			// System.out
-			// .printf("ApproBolt %d ------------------  pivot stream %d :  \n\n",
-			// locAppBolt, pivotId);
-			//
-			// // for (int k = 0; k < TopologyMain.winSize; ++k) {
-			// // System.out.printf(" %d  ", gridCoors[tmpid][k]);
-			// // }
-			// // System.out.printf("\n");
-			//
-			// }
-			// }
-			//
-			// j = 0;
-			// while (gridAffs[tmpid][j] != sentinel) {
-			// if (gridAdjIdx[tmpid][j] == ta
-			// || gridAdjIdx[tmpid][j] == tb) {
-			// System.out
-			// .printf("ApproBolt %d ------------------ stream %d %d \n",
-			// locAppBolt, gridAdjIdx[tmpid][j],
-			// pivotId);
-			//
-			// // for (int k = 0; k < TopologyMain.winSize; ++k) {
-			// // System.out.printf(" %d  ", gridCoors[tmpid][k]);
-			// // }
-			// // System.out.printf("\n");
-			// }
-			// j++;
-			// }
-			// }
-
-			// ...........................................................//
-
-			curtstamp = ts;
-
-		} else if (ts < curtstamp) {
-			System.out
-					.printf("!!!!!!!!!!!!! AdjustApproBolt time sequence disorder\n");
-		} else if (Math.abs(ts - curtstamp) <= 1e-3) {
-
-			// ..................test......................................//
-			// if (curtstamp == tt) {
-			// if ((pivotId == ta || pivotId == tb)) {
-			// System.out
-			// .printf("ApproBolt %d ------------------  pivot stream %d :  \n\n",
-			// locAppBolt, pivotId);
-			// }
-			//
-			// }
-			// ...........................................................//
+			srctask = input.getIntegerByField("taskid");
 
 			if (localpStreIdx(pivotId) == true) {
+
 				tmpid = gridIdxcnt++;
+
+				srcTaskId[tmpid] = (int) srctask;
 
 				gridAffs.add(new ArrayList<Double>());
 				gridAdjIdx.add(new ArrayList<Integer>());
@@ -1045,57 +516,41 @@ public class AdjustApproBolt extends BaseBasicBolt {
 				gridPivot[tmpid] = pivotId;
 				gpTaskId[tmpid] = groupTaskId(gridCoors, tmpid,
 						TopologyMain.winh);
-
-				// ...................test...................................//
-				//
-				// if (curtstamp == tt) {
-				//
-				// if ((pivotId == ta || pivotId == tb)) {
-				// System.out
-				// .printf("ApproBolt %d ------------------  pivot stream %d :  \n\n",
-				// locAppBolt, pivotId);
-				//
-				// // for (int k = 0; k < TopologyMain.winSize; ++k) {
-				// // System.out.printf(" %d  ", gridCoors[tmpid][k]);
-				// // }
-				// // System.out.printf("\n");
-				//
-				// }
-				// }
-				//
-				// j = 0;
-				// while (gridAffs[tmpid][j] != sentinel) {
-				// if (gridAdjIdx[tmpid][j] == ta
-				// || gridAdjIdx[tmpid][j] == tb) {
-				// System.out
-				// .printf("ApproBolt %d ------------------ stream %d %d \n",
-				// locAppBolt, gridAdjIdx[tmpid][j],
-				// pivotId);
-				//
-				// // for (int k = 0; k < TopologyMain.winSize; ++k) {
-				// // System.out.printf(" %d  ", gridCoors[tmpid][k]);
-				// // }
-				// // System.out.printf("\n");
-				// }
-				// j++;
-				// }
-				// }
-
-				// ...........................................................//
 			}
 
-			// tmpid = localGridIdx(coordstr);
-			// if (gridIdxFlag[tmpid] == 0) {
-			// pivotVecAna(pivotstr, pivotVec, tmpid);
-			// pivotCoor(coordstr, gridCoors, tmpid);
-			// pivotAffs(affRelStr, gridAffs, tmpid);
-			// adjIdx(affIdx, gridAdjIdx, tmpid);
-			// gridBolt[tmpid] = boltNo;
-			// gridPivot[tmpid] = pivotId;
-			//
-			// gridIdxFlag[tmpid] = 1;
-			// }
+		} else if (streType.compareTo("calCommand") == 0) {
 
+			commandStr = input.getStringByField("command");
+			preTaskId = input.getLongByField("taskid");
+
+			preTaskIdx.add(preTaskId);
+			if (preTaskIdx.size() < TopologyMain.preBoltNum) {
+				return;
+			}
+
+			int resnum = 0, i, j;
+
+			if (ts > curtstamp) {
+
+				for (i = 0; i < gridIdxcnt; ++i) {
+					for (j = i + 1; j < gridIdxcnt; ++j) {
+						if (checkGrids(i, j) == 1) {
+							resnum += corBtwAffInGrids(i, j,
+									2 - 2 * TopologyMain.thre, collector,
+									curtstamp);
+							resnum += corBtwPivots(i, j,
+									2 - 2 * TopologyMain.thre, collector,
+									curtstamp);
+
+						}
+					}
+				}
+
+				localIdxRenew();
+				curtstamp = ts + 1;
+				preTaskIdx.clear();
+
+			}
 		}
 		return;
 	}
