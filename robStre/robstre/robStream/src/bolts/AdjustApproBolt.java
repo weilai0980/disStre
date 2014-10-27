@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import main.TopologyMain;
+import tools.streamPair;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.BasicOutputCollector;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -15,6 +16,7 @@ import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+
 
 public class AdjustApproBolt extends BaseBasicBolt {
 
@@ -51,6 +53,10 @@ public class AdjustApproBolt extends BaseBasicBolt {
 
 	public static int glAppBolt = 0;
 	public int locAppBolt = 0;
+	
+	HashMap<Integer,Integer > retriStre=new HashMap<Integer,Integer >();
+	HashSet<streamPair> retriPair=new HashSet<streamPair>();
+	
 
 	// .........computation parameters...............//
 
@@ -214,6 +220,34 @@ public class AdjustApproBolt extends BaseBasicBolt {
 		return 1;
 	}
 
+	public void boundCheck(double tStamp, double low, double up, double thre,
+			BasicOutputCollector collector, int stream1, int stream2) {
+
+		int stre1 = (stream1 < stream2 ? stream1 : stream2);
+		int stre2 = (stream1 < stream2 ? stream2 : stream1);
+
+		if (up <= thre) {
+
+			collector.emit(
+					"interQualStre",
+					new Values(tStamp, Integer.toString(stre1) + ","
+							+ Integer.toString(stre2)));
+
+		} else if (low <= thre) {
+
+			int cnt=retriStre.size();
+			
+			retriStre.put(stre1,cnt);
+			retriStre.put(stre2,cnt+1);
+			
+			streamPair tmp= new streamPair(stre1,stre2);
+			retriPair.add(tmp);
+			
+		}
+
+		return;
+	}
+
 	public int corBtwAffInGrids(int idx1, int idx2, double thre,
 			BasicOutputCollector collector, double tStamp) {
 
@@ -225,7 +259,7 @@ public class AdjustApproBolt extends BaseBasicBolt {
 		int iniflag = 1;
 		int adjidx1 = 0, adjidx2 = 0;
 
-		double sqrthre = Math.sqrt(thre);
+		double sqrthre = Math.sqrt(thre), upbound = 0.0, lowbound = 0.0;
 
 		Iterator<Double> it1 = gridAffs.get(idx1).iterator();
 
@@ -248,31 +282,39 @@ public class AdjustApproBolt extends BaseBasicBolt {
 				tmpdis += (tmpscal * tmpscal);
 
 			}
-			tmpdis = Math.abs(Math.sqrt(tmpdis) - Math.sqrt(er1));
+			 tmpdis = Math.abs(Math.sqrt(tmpdis) - Math.sqrt(er1));
 
-			if (tmpdis <= sqrthre) {
-				cnt++;
+//			lowbound = Math.abs(Math.sqrt(tmpdis) - Math.sqrt(er1));
+//			upbound = Math.sqrt(tmpdis) + Math.sqrt(er1);
 
-				if (gridAdjIdx.get(idx1).get(adjidx1) < gridPivot[idx2]) {
+//			boundCheck(tStamp, lowbound, upbound, sqrthre, collector,
+//					gridAdjIdx.get(idx1).get(adjidx1), gridPivot[idx2]);
 
-					collector.emit(
-							"interQualStre",
-							new Values(tStamp, Integer.toString(gridAdjIdx.get(
-									idx1).get(adjidx1))
-									+ "," + Integer.toString(gridPivot[idx2])));
-				} else {
-
-					collector.emit(
-							"interQualStre",
-							new Values(tStamp, Integer
-									.toString(gridPivot[idx2])
-									+ ","
-									+ Integer.toString(gridAdjIdx.get(idx1)
-											.get(adjidx1))));
-
-				}
-
-			}
+			// .................
+			// if (tmpdis <= sqrthre) {
+			// cnt++;
+			//
+			// if (gridAdjIdx.get(idx1).get(adjidx1) < gridPivot[idx2]) {
+			//
+			// collector.emit(
+			// "interQualStre",
+			// new Values(tStamp, Integer.toString(gridAdjIdx.get(
+			// idx1).get(adjidx1))
+			// + "," + Integer.toString(gridPivot[idx2])));
+			// } else {
+			//
+			// collector.emit(
+			// "interQualStre",
+			// new Values(tStamp, Integer
+			// .toString(gridPivot[idx2])
+			// + ","
+			// + Integer.toString(gridAdjIdx.get(idx1)
+			// .get(adjidx1))));
+			//
+			// }
+			//
+			// }
+			// ....................
 
 			Iterator<Double> it2 = gridAffs.get(idx2).iterator();
 
@@ -296,70 +338,85 @@ public class AdjustApproBolt extends BaseBasicBolt {
 
 				}
 
-				tmpdis = Math.sqrt(tmpdis) - Math.sqrt(er1) - Math.sqrt(er2);
+				// lowbound = tmpdis;
+				// upbound = Math.abs(Math.sqrt(tmpdis) + Math.sqrt(er1));
 
-				tmpdis = Math.max(
-						tmpdis,
+				upbound = Math.sqrt(tmpdis) + Math.sqrt(er1) + Math.sqrt(er2);
+
+				// tmpdis = Math.sqrt(tmpdis) - Math.sqrt(er1) - Math.sqrt(er2);
+
+				lowbound = Math.max(
+						Math.sqrt(tmpdis) - Math.sqrt(er1) - Math.sqrt(er2),
 						-Math.sqrt(tmpdis)
 								+ Math.abs(Math.sqrt(er1) - Math.sqrt(er2)));
 
-				if (tmpdis <= sqrthre) {
-					cnt++;
+				boundCheck(tStamp, lowbound, upbound, sqrthre, collector,
+						gridAdjIdx.get(idx1).get(adjidx1), gridAdjIdx.get(idx2)
+								.get(adjidx2));
 
-					if (gridAdjIdx.get(idx1).get(adjidx1) < gridAdjIdx
-							.get(idx2).get(adjidx2)) {
-
-						collector.emit(
-								"interQualStre",
-								new Values(tStamp, Integer.toString(gridAdjIdx
-										.get(idx1).get(adjidx1))
-										+ ","
-										+ Integer.toString(gridAdjIdx.get(idx2)
-												.get(adjidx2))));
-					} else {
-
-						collector.emit(
-								"interQualStre",
-								new Values(tStamp, Integer.toString(gridAdjIdx
-										.get(idx2).get(adjidx2))
-										+ ","
-										+ Integer.toString(gridAdjIdx.get(idx1)
-												.get(adjidx1))));
-
-					}
-
-				}
+				// if (tmpdis <= sqrthre) {
+				// cnt++;
+				//
+				// if (gridAdjIdx.get(idx1).get(adjidx1) < gridAdjIdx
+				// .get(idx2).get(adjidx2)) {
+				//
+				// collector.emit(
+				// "interQualStre",
+				// new Values(tStamp, Integer.toString(gridAdjIdx
+				// .get(idx1).get(adjidx1))
+				// + ","
+				// + Integer.toString(gridAdjIdx.get(idx2)
+				// .get(adjidx2))));
+				// } else {
+				//
+				// collector.emit(
+				// "interQualStre",
+				// new Values(tStamp, Integer.toString(gridAdjIdx
+				// .get(idx2).get(adjidx2))
+				// + ","
+				// + Integer.toString(gridAdjIdx.get(idx1)
+				// .get(adjidx1))));
+				//
+				// }
+				//
+				// }
 
 				if (iniflag == 1) {
-					tmpdis2 = Math.abs(Math.sqrt(tmpdis2) - Math.sqrt(er2));
 
-					if (tmpdis2 <= sqrthre) {
+					lowbound = Math.abs(Math.sqrt(tmpdis2) - Math.sqrt(er2));
+					upbound = Math.sqrt(tmpdis2) + Math.sqrt(er2);
 
-						cnt++;
+					boundCheck(tStamp, lowbound, upbound, sqrthre, collector,
+							gridAdjIdx.get(idx2).get(adjidx2), gridPivot[idx1]);
 
-						if (gridPivot[idx1] < gridAdjIdx.get(idx2).get(adjidx2)) {
-							collector.emit(
-									"interQualStre",
-									new Values(tStamp, Integer
-											.toString(gridPivot[idx1])
-											+ ","
-											+ Integer.toString(gridAdjIdx.get(
-													idx2).get(adjidx2))));
-						} else {
-							collector
-									.emit("interQualStre",
-											new Values(
-													tStamp,
-													Integer.toString(gridAdjIdx
-															.get(idx2).get(
-																	adjidx2))
-															+ ","
-															+ Integer
-																	.toString(gridPivot[idx1])));
-
-						}
-
-					}
+					// if (tmpdis2 <= sqrthre) {
+					//
+					// cnt++;
+					//
+					// if (gridPivot[idx1] < gridAdjIdx.get(idx2).get(adjidx2))
+					// {
+					// collector.emit(
+					// "interQualStre",
+					// new Values(tStamp, Integer
+					// .toString(gridPivot[idx1])
+					// + ","
+					// + Integer.toString(gridAdjIdx.get(
+					// idx2).get(adjidx2))));
+					// } else {
+					// collector
+					// .emit("interQualStre",
+					// new Values(
+					// tStamp,
+					// Integer.toString(gridAdjIdx
+					// .get(idx2).get(
+					// adjidx2))
+					// + ","
+					// + Integer
+					// .toString(gridPivot[idx1])));
+					//
+					// }
+					//
+					// }
 				}
 
 				j = j + 3;
@@ -393,30 +450,37 @@ public class AdjustApproBolt extends BaseBasicBolt {
 
 				}
 
-				tmpdis2 = Math.abs(Math.sqrt(tmpdis2) - Math.sqrt(er2));
+				// tmpdis2 = Math.abs(Math.sqrt(tmpdis2) - Math.sqrt(er2));
 
-				if (tmpdis2 <= sqrthre) {
-					cnt++;
+				lowbound = Math.abs(Math.sqrt(tmpdis2) - Math.sqrt(er2));
+				upbound = Math.sqrt(tmpdis2) + Math.sqrt(er2);
 
-					if (gridPivot[idx1] < gridAdjIdx.get(idx2).get(adjidx2)) {
-						collector.emit(
-								"interQualStre",
-								new Values(tStamp, Integer
-										.toString(gridPivot[idx1])
-										+ ","
-										+ Integer.toString(gridAdjIdx.get(idx2)
-												.get(adjidx2))));
-					} else {
-						collector.emit(
-								"interQualStre",
-								new Values(tStamp, Integer.toString(gridAdjIdx
-										.get(idx2).get(adjidx2))
-										+ ","
-										+ Integer.toString(gridPivot[idx1])));
+				boundCheck(tStamp, lowbound, upbound, sqrthre, collector,
+						gridAdjIdx.get(idx2).get(adjidx2), gridPivot[idx1]);
 
-					}
-
-				}
+				//
+				// if (tmpdis2 <= sqrthre) {
+				// cnt++;
+				//
+				// if (gridPivot[idx1] < gridAdjIdx.get(idx2).get(adjidx2)) {
+				// collector.emit(
+				// "interQualStre",
+				// new Values(tStamp, Integer
+				// .toString(gridPivot[idx1])
+				// + ","
+				// + Integer.toString(gridAdjIdx.get(idx2)
+				// .get(adjidx2))));
+				// } else {
+				// collector.emit(
+				// "interQualStre",
+				// new Values(tStamp, Integer.toString(gridAdjIdx
+				// .get(idx2).get(adjidx2))
+				// + ","
+				// + Integer.toString(gridPivot[idx1])));
+				//
+				// }
+				//
+				// }
 				j = j + 3;
 				adjidx2++;
 			}

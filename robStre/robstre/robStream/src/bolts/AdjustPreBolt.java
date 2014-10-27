@@ -18,18 +18,17 @@ public class AdjustPreBolt extends BaseBasicBolt {
 	public static int gtaskId = 0;
 	public int taskId = 0;
 
-	
 	// .........time order....................//
-	
-	public double curtstamp = TopologyMain.winSize-1;
-//	public double ststamp = -TopologyMain.winSize+1;
+
+	public double curtstamp = TopologyMain.winSize - 1;
+	// public double ststamp = -TopologyMain.winSize+1;
 	public double ststamp = 0.0;
-	String streType=new String();
-	String commandStr=new String(), preCommandStr=new String();
-	double ts=0.0;
+	String streType = new String();
+	String commandStr = new String(), preCommandStr = new String();
+	double ts = 0.0;
 	// .........memory......................//
 
-	int declrNum=(int)(TopologyMain.nstreBolt/TopologyMain.preBoltNum+10);
+	int declrNum = (int) (TopologyMain.nstreBolt / TopologyMain.preBoltNum + 10);
 	public double[][] strevec = new double[declrNum][TopologyMain.winSize + 6];
 	public double[][] normvec = new double[declrNum][TopologyMain.winSize + 6];
 
@@ -62,8 +61,8 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 	// ................test..................//
 
-//	public int ta = 3, tb = 8;
-//	public double tt = 21;
+	// public int ta = 3, tb = 8;
+	// public double tt = 21;
 	// ......................................//
 
 	public double[] curexp = new double[TopologyMain.nstreBolt + 10],
@@ -386,6 +385,24 @@ public class AdjustPreBolt extends BaseBasicBolt {
 		}
 	}
 
+	String stream2Str(int id) {
+		int i = 0, tmpsn = 0;
+		String str = new String();
+		for (i = 0; i < streidCnt; ++i) {
+			if (streid[i] == id) {
+				tmpsn = i;
+				break;
+			}
+		}
+
+		int k = vecst[tmpsn];
+		while (k != veced[tmpsn]) {
+			str = str + Double.toString(normvec[tmpsn][k]) + ",";
+			k = (k + 1) % queueLen;
+		}
+		return str;
+	}
+
 	/**
 	 * At the end of the spout (when the cluster is shutdown We will show the
 	 * word counters
@@ -405,16 +422,15 @@ public class AdjustPreBolt extends BaseBasicBolt {
 	public void prepare(Map stormConf, TopologyContext context) {
 		// TODO Auto-generated method stub
 
-		taskId = gtaskId;  // need improvement
+		taskId = gtaskId; // need improvement
 		gtaskId++;
-		
-		taskId= context.getThisTaskId();
 
+		taskId = context.getThisTaskId();
 
 		for (int j = 0; j < TopologyMain.nstreBolt + 10; j++) {
 			vecst[j] = 0;
 			veced[j] = 0;
-			veced[j] = TopologyMain.winSize-1;
+			veced[j] = TopologyMain.winSize - 1;
 
 			vecflag[j] = 0;
 			streid[j] = 0;
@@ -422,24 +438,26 @@ public class AdjustPreBolt extends BaseBasicBolt {
 			curexp[j] = 0;
 			curdev[j] = 0;
 			cursqr[j] = 0;
-			cursum[j] = 0;	
+			cursum[j] = 0;
 
 		}
 
 		localBoltNo = adjustBoltNo;
 		adjustBoltNo++;
-		
+
 	}
 
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		declarer.declareStream("interStre", new Fields("pidx", "pivotvec",
-				"adjaffine", "adjidx", "coord", "ts", "bolt","taskid"));
+				"adjaffine", "adjidx", "coord", "ts", "bolt", "taskid"));
 
 		declarer.declareStream("qualStre", new Fields("pair", "ts"));
-		
+
+		declarer.declareStream("winStre", new Fields("ts", "sId", "stream"));
+
 		declarer.declareStream("calCommand", new Fields("command", "taskid"));
-		
+
 		return;
 	}
 
@@ -453,26 +471,23 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 		String coorStr = new String();
 		String[] streAffine = new String[4];
-		
-		streType=input.getSourceStreamId();
-		
-		if(streType.compareTo("dataStre")==0)
-		{
-			
-		    ts = input.getDoubleByField("ts");
+
+		streType = input.getSourceStreamId();
+
+		if (streType.compareTo("dataStre") == 0) {
+
+			ts = input.getDoubleByField("ts");
 			double tmpval = input.getDoubleByField("value");
 			int sn = input.getIntegerByField("sn");
-			
+
 			idxNewTuple(sn, tmpval, 1 - iniFlag);
-		}
-		else if(streType.compareTo("contrStre")==0) 
-		{
+		} else if (streType.compareTo("contrStre") == 0) {
 			commandStr = input.getStringByField("command");
 
 			if (commandStr.compareTo(preCommandStr) == 0) {
 				return;
 			}
-			
+
 			if (ts - ststamp >= TopologyMain.winSize) {
 
 				ststamp++;
@@ -512,7 +527,6 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 				// ............................................//
 
-
 				for (i = 0; i < pivotcnt; ++i) {
 
 					tmppivot = pivotset[i];
@@ -522,51 +536,46 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 					// .........test.................//
 
-//					if (curtstamp == tt) {
-//						System.out
-//								.printf("affine streams of %d  :  %s   %s  \n\n",
-//										streid[tmppivot], 
-//										streAffine[2], coorStr);
-//
-////						for (Integer j : adjList.get(tmppivot))
-////						{
-////							System.out.printf(" %d ",
-////									streid[j]);
-////						}
-//						
-//						
-////						for (int k = 0; k < adjcnt[tmppivot]; ++k) {
-////
-////							System.out.printf(" %d ",
-////									streid[adjList[tmppivot][k]]);
-////							//
-////						}
-//						System.out.printf("\n");
-//					}
+					// if (curtstamp == tt) {
+					// System.out
+					// .printf("affine streams of %d  :  %s   %s  \n\n",
+					// streid[tmppivot],
+					// streAffine[2], coorStr);
+					//
+					// // for (Integer j : adjList.get(tmppivot))
+					// // {
+					// // System.out.printf(" %d ",
+					// // streid[j]);
+					// // }
+					//
+					//
+					// // for (int k = 0; k < adjcnt[tmppivot]; ++k) {
+					// //
+					// // System.out.printf(" %d ",
+					// // streid[adjList[tmppivot][k]]);
+					// // //
+					// // }
+					// System.out.printf("\n");
+					// }
 
 					// ..............................//
 
-						
 					collector.emit("interStre", new Values(streid[tmppivot],
 							streAffine[0], streAffine[1], streAffine[2],
-							coorStr, curtstamp, localBoltNo,taskId)); // modification
-					
-//					collector.emitDirect(i, streamId, tuple)
-					
+							coorStr, curtstamp, localBoltNo, taskId)); // modification
+
+					// collector.emitDirect(i, streamId, tuple)
+
 					iniFlag = 0;
-					
-				
 
 				}
 			}
 
-			collector
-			.emit("calCommand",
-					new Values("done" + Double.toString(curtstamp),
-							taskId));
+			collector.emit("calCommand",
+					new Values("done" + Double.toString(curtstamp), taskId));
 			// .....update for next tuple...............//
 			preCommandStr = commandStr;
-			curtstamp = ts+1;
+			curtstamp = ts + 1;
 
 			graphmat.clear();
 			adjList.clear();
@@ -575,7 +584,20 @@ public class AdjustPreBolt extends BaseBasicBolt {
 				degree[j] = 0;
 
 				vecflag[j] = 0;
-			}	
+			}
+		} else if (streType.compareTo("retriStre") == 0) {
+			// declarer.declareStream("retriStre", new Fields("ts", "streId",
+			// "targetTask"));
+			ts = input.getDoubleByField("ts");
+			int id = input.getIntegerByField("streid");
+			int task = input.getIntegerByField("targetTask");
+
+			// declarer.declareStream("winStre", new
+			// Fields("ts","sId","stream"));
+
+			collector.emitDirect(task, "winStre", new Values(ts, id,
+					stream2Str(id)));
+
 		}
 	}
 

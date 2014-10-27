@@ -23,6 +23,11 @@ public class TopologyMain {
 	
 	public static int dftN = 4;
 	
+	//.................Random projection......................//
+	
+	public static int vecnum=10;
+	public static int dimnum=10;
+	
 	
 	// .................local parallelism record...........................//
 	public static int datasrc = 1; // 0: synthetic 1: real

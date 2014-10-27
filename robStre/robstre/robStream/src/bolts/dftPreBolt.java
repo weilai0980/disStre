@@ -237,7 +237,7 @@ public class dftPreBolt extends BaseBasicBolt {
 			vecflag[tmpsn] = 1;
 
 			streNorm(tmpsn);
-			if (flag == 0) {
+			if (flag == 1) {
 				dftUpdate(tmpsn, oldval, newval);
 			}
 		}
