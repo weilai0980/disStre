@@ -495,38 +495,7 @@ public class AdjustPreBolt extends BaseBasicBolt {
 				graphCons(TopologyMain.thre, collector, curtstamp);
 				pivotcnt = affineSelec(pivotset);
 
-				// .........test...............................//
-				//
-
-				// int [] testsign=new int[TopologyMain.nstream + 5];
-				//
-				// for(i=0;i<TopologyMain.nstream + 5;++i)
-				// testsign[i]=0;
-				//
-				// // System.out.printf("+++  time %f: \n", curtstamp);
-				//
-				// for(i=0;i<pivotcnt;i++)
-				// {
-				// tmppivot=pivotset[i];
-				// testsign[tmppivot]++;
-				//
-				// for(int j=0;j<adjcnt[tmppivot]; ++j)
-				//
-				// testsign[adjList[tmppivot][j]]++;
-				// }
-				//
-				// for(i=0;i<streidCnt;++i)
-				// {
-				// if(testsign[i]>=2 || testsign[i]==0)
-				// {
-				// System.out.printf("+++pivot pair problem at time %f: %d\n",
-				// curtstamp,i);
-				// }
-				// }
-				//
-
-				// ............................................//
-
+				
 				for (i = 0; i < pivotcnt; ++i) {
 
 					tmppivot = pivotset[i];
@@ -588,6 +557,10 @@ public class AdjustPreBolt extends BaseBasicBolt {
 		} else if (streType.compareTo("retriStre") == 0) {
 			// declarer.declareStream("retriStre", new Fields("ts", "streId",
 			// "targetTask"));
+			
+			
+			//add one hashing mechanism 
+			
 			ts = input.getDoubleByField("ts");
 			int id = input.getIntegerByField("streid");
 			int task = input.getIntegerByField("targetTask");

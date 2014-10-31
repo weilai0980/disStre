@@ -25,8 +25,11 @@ public class TopologyMain {
 	
 	//.................Random projection......................//
 	
-	public static int vecnum=10;
-	public static int dimnum=10;
+	public static int rp_vecnum=10;
+	public static int rp_dimnum=10;
+	public static String rp_matFile="";
+	
+	
 	
 	
 	// .................local parallelism record...........................//
@@ -103,6 +106,10 @@ public class TopologyMain {
 	// gbc:
 	// aps: 7600
 
+	
+
+	
+	
 	public static void main(String[] args) throws InterruptedException,
 			IOException, AlreadyAliveException, InvalidTopologyException {
 

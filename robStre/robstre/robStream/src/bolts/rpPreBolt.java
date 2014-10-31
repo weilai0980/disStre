@@ -1,5 +1,9 @@
 package bolts;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,14 +23,8 @@ public class rpPreBolt extends BaseBasicBolt {
 	int declrNum = (int) (TopologyMain.nstreBolt / TopologyMain.preBoltNum + 10);
 	public double[][] strevec = new double[declrNum][TopologyMain.winSize + 6];
 	public double[][] normvec = new double[declrNum][TopologyMain.winSize + 6];
-	
-	public double[][] rpvec = new double[declrNum][TopologyMain.winSize + 6];
-	public double[][] rpCell = new double[declrNum][TopologyMain.winSize + 6];
-	public double[][] rpVec = new double[TopologyMain.vecnum][TopologyMain.dimnum];
-	
-	
-	public double[][] dft = new double[declrNum][TopologyMain.dftN * 2 + 2];
-	public int[][] dftCell = new int[declrNum][TopologyMain.dftN * 2 + 2];
+
+	public double[][][] rpvec = new double[declrNum][TopologyMain.rp_vecnum][TopologyMain.rp_dimnum + 1];
 
 	public int[] streid = new int[TopologyMain.nstreBolt + 10];
 	public int streidCnt = 0;
@@ -50,14 +48,11 @@ public class rpPreBolt extends BaseBasicBolt {
 	public int hSpaceTaskNum;
 	public int hSpaceCellNum;
 
+	double[][][] rpMat = new double[TopologyMain.rp_vecnum | +1][TopologyMain.rp_dimnum + 1][TopologyMain.winSize + 1];
+
 	// ...........emitting streams....................//
 
-	public String ptOutputStr;
-	public String vecOutputStr;
-	public double taskCoor;
 	public long localTaskId = 0;
-	int[] direcVec = { -1, 0, 1 };
-	int[] cellCal = new int[TopologyMain.dftN * 2 + 2];
 
 	// ............input time order..............//
 
@@ -70,39 +65,6 @@ public class rpPreBolt extends BaseBasicBolt {
 	String commandStr = new String(), preCommandStr = new String();
 
 	// ..........................................//
-
-	public void calCellCoor(int memidx, int dftNum, int curCnt, int cell[],
-			BasicOutputCollector collector, String strevec, String hostCoor,
-			double ts) {
-
-		if (curCnt >= dftNum) {
-			String cellCoor = new String();
-			for (int i = 0; i < dftNum; ++i) {
-				cellCoor = cellCoor + Integer.toString(cell[i]) + ",";
-			}
-
-			if (cellCoor.compareTo(hostCoor) == 0) {
-				collector.emit("streamData", new Values(ts, streid[memidx],
-						cellCoor, strevec, 1)); // hostflag=1
-			} else {
-				collector.emit("streamData", new Values(ts, streid[memidx],
-						cellCoor, strevec, 0));
-			}
-
-			return;
-
-		}
-		for (int i = 0; i < 3; ++i) {
-
-			cell[curCnt] = dftCell[memidx][curCnt] + direcVec[i];
-
-			calCellCoor(memidx, dftNum, curCnt + 1, cell, collector, strevec,
-					hostCoor, ts);
-
-		}
-
-		return;
-	}
 
 	public String streamVecPrep(int idx) {
 
@@ -118,82 +80,22 @@ public class rpPreBolt extends BaseBasicBolt {
 		return coorstr;
 	}
 
-	public String dftCellVecPrep(int idx) {
+	public String normStreamVecPrep(int idx) {
 
 		String coorstr = new String();
+		int k = vecst[idx];
+		while (k != veced[idx]) {
 
-		for (int i = 0; i < TopologyMain.dftN * 2; ++i) {
-			coorstr = coorstr + Double.toString(dftCell[idx][i]) + ",";
+			coorstr = coorstr + Double.toString(normvec[idx][k]) + ",";
+
+			k = (k + 1) % queueLen;
 		}
+
 		return coorstr;
 	}
 
 	public double complexAng(double real, double img) {
 		return Math.atan2(img, real);
-	}
-
-	public void dftUpdate(int memidx, double oldval, double newval) {
-
-		int cnt = 0;
-		double delAng = 0.0, oldAng = 0.0, ang = 0.0, r = 0.0;
-
-		for (int i = 0; i < TopologyMain.dftN; ++i) {
-
-			oldAng = complexAng(dft[memidx][cnt], dft[memidx][cnt + 1]);
-			delAng = 2 * Math.PI * (i + 1) / TopologyMain.winSize;
-
-			ang = complexAng(dft[memidx][cnt], dft[memidx][cnt + 1]) + delAng;
-			r = Math.sqrt(dft[memidx][cnt] * dft[memidx][cnt]
-					+ dft[memidx][cnt + 1] * dft[memidx][cnt + 1]);
-
-			dft[memidx][cnt] = dft[memidx][cnt] * Math.cos(ang)
-					/ Math.cos(oldAng);
-			dft[memidx][cnt + 1] = dft[memidx][cnt + 1] * Math.sin(ang)
-					/ Math.sin(oldAng);
-
-			r = (newval - oldval) / Math.sqrt(TopologyMain.winSize);
-
-			dft[memidx][cnt] += r * Math.cos(delAng);
-			dft[memidx][cnt + 1] += r * Math.sin(delAng);
-
-			dftCell[memidx][cnt] = dftCellCal(dft[memidx][cnt]);
-			dftCell[memidx][cnt + 1] = dftCellCal(dft[memidx][cnt + 1]);
-
-			cnt += 2;
-		}
-
-		return;
-	}
-
-	public int dftCellCal(double val) {
-		return val >= 0 ? (int) Math.floor((double) val / cellEps) : -1
-				* (int) Math.ceil(-1.0 * val / cellEps);
-	}
-
-	public void dftIni(int memidx) {
-
-		int k = vecst[memidx], cnt = 0;
-		double ang = 0.0, r = 0.0;
-
-		for (int i = 0; i < TopologyMain.dftN; ++i) {
-			while (k != veced[memidx]) {
-
-				r = normvec[memidx][k];
-				ang = (double) (-2 * Math.PI * i * k / TopologyMain.winSize);
-
-				dft[memidx][cnt] += r * Math.cos(ang); // real
-				dft[memidx][cnt + 1] += r * Math.sin(ang); // imaginary
-
-				k = (k + 1) % queueLen;
-			}
-
-			dftCell[memidx][cnt] = dftCellCal(dft[memidx][cnt]);
-			dftCell[memidx][cnt + 1] = dftCellCal(dft[memidx][cnt + 1]);
-
-			cnt += 2;
-		}
-
-		return;
 	}
 
 	public void streNorm(int memidx) {
@@ -243,32 +145,86 @@ public class rpPreBolt extends BaseBasicBolt {
 			vecflag[tmpsn] = 1;
 
 			streNorm(tmpsn);
-//			if (flag == 1) {
-//				dftUpdate(tmpsn, oldval, newval);
-//			}
+
 		}
 	}
-	
-	
-	void rpVecConstructor()
-	{
-		return;
-	}
-	void rpCal(int idx)
-	{
-		return;
-	}
-	public String rpCellPrep(int idx) {
 
-		String coorstr = new String();
+	void rpCal(int idx) {
 
-		for (int i = 0; i < TopologyMain.dimnum; ++i) {
-			coorstr = coorstr + Double.toString(rpCell[idx][i]) + ",";
+		double tmpDot = 0.0;
+
+		for (int i = 0; i < TopologyMain.rp_vecnum; ++i) {
+
+			for (int j = 0; j < TopologyMain.rp_dimnum; ++j) {
+
+				tmpDot = 0.0;
+
+				for (int k = 0; k < TopologyMain.winSize; ++k) {
+
+					tmpDot = tmpDot + normvec[idx][k] * rpMat[i][j][k];
+
+				}
+				rpvec[idx][i][j] = tmpDot > 0 ? 1 : 0;
+
+			}
 		}
-		return coorstr;
+
+		return;
 	}
 
-	
+	public String rpBucketPrep(int idx, int bucketCnt) {
+
+		String str = new String();
+
+		for (int i = 0; i < TopologyMain.rp_dimnum; ++i) {
+			str = str + rpvec[idx][bucketCnt][i] + ",";
+
+		}
+
+		return str;
+
+	}
+
+	// ............random project.............//
+	public void readProjectMatrix() throws FileNotFoundException {
+		FileReader fstream = new FileReader(TopologyMain.rp_matFile);
+		BufferedReader reader = new BufferedReader(fstream);
+
+		String line;
+		int len = 0, pre = 0, dimcnt = 0, cnt = 0, veccnt = 0;
+		try {
+
+			while ((line = reader.readLine()) != null) {
+
+				len = line.length();
+				pre = 0;
+				cnt = 0;
+				dimcnt++;
+
+				if ((int) (dimcnt / TopologyMain.rp_dimnum) == 1) {
+					veccnt++;
+					dimcnt = 0;
+				}
+
+				for (int i = 0; i < len; i++) {
+					if (line.charAt(i) == ',') {
+						rpMat[veccnt][dimcnt][cnt++] = Double.parseDouble(line
+								.substring(pre, i));
+						pre = i + 1;
+					}
+				}
+			}
+
+			reader.close();
+			fstream.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	// ......................................//
 
 	/**
 	 * At the end of the spout (when the cluster is shutdown We will show the
@@ -296,18 +252,22 @@ public class rpPreBolt extends BaseBasicBolt {
 			curexp[j] = 0;
 			cursqrsum[j] = 0;
 
-			// preTaskCoor[j] = -1;
 		}
-		taskCoor = 0.0;
+
 
 		hSpaceTaskNum = (int) Math.floor(1.0 / cellEps) * TopologyMain.cellTask
 				+ 1;
 		hSpaceCellNum = (int) Math.ceil(1.0 / cellEps);
 
-		ptOutputStr = new String();
-		vecOutputStr = new String();
 
 		localTaskId = context.getThisTaskId();
+
+		try {
+			readProjectMatrix();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		return;
 	}
@@ -316,7 +276,7 @@ public class rpPreBolt extends BaseBasicBolt {
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 
 		declarer.declareStream("streamData", new Fields("ts", "streId",
-				"cellCoor", "strevec","dftvec", "hostFlag"));
+				"bucket", "strevec"));
 
 		declarer.declareStream("calCommand", new Fields("command", "taskid"));
 		return;
@@ -351,20 +311,22 @@ public class rpPreBolt extends BaseBasicBolt {
 
 				ststamp++;
 
-//				if (iniFlag == 1) {
-//					for (i = 0; i < streidCnt; ++i) {
-//
-//						dftIni(i);
-//					}
-//				}
-
 				for (i = 0; i < streidCnt; ++i) {
-					
+
 					rpCal(i);
-					
-					
-					calCellCoor(i, TopologyMain.dimnum, 0, cellCal,
-							collector, streamVecPrep(i), dftCellVecPrep(i), ts);
+
+					for (int j = 0; j < TopologyMain.rp_vecnum; ++j) {
+
+						collector.emit("streamData", new Values(curtstamp,
+								streid[i], rpBucketPrep(i, j),
+								normStreamVecPrep(i))); // modification
+
+						// declarer.declareStream("streamData", new Fields("ts",
+						// "streId",
+						// "bucket", "strevec"));
+
+					}
+
 				}
 
 				iniFlag = 0;

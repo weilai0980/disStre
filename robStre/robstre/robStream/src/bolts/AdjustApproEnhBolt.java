@@ -66,8 +66,8 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 	final double subDivNum = 2;
 	final double taskRange = 2.0 / subDivNum;
 	final double disThre = 2 - 2 * TopologyMain.thre;
+	final double disThreRoot = Math.sqrt(disThre);
 	final int gridRange = (int) Math.ceil(1.0 / Math.sqrt(disThre));
-	// public int taskGridMax=2*gridRange-1;
 	final double taskGridCap = taskRange / Math.sqrt(disThre);
 	int locTaskIdx, localTask;
 
@@ -125,20 +125,6 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 		return cnt;
 	}
 
-	// public int pivotAffs(String orgstr, double affines[][], int id) {
-	//
-	// int len = orgstr.length();
-	// int cnt = 0, pre = 0;
-	// for (int i = 0; i < len; ++i) {
-	// if (orgstr.charAt(i) == ',' || orgstr.charAt(i) == ';') {
-	// affines[id][cnt++] = Double.valueOf(orgstr.substring(pre, i));
-	// pre = i + 1;
-	// }
-	// }
-	// affines[id][cnt++] = sentinel;
-	// return cnt;
-	// }
-
 	public int pivotAffs(String orgstr, int id) {
 
 		int len = orgstr.length();
@@ -149,23 +135,8 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 				pre = i + 1;
 			}
 		}
-		// gridAffs.get[id][cnt++] = sentinel;
 		return cnt;
 	}
-
-	// public int adjIdx(String orgstr, int adjStre[][], int id) {
-	//
-	// int len = orgstr.length();
-	// int cnt = 0, pre = 0;
-	// for (int i = 0; i < len; ++i) {
-	// if (orgstr.charAt(i) == ',') {
-	// adjStre[id][cnt++] = Integer.valueOf(orgstr.substring(pre, i));
-	// pre = i + 1;
-	// }
-	// }
-	// adjStre[id][cnt++] = sentinel;
-	// return cnt;
-	// }
 
 	public int adjIdx(String orgstr, int id) {
 
@@ -175,11 +146,10 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 			if (orgstr.charAt(i) == ',') {
 				gridAdjIdx.get(id).add(
 						Integer.valueOf(orgstr.substring(pre, i)));
-				// [id][cnt++] = Integer.valueOf(orgstr.substring(pre, i));
+		
 				pre = i + 1;
 			}
 		}
-		// gridAdjIdx[id][cnt++] = sentinel;
 		return cnt;
 	}
 
@@ -226,9 +196,6 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 	public void boundCheck(double tStamp, double low, double up, double thre,
 			BasicOutputCollector collector, int stream1, int stream2,
 			int taskId1, int taskId2) {
-
-		// int stre1 = (stream1 < stream2 ? stream1 : stream2);
-		// int stre2 = (stream1 < stream2 ? stream2 : stream1);
 
 		int stre1 = stream1, stre2 = stream2;
 
@@ -313,7 +280,6 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 				tmpdis += (tmpscal * tmpscal);
 
 			}
-			// tmpdis = Math.abs(Math.sqrt(tmpdis) - Math.sqrt(er1));
 
 			lowbound = Math.abs(Math.sqrt(tmpdis) - Math.sqrt(er1));
 			upbound = Math.sqrt(tmpdis) + Math.sqrt(er1);
@@ -370,12 +336,8 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 				}
 
-				// lowbound = tmpdis;
-				// upbound = Math.abs(Math.sqrt(tmpdis) + Math.sqrt(er1));
 
-				upbound = Math.sqrt(tmpdis) + Math.sqrt(er1) + Math.sqrt(er2);
-
-				// tmpdis = Math.sqrt(tmpdis) - Math.sqrt(er1) - Math.sqrt(er2);
+				upbound = Math.sqrt(tmpdis) + Math.sqrt(er1) + Math.sqrt(er2);	
 
 				lowbound = Math.max(
 						Math.sqrt(tmpdis) - Math.sqrt(er1) - Math.sqrt(er2),
@@ -598,12 +560,9 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 					// declarer.declareStream("interQualStre", new Fields("ts",
 					// "pair"));
 				}
-
 				checkedPair.add(pair);
-
 			}
 		}
-
 		return;
 	}
 
@@ -656,7 +615,6 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 			if (localpStreIdx(pivotId) == true) {
 
 				tmpid = gridIdxcnt++;
-
 				srcTaskId[tmpid] = (int) srctask;
 
 				gridAffs.add(new ArrayList<Double>());
@@ -664,9 +622,7 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 				pivotVecAna(pivotstr, pivotVec, tmpid);
 				pivotCoor(coordstr, gridCoors, tmpid);
-				// pivotAffs(affRelStr, gridAffs, tmpid);
 				pivotAffs(affRelStr, tmpid);
-				// adjIdx(affIdx, gridAdjIdx, tmpid);
 				adjIdx(affIdx, tmpid);
 				gridBolt[tmpid] = boltNo;
 				gridPivot[tmpid] = pivotId;
@@ -720,6 +676,8 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 				int idx = retriStre.get(sid);
 				indexRetriStre(idx, streStr);
 				receStre.add(sid);
+
+				checkRetriStre(idx, sid, collector, disThreRoot, ts);
 			}
 
 		}
