@@ -23,21 +23,15 @@ public class naiveStatisBolt extends BaseBasicBolt {
 
 	double curtstamp = TopologyMain.winSize - 1;
 
-	// int[][] strpair = new int[TopologyMain.nstream][TopologyMain.nstream];
-	// int[] strpaircnt=new int[TopologyMain.nstream];
-	// int[] strid = new int[TopologyMain.nstreBolt];
-	// ArrayList<String> strvec = new ArrayList<String>(TopologyMain.nstreBolt +
-	// 5);
-
 	List<List<Integer>> strpair = new ArrayList<List<Integer>>(
 			TopologyMain.nstreBolt + 5);
 
 	HashMap<Integer, Integer> strid = new HashMap<Integer, Integer>();
 	ArrayList<Integer> idMap = new ArrayList<Integer>();
 	int stridcnt = 0;
-	
+
 	String[] strvec = new String[TopologyMain.nstreBolt + 5];
-	short [] strvecflag = new short[TopologyMain.nstreBolt + 5];
+	short[] strvecflag = new short[TopologyMain.nstreBolt + 5];
 
 	int rescnt = 0;
 
@@ -117,7 +111,6 @@ public class naiveStatisBolt extends BaseBasicBolt {
 
 		return (cor >= thre) ? 1 : 0;
 
-		// return (Math.abs(cor)>=thre)? 1: 0;
 	}
 
 	void localIdx(int lstre, int rstre, int hoststre, String vecdata) {
@@ -146,102 +139,30 @@ public class naiveStatisBolt extends BaseBasicBolt {
 			stridcnt++;
 		}
 
-		// for (i = 0; i < stridcnt; ++i) {
-		// if (strid[i] == lstr) {
-		// break;
-		// }
-		// }
-		// if (i == stridcnt) {
-		// strpair.add(new ArrayList<Integer>());
-		// strid[stridcnt++] = lstr;
-		// }
-		// int lno = i;
-		//
-		// for (i = 0; i < stridcnt; ++i) {
-		// if (strid[i] == rstr) {
-		// break;
-		// }
-		// }
-		// if (i == stridcnt) {
-		// strid[stridcnt++] = rstr;
-		// strpair.add(new ArrayList<Integer>());
-		// }
-		// int rno = i;
-
 		if (lstre < rstre) {
 			strpair.get(lno).add(rno);
 		} else {
 			strpair.get(rno).add(lno);
 		}
 
-		// strpair[lno][rno] = 1;
-		// strpair[rno][lno] = 1;
-
 		if (lstre == hoststre) {
 
 			strvec[lno] = vecdata;
-			strvecflag[lno]=1;
-			
+			strvecflag[lno] = 1;
+
 		} else {
 			strvec[rno] = vecdata;
-			strvecflag[rno]=1;
+			strvecflag[rno] = 1;
 
-			// strvec.
 		}
 		return;
 	}
 
-	// void localIdx(int lstr, int rstr, int hoststr, String vecdata) {
-	// int i = 0;
-	// for (i = 0; i < stridcnt; ++i) {
-	// if (strid[i] == lstr) {
-	// break;
-	// }
-	// }
-	// if (i == stridcnt) {
-	// strpair.add(new ArrayList<Integer>());
-	// strid[stridcnt++] = lstr;
-	// }
-	// int lno = i;
-	//
-	// for (i = 0; i < stridcnt; ++i) {
-	// if (strid[i] == rstr) {
-	// break;
-	// }
-	// }
-	// if (i == stridcnt) {
-	// strid[stridcnt++] = rstr;
-	// strpair.add(new ArrayList<Integer>());
-	// }
-	// int rno = i;
-	//
-	// if(lno<rno)
-	// {
-	// strpair.get(lno).add(rno);
-	// }
-	// else
-	// {
-	// strpair.get(rno).add(lno);
-	// }
-	//
-	//
-	// // strpair[lno][rno] = 1;
-	// // strpair[rno][lno] = 1;
-	//
-	// if (lstr == hoststr) {
-	// strvec[lno] = vecdata;
-	// } else {
-	// strvec[rno] = vecdata;
-	// }
-	// return;
-	// }
-
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		// TODO Auto-generated method stub
-		declarer.declare(new Fields("ts", "taskid", "num"));
 
-//		 declarer.declare(new Fields("ts", "taskid", "pair"));
+		declarer.declare(new Fields("ts", "pair"));
 	}
 
 	@Override
@@ -256,15 +177,7 @@ public class naiveStatisBolt extends BaseBasicBolt {
 		int hoststr = input.getIntegerByField("host");
 
 		tspairStrAna(tsstr, tspair);
-		// int adjstr=0;
-		// if(tspair[0]==hoststr)
-		// {
-		// adjstr=tspair[1];
-		// }
-		// else
-		// {
-		// adjstr=tspair[0];
-		// }
+
 		int lstr = tspair[0], rstr = tspair[1], i = 0;
 		double tmpval = 0.0;
 		double[] cval = new double[4];
@@ -276,59 +189,37 @@ public class naiveStatisBolt extends BaseBasicBolt {
 			for (i = 0; i < stridcnt; ++i) {
 
 				for (Integer j : strpair.get(i)) {
-					//
 
-					// for (j = i + 1; j < stridcnt; ++j) {
-
-					// if (strpair[i][j] == 1) {
-
-					if ( (strvecflag[i]==1 && strvecflag[j]==1) &&   (tmpval = correCal(strvec[i], strvec[j],
-							TopologyMain.thre, idMap.get(i), idMap.get(j), cval)) == 1) {
+					if ((strvecflag[i] == 1 && strvecflag[j] == 1)
+							&& (tmpval = correCal(strvec[i], strvec[j],
+									TopologyMain.thre, idMap.get(i),
+									idMap.get(j), cval)) == 1) {
 						rescnt++;
-//
-//						 if (strid.get(i) < strid.get(j)) {
-//						 collector.emit(new Values(curtstamp, taskId,
-//						 Integer.toString(strid.get(i)) + ","
-//						 + Integer.toString(strid.get(j))
-//						 + ","
-//						 + Double.toString(cval[0])));
-//						 } else {
-//						 collector.emit(new Values(curtstamp, taskId,
-//						 Integer.toString(strid.get(j)) + ","
-//						 + Integer.toString(strid.get(i))
-//						 + ","
-//						 + Double.toString(cval[0])));
-//						 }
-//
+						if (strid.get(i) < strid.get(j)) {
+							collector.emit(new Values(curtstamp, Integer
+									.toString(strid.get(i))
+									+ ","
+									+ Integer.toString(strid.get(j))));
+						} else {
+							collector.emit(new Values(curtstamp, Integer
+									.toString(strid.get(j))
+									+ ","
+									+ Integer.toString(strid.get(i))));
+						}
 					}
-
-					// if(strid[i]==12 && strid[j]==19 && curtstamp==27 )
-					// {
-					// System.out.printf("!!!  timestamp %f:  %s\n",
-					// curtstamp,Integer
-					// .toString(strid[i])
-					// + ","
-					// + Integer.toString(strid[j])
-					// + ","
-					// + Double.toString(cval[0]));
-					// }
-
-					// }
 				}
 			}
 
 			collector.emit(new Values(curtstamp, taskId, rescnt));
 
-
 			strpair.clear();
 			strid.clear();
 			idMap.clear();
 			stridcnt = 0;
-			for(i=0;i<TopologyMain.nstreBolt + 5;++i)
-			{
-				strvecflag[i]=0;
+			for (i = 0; i < TopologyMain.nstreBolt + 5; ++i) {
+				strvecflag[i] = 0;
 			}
-			
+
 			curtstamp = ts;
 
 			localIdx(lstr, rstr, hoststr, vecstr);
@@ -345,14 +236,7 @@ public class naiveStatisBolt extends BaseBasicBolt {
 
 	@Override
 	public void cleanup() {
-		// try {
-		// fstream = new FileWriter("naiveRes.txt", true);
-		// BufferedWriter out = new BufferedWriter(fstream);
-		// out.close();
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
+
 		return;
 	}
 
@@ -361,10 +245,9 @@ public class naiveStatisBolt extends BaseBasicBolt {
 
 		taskId = gtaskId;
 		gtaskId++;
-		
-		for(int i=0;i<TopologyMain.nstreBolt + 5;++i)
-		{
-			strvecflag[i]=0;
+
+		for (int i = 0; i < TopologyMain.nstreBolt + 5; ++i) {
+			strvecflag[i] = 0;
 		}
 
 		return;

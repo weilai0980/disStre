@@ -20,28 +20,17 @@ public class gridAggreBolt extends BaseBasicBolt {
 
 	HashSet<String> pairDirec = new HashSet<String>();
 
-	public static int glAggBolt = 0;
-	public int locAggBolt = 0;
 
 	
-
 	@Override
 	public void cleanup() {
-		// try {
-		// fstream = new FileWriter("naiveRes.txt", true);
-		// BufferedWriter out = new BufferedWriter(fstream);
-		// out.close();
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
+
 		return;
 	}
 
 	@Override
 	public void prepare(Map stormConf, TopologyContext context) {
 
-		locAggBolt = glAggBolt++;
 
 		return;
 	}

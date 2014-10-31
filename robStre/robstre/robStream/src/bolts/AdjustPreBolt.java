@@ -20,28 +20,28 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 	// .........time order....................//
 
-	public double curtstamp = TopologyMain.winSize - 1;
+	double curtstamp = TopologyMain.winSize - 1;
 	// public double ststamp = -TopologyMain.winSize+1;
-	public double ststamp = 0.0;
+	double ststamp = 0.0;
 	String streType = new String();
 	String commandStr = new String(), preCommandStr = new String();
 	double ts = 0.0;
 	// .........memory......................//
 
 	int declrNum = (int) (TopologyMain.nstreBolt / TopologyMain.preBoltNum + 10);
-	public double[][] strevec = new double[declrNum][TopologyMain.winSize + 6];
-	public double[][] normvec = new double[declrNum][TopologyMain.winSize + 6];
+	double[][] strevec = new double[declrNum][TopologyMain.winSize + 6];
+	double[][] normvec = new double[declrNum][TopologyMain.winSize + 6];
 
-	public int[] streid = new int[TopologyMain.nstreBolt + 10];
-	public int streidCnt = 0;
+	int[] streid = new int[TopologyMain.nstreBolt + 10];
+	int streidCnt = 0;
 
-	public int[] vecst = new int[TopologyMain.nstreBolt + 10];
-	public int[] veced = new int[TopologyMain.nstreBolt + 10];
-	public int queueLen = TopologyMain.winSize + 5;
+	int[] vecst = new int[TopologyMain.nstreBolt + 10];
+	int[] veced = new int[TopologyMain.nstreBolt + 10];
+	int queueLen = TopologyMain.winSize + 5;
 
-	public int[] vecflag = new int[TopologyMain.nstreBolt + 10];
+	int[] vecflag = new int[TopologyMain.nstreBolt + 10];
 
-	public int iniFlag = 1;
+	int iniFlag = 1;
 
 	// .........affine relation graph......................//
 
@@ -54,10 +54,10 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 	// ...........Computation parameter....................//
 
-	public double disThre = 2 - 2 * TopologyMain.thre;
+	final double disThre = 2 - 2 * TopologyMain.thre;
 
-	public static int adjustBoltNo = 0;
-	public int localBoltNo = 0;
+	static int adjustBoltNo = 0;
+	int localBoltNo = 0;
 
 	// ................test..................//
 
@@ -495,7 +495,6 @@ public class AdjustPreBolt extends BaseBasicBolt {
 				graphCons(TopologyMain.thre, collector, curtstamp);
 				pivotcnt = affineSelec(pivotset);
 
-				
 				for (i = 0; i < pivotcnt; ++i) {
 
 					tmppivot = pivotset[i];
@@ -549,18 +548,15 @@ public class AdjustPreBolt extends BaseBasicBolt {
 			graphmat.clear();
 			adjList.clear();
 			for (int j = 0; j < TopologyMain.nstreBolt + 5; ++j) {
-
 				degree[j] = 0;
-
 				vecflag[j] = 0;
 			}
 		} else if (streType.compareTo("retriStre") == 0) {
 			// declarer.declareStream("retriStre", new Fields("ts", "streId",
 			// "targetTask"));
-			
-			
-			//add one hashing mechanism 
-			
+
+			// add one hashing mechanism
+
 			ts = input.getDoubleByField("ts");
 			int id = input.getIntegerByField("streid");
 			int task = input.getIntegerByField("targetTask");

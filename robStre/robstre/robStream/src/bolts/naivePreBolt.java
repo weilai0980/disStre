@@ -17,25 +17,24 @@ import backtype.storm.tuple.Values;
 
 public class naivePreBolt extends BaseBasicBolt {
 
+	// public double curtstamp = TopologyMain.winSize-1;
 
-//	public double curtstamp = TopologyMain.winSize-1;
-	
 	public double curtstamp = 0.0;
 	public double ststamp = 0.0;
-	
+
 	public int taskId = 0;
 
-	public double[][] strevec = new double[TopologyMain.nstreBolt + 10][TopologyMain.winSize+10];
+	public double[][] strevec = new double[TopologyMain.nstreBolt + 10][TopologyMain.winSize + 10];
 	public int[] vecst = new int[TopologyMain.nstreBolt + 10];
 	public int[] veced = new int[TopologyMain.nstreBolt + 10];
-    public int queueLen=TopologyMain.winSize+10;
-	
+	public int queueLen = TopologyMain.winSize + 10;
+
 	public int[] vecflag = new int[TopologyMain.nstreBolt + 10];
 
 	public int[] streid = new int[TopologyMain.nstreBolt + 10];
 	public int streidCnt = 0;
 
-//	public int flag = 1;
+	// public int flag = 1;
 
 	/**
 	 * At the end of the spout (when the cluster is shutdown We will show the
@@ -43,12 +42,6 @@ public class naivePreBolt extends BaseBasicBolt {
 	 */
 	@Override
 	public void cleanup() {
-		// System.out.println("-- Word Counter [" + name + "-" + id + "] --");
-		// for (Map.Entry<String, Integer> entry : counters.entrySet()) {
-		// System.out.println(entry.getKey() + ": " + entry.getValue());
-		// }
-
-		// ....output stream........
 
 	}
 
@@ -64,12 +57,11 @@ public class naivePreBolt extends BaseBasicBolt {
 		for (int j = 0; j < TopologyMain.nstreBolt + 10; j++) {
 			vecst[j] = 0;
 			veced[j] = 0;
-//			veced[j] = TopologyMain.winSize-1;
+			// veced[j] = TopologyMain.winSize-1;
 
 			vecflag[j] = 0;
 			streid[j] = 0;
 
-//			tmpstrcnt[j] = 0;
 		}
 
 	}
@@ -82,8 +74,8 @@ public class naivePreBolt extends BaseBasicBolt {
 		double tmpval = input.getDoubleByField("value");
 		int sn = input.getIntegerByField("sn");
 		int i = 0, tmpsn = 0;
-		
-		int veccnt=0;
+
+		int veccnt = 0;
 
 		if (ts > curtstamp) {
 
@@ -99,46 +91,39 @@ public class naivePreBolt extends BaseBasicBolt {
 					tmpstrid = streid[j];
 
 					// ...........................//
-					vecstr = "";		
-					veccnt=0;
-					
+					vecstr = "";
+					veccnt = 0;
+
 					k = vecst[j];
 					while (k != veced[j]) {
 						vecstr = vecstr + Double.toString(strevec[j][k]) + ",";
 						k = (k + 1) % queueLen;
-						
+
 						veccnt++;
 					}
-					
+
 					for (k = 0; k < tmpstrid; ++k) {
 
 						tspairstr = Integer.toString(k) + ","
 								+ Integer.toString(tmpstrid);
 
+						collector.emit(new Values(curtstamp, tspairstr,
+								tmpstrid, vecstr));
 
-						collector.emit(new Values(curtstamp, tspairstr, tmpstrid,
-								vecstr));
-
-						
-						
-						
 					}
 					for (k = tmpstrid + 1; k < TopologyMain.nstream; ++k) {
 
 						tspairstr = Integer.toString(tmpstrid) + ","
 								+ Integer.toString(k);
-						
-						
-					
 
-						collector.emit(new Values(curtstamp, tspairstr, tmpstrid,
-								vecstr));
+						collector.emit(new Values(curtstamp, tspairstr,
+								tmpstrid, vecstr));
 					}
 
 				}
 
 				for (int j = 0; j < TopologyMain.nstreBolt + 5; ++j) {
-					vecst[j] = (vecst[j] + 1)%queueLen;
+					vecst[j] = (vecst[j] + 1) % queueLen;
 				}
 
 			}
@@ -151,9 +136,8 @@ public class naivePreBolt extends BaseBasicBolt {
 				vecflag[j] = 0;
 			}
 
-			streidCnt=0;
-			
-			
+			streidCnt = 0;
+
 			// .........................................................//
 			for (i = 0; i < streidCnt; ++i) {
 				if (streid[i] == sn) {
