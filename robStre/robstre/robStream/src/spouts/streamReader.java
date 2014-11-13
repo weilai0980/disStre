@@ -74,9 +74,6 @@ public class streamReader extends BaseRichSpout {
 		getFiles(folder, list, filter);
 		Collections.sort(list);
 
-		// fstream = new FileWriter(outfile, true);
-		// out = new BufferedWriter(fstream);
-
 		curFileCnt = 0;
 
 		return;
@@ -106,7 +103,7 @@ public class streamReader extends BaseRichSpout {
 
 			// .............for loop reading files...........
 			// curFileCnt=0;
-			System.out.printf("file finished");
+			// System.out.printf("file finished ");
 			// ..............................................
 
 			return 0;
@@ -230,16 +227,8 @@ public class streamReader extends BaseRichSpout {
 			collector.emit("dataStre", new Values(i, tupTs, curStreRand[i]
 					- tupTs * curStreBias[i] + curStreConst[i]));
 		}
-
-		
-		try {
-			Thread.sleep(100);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		collector.emit("contrStre", new Values("done"+Double.toString(tupTs)));
+		collector
+				.emit("contrStre", new Values("done" + Double.toString(tupTs)));
 
 		return;
 	}
@@ -283,14 +272,7 @@ public class streamReader extends BaseRichSpout {
 		 * we will wait and then return
 		 */
 
-		// .........data emission................//
-
-		try {
-			Thread.sleep(TopologyMain.tinterval);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Utils.sleep(100);
 
 		if (TopologyMain.datasrc == 0) {
 
@@ -310,6 +292,7 @@ public class streamReader extends BaseRichSpout {
 			SpoutOutputCollector coll) {
 
 		if (TopologyMain.datasrc == 1) {
+
 			// ..........for real data...............//
 
 			try {
@@ -328,7 +311,6 @@ public class streamReader extends BaseRichSpout {
 
 			synDataIni(TopologyMain.nstream);
 
-			// ...................................//
 		}
 
 		collector = coll;

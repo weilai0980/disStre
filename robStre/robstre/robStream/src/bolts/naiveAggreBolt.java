@@ -23,60 +23,6 @@ public class naiveAggreBolt extends BaseBasicBolt {
 
 	HashSet<String> pairHset = new HashSet<String>();
 
-	// ................................................//
-
-	// public int localStreIdx(int streid) {
-	// int i = 0;
-	// for (i = 0; i < stridcnt; ++i) {
-	// if (strid[i] == streid) {
-	// break;
-	// }
-	// }
-	// if (i == stridcnt) {
-	// strid[stridcnt++] = streid;
-	// }
-	// return i;
-	// }
-
-	// public void pairAna(String pair,int pairInt[])
-	// {
-	// int len=pair.length();
-	// for(int i=0;i<len;++i)
-	// {
-	// if(pair.charAt(i)==',')
-	// {
-	// pairInt[0]=Integer.valueOf(pair.substring(0, i));
-	// pairInt[1]=Integer.valueOf(pair.substring(i+1, len));
-	// return;
-	// }
-	// }
-	// return;
-	// }
-
-	// public void pairAna(String pair,int pairInt[])
-	// {
-	// int len=pair.length();
-	// int cnt=0,pre=0;
-	//
-	// // System.out.printf("%s\n",pair);
-	//
-	// for(int i=0;i<len;++i)
-	// {
-	// if(pair.charAt(i)==',')
-	// {
-	// pairInt[cnt++]=Integer.valueOf(pair.substring(pre, i));
-	// pre=i+1;
-	//
-	// if(cnt==2)
-	// return;
-	//
-	// // pairInt[1]=Integer.valueOf(pair.substring(i+1, len));
-	// // return;
-	// }
-	// }
-	// return;
-	// }
-
 	@Override
 	public void cleanup() {
 
@@ -105,7 +51,9 @@ public class naiveAggreBolt extends BaseBasicBolt {
 		if (ts > curtstamp) {
 
 			try {
-				 fstream = new FileWriter("naiveRes.txt", true);
+
+				// ...........test........
+				fstream = new FileWriter("naiveRes.txt", true);
 				BufferedWriter out = new BufferedWriter(fstream);
 
 				out.write("Timestamp  " + Double.toString(curtstamp) + ", "
@@ -117,22 +65,23 @@ public class naiveAggreBolt extends BaseBasicBolt {
 				for (String iter : pairHset) {
 					out.write(iter + "\n");
 				}
-				
+
+				System.out.printf("timestamp %f  %d\n", ts, pairHset.size());
+
 				out.write("\n");
 				out.close();
+				// ..................
+
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
-//			System.out.printf("time stamp %f:   %d\n ", curtstamp, rescnt);
-			
+			// ..........update...........//
 
-			//..........update...........//
-			
 			pairHset.clear();
 			pairHset.add(pair);
-
+			curtstamp = ts;
 
 		} else if (ts < curtstamp) {
 			System.out

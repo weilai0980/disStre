@@ -34,7 +34,9 @@ public class naivePreBolt extends BaseBasicBolt {
 	public int[] streid = new int[TopologyMain.nstreBolt + 10];
 	public int streidCnt = 0;
 
-	// public int flag = 1;
+	String streType = new String();
+	double ts = 0.0;
+	int localTaskId = 0;
 
 	/**
 	 * At the end of the spout (when the cluster is shutdown We will show the
@@ -47,7 +49,11 @@ public class naivePreBolt extends BaseBasicBolt {
 
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("ts", "tspair", "host", "vec"));
+		declarer.declareStream("streamData", new Fields("ts", "tspair", "host",
+				"vec"));
+
+		declarer.declareStream("calCommand", new Fields("command", "taskid"));
+
 	}
 
 	@Override
@@ -64,42 +70,68 @@ public class naivePreBolt extends BaseBasicBolt {
 
 		}
 
+		localTaskId = context.getThisTaskId();
+
 	}
 
 	@Override
 	public void execute(Tuple input, BasicOutputCollector collector) {
 		// TODO Auto-generated method stub
 
-		double ts = input.getDoubleByField("ts");
-		double tmpval = input.getDoubleByField("value");
-		int sn = input.getIntegerByField("sn");
-		int i = 0, tmpsn = 0;
+		streType = input.getSourceStreamId();
 
-		int veccnt = 0;
+		if (streType.compareTo("dataStre") == 0) {
 
-		if (ts > curtstamp) {
+			ts = input.getDoubleByField("ts");
+			double tmpval = input.getDoubleByField("value");
+			int sn = input.getIntegerByField("sn");
+			int i = 0, tmpsn = 0;
+
+			for (i = 0; i < streidCnt; ++i) {
+				if (streid[i] == sn) {
+					tmpsn = i;
+					break;
+				}
+			}
+			if (i == streidCnt) {
+				streid[i] = sn;
+				tmpsn = streidCnt;
+				streidCnt++;
+
+			}
+			if (vecflag[tmpsn] == 0) {
+				strevec[tmpsn][veced[tmpsn]] = tmpval;
+				veced[tmpsn] = (veced[tmpsn] + 1) % queueLen;
+
+				vecflag[tmpsn] = 1;
+			}
+
+		} else if (streType.compareTo("contrStre") == 0) {
 
 			String tspairstr = new String();
+			
+//			System.out.printf("---------  got control stream \n");
 
-			if (ts - ststamp >= TopologyMain.winSize) {
+			if (ts - ststamp >= TopologyMain.winSize-1) {
 				ststamp++;
+				curtstamp = ts;
+
+				// ..........test.............
+//				System.out.printf("%f %d\n", curtstamp, streidCnt);
+				// .........................
 
 				int tmpstrid = 0, k = 0;
 				String vecstr = new String();
 
 				for (int j = 0; j < streidCnt; ++j) {
+					
 					tmpstrid = streid[j];
-
-					// ...........................//
 					vecstr = "";
-					veccnt = 0;
 
 					k = vecst[j];
 					while (k != veced[j]) {
 						vecstr = vecstr + Double.toString(strevec[j][k]) + ",";
 						k = (k + 1) % queueLen;
-
-						veccnt++;
 					}
 
 					for (k = 0; k < tmpstrid; ++k) {
@@ -107,8 +139,8 @@ public class naivePreBolt extends BaseBasicBolt {
 						tspairstr = Integer.toString(k) + ","
 								+ Integer.toString(tmpstrid);
 
-						collector.emit(new Values(curtstamp, tspairstr,
-								tmpstrid, vecstr));
+						collector.emit("streamData", new Values(curtstamp,
+								tspairstr, tmpstrid, vecstr));
 
 					}
 					for (k = tmpstrid + 1; k < TopologyMain.nstream; ++k) {
@@ -116,8 +148,8 @@ public class naivePreBolt extends BaseBasicBolt {
 						tspairstr = Integer.toString(tmpstrid) + ","
 								+ Integer.toString(k);
 
-						collector.emit(new Values(curtstamp, tspairstr,
-								tmpstrid, vecstr));
+						collector.emit("streamData", new Values(curtstamp,
+								tspairstr, tmpstrid, vecstr));
 					}
 
 				}
@@ -128,9 +160,10 @@ public class naivePreBolt extends BaseBasicBolt {
 
 			}
 
-			// ...........prepare for next timestamp tuple...............//
+			collector.emit("calCommand", new Values(Double.toString(ts),
+					localTaskId));
 
-			curtstamp = ts;
+			// ...........prepare for next timestamp tuple...............//
 
 			for (int j = 0; j < TopologyMain.nstreBolt + 5; ++j) {
 				vecflag[j] = 0;
@@ -138,52 +171,8 @@ public class naivePreBolt extends BaseBasicBolt {
 
 			streidCnt = 0;
 
-			// .........................................................//
-			for (i = 0; i < streidCnt; ++i) {
-				if (streid[i] == sn) {
-					tmpsn = i;
-					break;
-				}
-			}
-			if (i == streidCnt) {
-				streid[i] = sn;
-				tmpsn = streidCnt;
-				streidCnt++;
-
-			}
-			if (vecflag[tmpsn] == 0) {
-
-				strevec[tmpsn][veced[tmpsn]] = tmpval;
-				veced[tmpsn] = (veced[tmpsn] + 1) % queueLen;
-
-				vecflag[tmpsn] = 1;
-			}
-
-		} else if (ts < curtstamp) {
-			System.out.printf("!!!!!!!!!!!!! time sequence disorder\n");
-		} else if (Math.abs(ts - curtstamp) <= 1e-3) {
-
-			for (i = 0; i < streidCnt; ++i) {
-				if (streid[i] == sn) {
-					tmpsn = i;
-					break;
-				}
-			}
-			if (i == streidCnt) {
-				streid[i] = sn;
-				tmpsn = streidCnt;
-				streidCnt++;
-
-			}
-			if (vecflag[tmpsn] == 0) {
-				strevec[tmpsn][veced[tmpsn]] = tmpval;
-				veced[tmpsn] = (veced[tmpsn] + 1) % queueLen;
-
-				vecflag[tmpsn] = 1;
-			}
+			// ........................................................//
 
 		}
-
 	}
-
 }

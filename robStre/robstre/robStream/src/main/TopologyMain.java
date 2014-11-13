@@ -18,30 +18,28 @@ import java.util.ArrayList;
 
 public class TopologyMain {
 
-	
 	// .................DFT approach...........................//
-	
+
 	public static int dftN = 4;
-	
-	//.................Random projection......................//
-	
-	public static int rp_vecnum=10;
-	public static int rp_dimnum=10;
-	public static String rp_matFile="";
-	
-	
-	
-	
-	// .................local parallelism record...........................//
+
+	// .................Random projection......................//
+
+	public static int rp_vecnum = 10;
+	public static int rp_dimnum = 10;
+	public static String rp_matFile = "";
+
+	// ..................data set.....................
 	public static int datasrc = 1; // 0: synthetic 1: real
+
+	// .................local parallelism record...........................//
+
 	public static int nstreBolt = 20;
 	public static int nstream = 20;
 	public static int gridIdxN = 500;
 
-	
 	public static int winSize = 3;
-	public static double thre = 0.9;
-	public static int tinterval = 1000;
+	public static double thre = 0.98;
+	public static int tinterval = 100;
 	public static int wokernum = 2;
 
 	public static int preBoltNum = 2;
@@ -106,10 +104,6 @@ public class TopologyMain {
 	// gbc:
 	// aps: 7600
 
-	
-
-	
-	
 	public static void main(String[] args) throws InterruptedException,
 			IOException, AlreadyAliveException, InvalidTopologyException {
 
@@ -118,7 +112,7 @@ public class TopologyMain {
 
 		// Configuration
 		Config conf = new Config();
-		conf.put("steamsFile", "/home/guo/conqry/streamqry/dataset/");
+		conf.put("steamsFile", "/home/guo/disStre/robStre/robstre/dataset");
 		conf.put("steamsFilter", "syn"); // needs modify
 
 		conf.setDebug(false);
@@ -133,21 +127,25 @@ public class TopologyMain {
 			String runenv = args[1];
 
 			TopologyBuilder builderNavie = new TopologyBuilder();
+
 			builderNavie.setSpout("sreader", new streamReader());
 
 			builderNavie.setBolt("naviepre", new naivePreBolt(), preBoltNum)
-					.fieldsGrouping("sreader", new Fields("sn"));
-			builderNavie.setBolt("naviestatis", new naiveStatisBolt(),
-					calBoltNum)
-					.fieldsGrouping("naviepre", new Fields("tspair"));
+					.fieldsGrouping("sreader", "dataStre", new Fields("sn"))
+					.allGrouping("sreader", "contrStre");
+			builderNavie
+					.setBolt("naviestatis", new naiveStatisBolt(), calBoltNum)
+					.fieldsGrouping("naviepre", "streamData",
+							new Fields("tspair"))
+					.allGrouping("naviepre", "calCommand");
 			builderNavie.setBolt("navieaggre", new naiveAggreBolt(),
 					aggreBoltNum).fieldsGrouping("naviestatis",
-					new Fields("taskid"));
+					new Fields("pair"));
 
 			if (runenv.compareTo("local") == 0) {
 				cluster.submitTopology("strqry", conf,
 						builderNavie.createTopology());
-				Thread.sleep(2000);
+				Thread.sleep(5000);
 			} else if (runenv.compareTo("cluster") == 0) {
 				StormSubmitter.submitTopology("conqry", conf,
 						builderNavie.createTopology());
@@ -226,8 +224,8 @@ public class TopologyMain {
 					.customGrouping("robPre", "streamData", new robStripGroup())
 					.allGrouping("robPre", "calCommand");
 
-//			builderRob.setBolt("robAggre", new robAggreBolt(), calBoltNum)
-//					.fieldsGrouping("robCal", new Fields("pair"));
+			// builderRob.setBolt("robAggre", new robAggreBolt(), calBoltNum)
+			// .fieldsGrouping("robCal", new Fields("pair"));
 
 			if (runenv.compareTo("local") == 0) {
 				cluster.submitTopology("strqry", conf,
@@ -245,6 +243,7 @@ public class TopologyMain {
 			dataGene dataProd = new dataGene();
 			dataProd.generate();
 			System.out.printf("!!   Data set is produced\n");
+
 		} else if (appro == 20) {
 
 			int sampcnt = 0, recFlag = 1;
