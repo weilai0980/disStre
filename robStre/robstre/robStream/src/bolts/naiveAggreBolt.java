@@ -50,9 +50,11 @@ public class naiveAggreBolt extends BaseBasicBolt {
 
 		if (ts > curtstamp) {
 
+			
+			// ...........test........
 			try {
 
-				// ...........test........
+				
 				fstream = new FileWriter("naiveRes.txt", true);
 				BufferedWriter out = new BufferedWriter(fstream);
 
@@ -70,12 +72,13 @@ public class naiveAggreBolt extends BaseBasicBolt {
 
 				out.write("\n");
 				out.close();
-				// ..................
+				
 
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			}	
+			// ..................
 
 			// ..........update...........//
 
