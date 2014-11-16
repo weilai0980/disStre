@@ -25,8 +25,11 @@ public class AdjustAggreBolt extends BaseBasicBolt {
 	HashSet<String> pairInter = new HashSet<String>();
 	HashSet<String> pairDirec = new HashSet<String>();
 
-	HashSet<String> pairRes = new HashSet<String>(), pairPreRes=new HashSet<String>();
-	
+	HashSet<String> pairRes = new HashSet<String>(),
+			pairPreRes = new HashSet<String>();
+
+	HashSet<String>[] pairs = new HashSet[3];
+	int curset = 0;
 
 	String streType = new String();
 
@@ -46,6 +49,11 @@ public class AdjustAggreBolt extends BaseBasicBolt {
 	public void prepare(Map stormConf, TopologyContext context) {
 
 		locAggBolt = glAggBolt++;
+
+		for (int i = 0; i < 2; ++i) {
+			pairs[i] = new HashSet<String>();
+
+		}
 
 		try {
 			fstream = new FileWriter("apsRes.txt", false);
@@ -67,18 +75,18 @@ public class AdjustAggreBolt extends BaseBasicBolt {
 		String pairstr = input.getStringByField("pair");
 
 		streType = input.getSourceStreamId();
-		
-//		
-//		if(ts==curt+2)
-//		{
-//			
-//		}
-	   if (ts > curt) {
-			
+
+		//
+		// if(ts==curt+2)
+		// {
+		//
+		// }
+
+		if (ts > curt + 1) {
 			// ...........test............................
 			if (curt == 2) {
 				System.out.printf("AggreBolt  time stamp %f:   %d \n ", curt,
-						pairRes.size());
+						pairs[curset].size());
 			}
 
 			try {
@@ -87,10 +95,10 @@ public class AdjustAggreBolt extends BaseBasicBolt {
 				BufferedWriter out = new BufferedWriter(fstream);
 
 				out.write("Timestamp  " + Double.toString(curt) + ", "
-						+ "total num  " + Integer.toString(pairRes.size())
-						+ ": \n ");
+						+ "total num  "
+						+ Integer.toString(pairs[curset].size()) + ": \n ");
 
-				for (String iter : pairRes) {
+				for (String iter : pairs[curset]) {
 					out.write(iter + "\n");
 				}
 
@@ -103,12 +111,25 @@ public class AdjustAggreBolt extends BaseBasicBolt {
 			}
 			// .......................................
 
-			curt = ts;
-			pairRes.clear();
-			pairRes.add(pairstr);
+			curt = curt + 1;
+			// pairRes.clear();
+			// pairRes.add(pairstr);
 
-		} else {
-			pairRes.add(pairstr);
+			curset = 1 - curset;
+			pairs[1 - curset].clear();
+			pairs[1 - curset].add(pairstr);
+
+		}
+
+		else if (ts == curt + 1) {
+
+			pairs[1 - curset].add(pairstr);
+
+		} else if (ts == curt) {
+
+			pairs[curset].add(pairstr);
+
+			// pairRes.add(pairstr);
 		}
 
 		// if (streType.compareTo("qualStre") == 0) {

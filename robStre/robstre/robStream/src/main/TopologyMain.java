@@ -20,7 +20,7 @@ public class TopologyMain {
 
 	// .................DFT approach...........................//
 
-	public static int dftN = 4;
+	public static int dftN = 1;
 
 	// .................Random projection......................//
 
@@ -214,7 +214,39 @@ public class TopologyMain {
 						builderAdjust.createTopology());
 			}
 
-		} else if (appro == 3) {
+		} 
+		
+		else if (appro == 3) {
+
+			String runenv = args[1];
+
+			TopologyBuilder builderRob = new TopologyBuilder();
+			builderRob.setSpout("sreader", new streamReader());
+
+			builderRob.setBolt("dftPre", new dftPreBolt(), preBoltNum)
+					.fieldsGrouping("sreader", "dataStre", new Fields("sn"))
+					.allGrouping("sreader", "contrStre");
+
+			builderRob
+					.setBolt("dftCal", new dftCalBolt(), calBoltNum)
+					.fieldsGrouping("dftPre", "streamData", new Fields("cellCoor"))
+					.allGrouping("dftPre", "calCommand");
+
+			 builderRob.setBolt("dftAggre", new dftAggreBolt(), calBoltNum)
+			 .fieldsGrouping("dftCal", new Fields("pair"));
+
+			if (runenv.compareTo("local") == 0) {
+				cluster.submitTopology("strqry", conf,
+						builderRob.createTopology());
+				Thread.sleep(2000);
+			} else if (runenv.compareTo("cluster") == 0) {
+				StormSubmitter.submitTopology("conqry", conf,
+						builderRob.createTopology());
+			}
+
+		}
+		
+		else if (appro == 4) {
 
 			String runenv = args[1];
 

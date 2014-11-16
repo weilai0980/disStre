@@ -34,7 +34,7 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 	int[] srcTaskId = new int[TopologyMain.gridIdxN + 5];
 
 	int[] gridPivot = new int[TopologyMain.gridIdxN + 5];
-	int[] gridBolt = new int[TopologyMain.gridIdxN + 5];
+	int[] gridSrcTask = new int[TopologyMain.gridIdxN + 5];
 	int[] gpTaskId = new int[TopologyMain.gridIdxN + 5];
 
 	int gridIdxcnt = 0;
@@ -48,7 +48,7 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 	HashMap<Integer, Integer> pStreMap = new HashMap<Integer, Integer>();
 
 	int sentinel = -100000;
-	int boltNo = 0;
+	int taskIdx = 0;
 
 	static int glAppBolt = 0;
 	int locAppBolt = 0;
@@ -80,7 +80,7 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 	public int groupTaskId(int cell[][], int id, int dimN) {
 
 		int cellCoor = 0, partCoor = 0;
-		int tmpid = 0;
+		double tmpid = 0;
 
 		cellCoor = cell[id][0] + gridRange + 1;
 		tmpid = (int) Math.ceil((double) cellCoor / taskGridCap);
@@ -92,10 +92,15 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 			// positive range
 			partCoor = (int) Math.ceil((double) cellCoor / taskGridCap);
 
-			tmpid = (int) (tmpid + (partCoor - 1) * Math.pow(subDivNum, i));
+			tmpid = (tmpid + (partCoor - 1) * Math.pow(subDivNum, i));
 		}
 
-		return tmpid - 1;
+		
+		if (Math.ceil(tmpid) > TopologyMain.calBoltNum) {
+			tmpid = TopologyMain.calBoltNum;
+		}
+
+		return (int) Math.ceil(tmpid) - 1;
 	}
 
 	public int pivotVecAna(String orgstr, double vecval[][], int id) {
@@ -149,9 +154,9 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 				// .......test............
 
-//				if (ts == 2
-//						&& (Integer.valueOf(orgstr.substring(pre, i)) == 8 || Integer
-//								.valueOf(orgstr.substring(pre, i)) == 11)) {
+//				if (ts == 15
+//						&& (Integer.valueOf(orgstr.substring(pre, i)) == 0 || Integer
+//								.valueOf(orgstr.substring(pre, i)) == 1)) {
 //					System.out
 //							.printf("+++++++++++++++++++++++  ApproBolt %d receives stream  %d from PreBolt %d\n",
 //									localTask,
@@ -189,8 +194,22 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 	}
 
 	public int checkGrids(int idx1, int idx2) {
+		
+		
+		
+		// .............test............
 
-		if (gridBolt[idx1] == gridBolt[idx2]) {
+//		gridPivot[i],gridPivot[j]
+		
+//		if (curtstamp == 15  && ((gridPivot[idx1]==0 && gridPivot[idx2]==1)|| (gridPivot[idx1]==1 && gridPivot[idx2]==0)  )  ) {
+//			System.out.printf("   !!!!!    %d %d  %d  %d %d", gridSrcTask[idx1],gridSrcTask[idx2] ,gpTaskId[idx1],gpTaskId[idx2],locTaskIdx);
+//		}
+		// .............................
+		
+		
+		
+
+		if (gridSrcTask[idx1] == gridSrcTask[idx2]) {
 			return 0;
 		}
 		if (gpTaskId[idx1] != locTaskIdx && gpTaskId[idx2] != locTaskIdx) {
@@ -200,6 +219,19 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 		for (int j = 0; j < TopologyMain.winSize; ++j) {
 			if ((gridCoors[idx1][j] + 1) < gridCoors[idx2][j] - 1
 					|| (gridCoors[idx1][j] - 1) > gridCoors[idx2][j] + 1) {
+				
+				// .............test............
+
+//				gridPivot[i],gridPivot[j]
+				
+//				if (curtstamp == 15  && ((gridPivot[idx1]==0 && gridPivot[idx2]==1)|| (gridPivot[idx1]==1 && gridPivot[idx2]==0)  )  ) {
+//					System.out.printf("  !!!!! disrupt at %d:  %d %d \n",j, gridCoors[idx1][j],gridCoors[idx2][j]);
+//				}
+				// .............................
+				
+				
+				
+				
 				return 0;
 			}
 		}
@@ -214,11 +246,12 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 		// ..........test............
 
-//		if (tStamp == 2
-//				&& ((stre1 == 8 && stre2 == 11) || (stre1 == 11 && stre2 == 8))) {
+//		if (tStamp == 15
+//				&& ((stre1 == 0 && stre2 == 1) || (stre1 == 1 && stre2 == 0))) {
 //
-//			System.out.printf("ApproBolt %d at %f:  %f   %f \n", localTask,
-//					thre, up, low);
+//			System.out
+//					.printf("--------------------------  ApproBolt %d at %f:  %f   %f \n",
+//							localTask, thre, up, low);
 //
 //		}
 
@@ -248,13 +281,14 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 				// ..........test............
 
-//				if (tStamp == 2
-//						&& ((stre1 == 8 && stre2 == 11) || (stre1 == 11 && stre2 == 8))) {
-//
-//					System.out.printf("ApproBolt %d requests at %f:  stream %d from %d \n",
-//							localTask, tStamp,stre1,taskId1);
-//
-//				}
+				// if (tStamp == 2
+				// && ((stre1 == 8 && stre2 == 11) || (stre1 == 11 && stre2 ==
+				// 8))) {
+				//
+				// System.out.printf("ApproBolt %d requests at %f:  stream %d from %d \n",
+				// localTask, tStamp,stre1,taskId1);
+				//
+				// }
 
 				// ........................
 
@@ -272,13 +306,14 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 				// ..........test............
 
-//				if (tStamp == 2
-//						&& ((stre1 == 8 && stre2 == 11) || (stre1 == 11 && stre2 == 8))) {
-//
-//					System.out.printf("ApproBolt %d requests at %f:  stream %d from %d \n",
-//							localTask, tStamp,stre2,taskId2);
-//
-//				}
+				// if (tStamp == 2
+				// && ((stre1 == 8 && stre2 == 11) || (stre1 == 11 && stre2 ==
+				// 8))) {
+				//
+				// System.out.printf("ApproBolt %d requests at %f:  stream %d from %d \n",
+				// localTask, tStamp,stre2,taskId2);
+				//
+				// }
 
 				// ........................
 
@@ -548,6 +583,17 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 		}
 
+		// ...........test.................
+
+//		if (tStamp == 15 && (gridPivot[idx1] == 0 && gridPivot[idx2] == 1)
+//				|| (gridPivot[idx1] == 1 && gridPivot[idx2] == 0)) {
+//			System.out
+//					.printf("--------- ApproBolt %d check pivot streams betwee %d and %d: %f to satisfy %f at %f\n",
+//							localTask, gridPivot[idx1], gridPivot[idx2], tmpdis,sqthre, tStamp);
+//		}
+
+		// ................................
+
 		if (tmpdis <= sqthre) {
 			if (gridPivot[idx1] < gridPivot[idx2]) {
 				collector.emit("interQualStre",
@@ -619,10 +665,10 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 					// ...........test...............
 
-//					if (tstamp == 2 && pair.compareTo("8,11") == 0) {
-//						System.out.printf(" (%f  %f) ", retriStreVec.get(idx)
-//								.get(i), retriStreVec.get(idx2).get(i));
-//					}
+					// if (tstamp == 2 && pair.compareTo("8,11") == 0) {
+					// System.out.printf(" (%f  %f) ", retriStreVec.get(idx)
+					// .get(i), retriStreVec.get(idx2).get(i));
+					// }
 					// ..............................
 
 				}
@@ -630,22 +676,22 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 				// ...........test...............
 
-//				if (tstamp == 2 && pair.compareTo("8,11") == 0) {
-//					System.out
-//							.printf("\n +++++++++++++++++++++++  ApproBolt %d compute the precise correlation on %s: %f \n",
-//									localTask, pair, dis);
-//				}
+				// if (tstamp == 2 && pair.compareTo("8,11") == 0) {
+				// System.out
+				// .printf("\n +++++++++++++++++++++++  ApproBolt %d compute the precise correlation on %s: %f \n",
+				// localTask, pair, dis);
+				// }
 				// ..............................
 
 				if (dis <= thre) {
 
 					// ...........test...............
-//
-//					if (tstamp == 2 && pair.compareTo("8,11") == 0) {
-//						System.out
-//								.printf("\n +++++++++++++++++++++++  ApproBolt %d compute the precise correlation and send out \n",
-//										localTask);
-//					}
+					//
+					// if (tstamp == 2 && pair.compareTo("8,11") == 0) {
+					// System.out
+					// .printf("\n +++++++++++++++++++++++  ApproBolt %d compute the precise correlation and send out \n",
+					// localTask);
+					// }
 					// ..............................
 
 					collector.emit("interQualStre", new Values(tstamp, pair));
@@ -701,7 +747,7 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 			int pivotId = input.getIntegerByField("pidx");
 			String affRelStr = input.getStringByField("adjaffine");
 			String affIdx = input.getStringByField("adjidx");
-			boltNo = input.getIntegerByField("bolt");
+			taskIdx = input.getIntegerByField("taskIdx");
 
 			srctask = input.getIntegerByField("taskid");
 
@@ -717,14 +763,14 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 				pivotCoor(coordstr, gridCoors, tmpid);
 				pivotAffs(affRelStr, tmpid);
 				adjIdx(affIdx, tmpid);
-				gridBolt[tmpid] = boltNo;
+				gridSrcTask[tmpid] = taskIdx;
 				gridPivot[tmpid] = pivotId;
 				gpTaskId[tmpid] = groupTaskId(gridCoors, tmpid,
 						TopologyMain.winh);
 
 				// ...........test............
 
-//				if (ts == 2 && (pivotId == 8 || pivotId == 11)) {
+//				if (ts == 15 && (pivotId == 0 || pivotId == 1)) {
 //					System.out
 //							.printf("+++++++++++++++++++++++  ApproBolt %d recevie stream %d from PreBolt %d\n",
 //									localTask, pivotId, srctask);
@@ -753,8 +799,49 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 				retriStre.clear();
 				retriStreVec.clear();
 
+				// .............test............
+
+				if (curtstamp == 15) {
+					System.out.printf("ApproBolt %d has pivot streams %d: ",
+							localTask,gridIdxcnt);
+					for (int l = 0; l < gridIdxcnt; ++l) {
+						System.out.printf("%d  ", gridPivot[l]);
+					}
+					System.out.printf("\n");
+					
+					System.out.printf("  ++++  ApproBolt %d checked stream pairs : ", localTask);
+				}
+
+				
+				
+				// .............................
+				
+				
+				
+
 				for (i = 0; i < gridIdxcnt; ++i) {
 					for (j = i + 1; j < gridIdxcnt; ++j) {
+						
+						
+						
+//						// .............test............
+//
+//						if (curtstamp == 15) {
+//							System.out.printf("<%d , %d> :",gridPivot[i],gridPivot[j]);
+//						}
+//						// .............................
+					
+						
+						// .............test............
+
+//						gridPivot[i],gridPivot[j]
+						
+//						if (curtstamp == 15 && ( localTask==5 )) {
+//							System.out.printf("<%d , %d, %d>  :",i,j,checkGrids(i, j));
+//						}
+						// .............................
+						
+								
 						if (checkGrids(i, j) == 1) {
 							resnum += corBtwAffInGrids(i, j,
 									2 - 2 * TopologyMain.thre, collector,
@@ -762,9 +849,18 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 							resnum += corBtwPivots(i, j,
 									2 - 2 * TopologyMain.thre, collector,
 									curtstamp);
+							
 						}
 					}
 				}
+				
+				
+				// .............test............
+
+				if (curtstamp == 15 &&  ( localTask==5 )) {
+					System.out.printf("\n");
+				}
+				// .............................
 
 				localIdxRenew();
 				curtstamp = ts + 1;
@@ -782,11 +878,11 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 			// ...........test.......
 
-//			if (ts == 2 && (sid == 8 || sid == 11)) {
-//				System.out
-//						.printf("+++++++++++++++++++++++  ApproBolt %d got feedback on %d \n",
-//								localTask, sid);
-//			}
+			// if (ts == 2 && (sid == 8 || sid == 11)) {
+			// System.out
+			// .printf("+++++++++++++++++++++++  ApproBolt %d got feedback on %d \n",
+			// localTask, sid);
+			// }
 
 			// ......................
 

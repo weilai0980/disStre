@@ -42,27 +42,27 @@
 </editorArea>
 <editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="TopologyMain.java" partName="TopologyMain.java" path="/home/guo/disStre/robStre/robstre/robStream/src/main/TopologyMain.java" title="TopologyMain.java" tooltip="robStream/src/main/TopologyMain.java" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/main/TopologyMain.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="4" selectionOffset="2127" selectionTopPixel="424"/>
-</editor>
-<editor activePart="true" focus="true" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustPreBolt.java" partName="AdjustPreBolt.java" path="/home/guo/disStre/robStre/robstre/robStream/src/bolts/AdjustPreBolt.java" title="AdjustPreBolt.java" tooltip="robStream/src/bolts/AdjustPreBolt.java" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/bolts/AdjustPreBolt.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="3314" selectionTopPixel="1535"/>
-</editor>
-<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustApproEnhBolt.java" partName="AdjustApproEnhBolt.java" path="/home/guo/disStre/robStre/robstre/robStream/src/bolts/AdjustApproEnhBolt.java" title="AdjustApproEnhBolt.java" tooltip="robStream/src/bolts/AdjustApproEnhBolt.java" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/bolts/AdjustApproEnhBolt.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="20072" selectionTopPixel="12758"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="925" selectionTopPixel="263"/>
 </editor>
 <editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="streamReader.java" partName="streamReader.java" path="/home/guo/disStre/robStre/robstre/robStream/src/spouts/streamReader.java" title="streamReader.java" tooltip="robStream/src/spouts/streamReader.java" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/spouts/streamReader.java"/>
 <editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="6253" selectionTopPixel="4072"/>
 </editor>
-<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustAggreBolt.java" partName="AdjustAggreBolt.java" path="/home/guo/disStre/robStre/robstre/robStream/src/bolts/AdjustAggreBolt.java" title="AdjustAggreBolt.java" tooltip="robStream/src/bolts/AdjustAggreBolt.java" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/bolts/AdjustAggreBolt.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="2867" selectionTopPixel="1735"/>
+<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="dftPreBolt.java" partName="dftPreBolt.java" path="/home/guo/disStre/robStre/robstre/robStream/src/bolts/dftPreBolt.java" title="dftPreBolt.java" tooltip="robStream/src/bolts/dftPreBolt.java" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/bolts/dftPreBolt.java"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="4146" selectionTopPixel="2142"/>
 </editor>
-<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustHashGroupEnh.java" partName="AdjustHashGroupEnh.java" path="/home/guo/disStre/robStre/robstre/robStream/src/grouping/AdjustHashGroupEnh.java" title="AdjustHashGroupEnh.java" tooltip="robStream/src/grouping/AdjustHashGroupEnh.java" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/grouping/AdjustHashGroupEnh.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="4" selectionOffset="9703" selectionTopPixel="7072"/>
+<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="dftCalBolt.java" partName="dftCalBolt.java" path="/home/guo/disStre/robStre/robstre/robStream/src/bolts/dftCalBolt.java" title="dftCalBolt.java" tooltip="robStream/src/bolts/dftCalBolt.java" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/bolts/dftCalBolt.java"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="4264" selectionTopPixel="2061"/>
+</editor>
+<editor activePart="true" focus="true" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="dftAggreBolt.java" partName="dftAggreBolt.java" path="/home/guo/disStre/robStre/robstre/robStream/src/bolts/dftAggreBolt.java" title="dftAggreBolt.java" tooltip="robStream/src/bolts/dftAggreBolt.java" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/bolts/dftAggreBolt.java"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="1619" selectionTopPixel="850"/>
+</editor>
+<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="naiveAggreBolt.java" partName="naiveAggreBolt.java" path="/home/guo/disStre/robStre/robstre/robStream/src/bolts/naiveAggreBolt.java" title="naiveAggreBolt.java" tooltip="robStream/src/bolts/naiveAggreBolt.java" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/robStream/src/bolts/naiveAggreBolt.java"/>
+<editorState selectionHorizontalPixel="0" selectionLength="9" selectionOffset="476" selectionTopPixel="1034"/>
 </editor>
 </editors>
 <views>
@@ -75,8 +75,8 @@
 <view id="org.eclipse.ui.views.ProblemView" partName="Problems">
 <viewState PRIMARY_SORT_FIELD="org.eclipse.ui.ide.severityAndDescriptionField" categoryGroup="org.eclipse.ui.ide.severity" markerContentGenerator="org.eclipse.ui.ide.problemsGenerator" partName="Problems">
 <expanded>
-<category IMemento.internal.id="Warnings"/>
 <category IMemento.internal.id="Errors"/>
+<category IMemento.internal.id="Warnings"/>
 </expanded>
 <columnWidths org.eclipse.ui.ide.locationField="0" org.eclipse.ui.ide.markerType="0" org.eclipse.ui.ide.pathField="0" org.eclipse.ui.ide.resourceField="0" org.eclipse.ui.ide.severityAndDescriptionField="0"/>
 <visible IMemento.internal.id="org.eclipse.ui.ide.severityAndDescriptionField"/>
@@ -273,161 +273,161 @@
 <workingSets/>
 <navigationHistory>
 <editors>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/robStream/src/bolts/AdjustPreBolt.java"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/robStream/src/bolts/AdjustApproEnhBolt.java"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/robStream/src/bolts/dftPreBolt.java"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/robStream/src/bolts/dftCalBolt.java"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/robStream/src/main/TopologyMain.java"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/robStream/src/grouping/AdjustHashGroupEnh.java"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/robStream/src/bolts/AdjustAggreBolt.java"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/robStream/src/bolts/AdjustPreBolt.java"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/robStream/src/bolts/dftAggreBolt.java"/>
 </editors>
-<item historyLabel="AdjustApproEnhBolt.java" index="1">
-<position info="not_deleted" x="17809" y="0"/>
+<item historyLabel="dftCalBolt.java" index="1">
+<position info="not_deleted" x="5947" y="11"/>
 </item>
-<item historyLabel="AdjustApproEnhBolt.java" index="1">
-<position info="not_deleted" x="17045" y="7"/>
+<item historyLabel="dftCalBolt.java" index="1">
+<position info="not_deleted" x="4957" y="0"/>
 </item>
-<item historyLabel="TopologyMain.java" index="2">
-<position info="not_deleted" x="2127" y="4"/>
+<item historyLabel="dftCalBolt.java" index="1">
+<position info="not_deleted" x="3703" y="14"/>
 </item>
-<item historyLabel="AdjustApproEnhBolt.java" index="1">
-<position info="not_deleted" x="18328" y="4"/>
+<item historyLabel="dftCalBolt.java" index="1">
+<position info="not_deleted" x="7643" y="0"/>
 </item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="390" y="18"/>
+<item historyLabel="dftCalBolt.java" index="1">
+<position info="not_deleted" x="2371" y="12"/>
 </item>
-<item historyLabel="TopologyMain.java" index="2">
-<position info="not_deleted" x="2127" y="4"/>
+<item historyLabel="dftCalBolt.java" index="1">
+<position info="not_deleted" x="8465" y="0"/>
 </item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="390" y="18"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="9290" y="0"/>
 </item>
-<item historyLabel="AdjustAggreBolt.java" index="4">
-<position info="not_deleted" x="1977" y="0"/>
+<item historyLabel="dftCalBolt.java" index="1">
+<position info="not_deleted" x="8619" y="0"/>
 </item>
-<item historyLabel="AdjustApproEnhBolt.java" index="1">
-<position info="not_deleted" x="18328" y="4"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="9290" y="0"/>
 </item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="15140" y="169"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="2312" y="11"/>
 </item>
-<item historyLabel="AdjustApproEnhBolt.java" index="1">
-<position info="not_deleted" x="18328" y="4"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="8576" y="7"/>
 </item>
-<item historyLabel="AdjustApproEnhBolt.java" index="1">
-<position/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="9386" y="0"/>
 </item>
-<item historyLabel="AdjustApproEnhBolt.java" index="1">
-<position info="not_deleted" x="17045" y="7"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="2312" y="11"/>
 </item>
-<item historyLabel="AdjustApproEnhBolt.java" index="1">
-<position info="not_deleted" x="18175" y="0"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="9475" y="0"/>
 </item>
-<item historyLabel="AdjustApproEnhBolt.java" index="1">
-<position info="not_deleted" x="3970" y="6"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="7890" y="0"/>
 </item>
-<item historyLabel="AdjustApproEnhBolt.java" index="1">
-<position info="not_deleted" x="18174" y="0"/>
+<item historyLabel="dftCalBolt.java" index="1">
+<position info="not_deleted" x="8619" y="0"/>
 </item>
-<item historyLabel="AdjustApproEnhBolt.java" index="1">
-<position info="not_deleted" x="3970" y="6"/>
+<item historyLabel="dftCalBolt.java" index="1">
+<position info="not_deleted" x="7337" y="0"/>
 </item>
-<item historyLabel="AdjustApproEnhBolt.java" index="1">
-<position info="not_deleted" x="18340" y="283"/>
+<item historyLabel="dftCalBolt.java" index="1">
+<position info="not_deleted" x="6881" y="5"/>
 </item>
-<item historyLabel="AdjustApproEnhBolt.java" index="1">
-<position info="not_deleted" x="11488" y="0"/>
+<item historyLabel="dftCalBolt.java" index="1">
+<position info="not_deleted" x="8427" y="0"/>
 </item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="15140" y="169"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="7890" y="0"/>
 </item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="13194" y="0"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="9387" y="0"/>
 </item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="2761" y="9"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="2312" y="11"/>
 </item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="4226" y="0"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="3013" y="0"/>
 </item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="11090" y="7"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="3104" y="0"/>
 </item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="4295" y="0"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="7636" y="7"/>
 </item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="2957" y="1"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="3103" y="0"/>
 </item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="3135" y="0"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="2312" y="11"/>
 </item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="2333" y="0"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="3750" y="91"/>
 </item>
-<item historyLabel="AdjustApproEnhBolt.java" index="1">
-<position info="not_deleted" x="4596" y="0"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="3858" y="0"/>
 </item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="2333" y="0"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="8576" y="7"/>
 </item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="3529" y="0"/>
-</item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="515" y="6"/>
-</item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="13195" y="0"/>
-</item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="2761" y="9"/>
-</item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="12974" y="0"/>
-</item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="13061" y="0"/>
-</item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="13196" y="0"/>
-</item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="2761" y="9"/>
-</item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="3293" y="0"/>
-</item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="3303" y="0"/>
-</item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="3227" y="0"/>
-</item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="3228" y="0"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="2861" y="0"/>
 </item>
 <item historyLabel="TopologyMain.java" index="2">
-<position info="not_deleted" x="2127" y="4"/>
+<position info="not_deleted" x="925" y="0"/>
 </item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="15668" y="0"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="2861" y="0"/>
 </item>
-<item historyLabel="AdjustApproEnhBolt.java" index="1">
-<position info="not_deleted" x="20072" y="0"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="4274" y="7"/>
 </item>
-<item historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="3568" y="0"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="2312" y="11"/>
 </item>
-<item historyLabel="AdjustAggreBolt.java" index="4">
-<position info="not_deleted" x="1977" y="0"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="3707" y="7"/>
 </item>
-<item historyLabel="AdjustAggreBolt.java" index="4">
-<position info="not_deleted" x="877" y="0"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="3861" y="0"/>
 </item>
-<item historyLabel="AdjustAggreBolt.java" index="4">
-<position info="not_deleted" x="2867" y="0"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="2312" y="11"/>
 </item>
-<item active="true" historyLabel="AdjustPreBolt.java" index="0">
-<position info="not_deleted" x="3568" y="0"/>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="3707" y="7"/>
+</item>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="4121" y="14"/>
+</item>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="4274" y="7"/>
+</item>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="5752" y="6"/>
+</item>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="6163" y="7"/>
+</item>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="6193" y="0"/>
+</item>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="4121" y="14"/>
+</item>
+<item historyLabel="dftPreBolt.java" index="0">
+<position info="not_deleted" x="4146" y="0"/>
+</item>
+<item historyLabel="dftCalBolt.java" index="1">
+<position info="not_deleted" x="4264" y="0"/>
+</item>
+<item historyLabel="AdjustPreBolt.java" index="3">
+<position info="not_deleted" x="12496" y="7"/>
+</item>
+<item historyLabel="dftCalBolt.java" index="1">
+<position info="not_deleted" x="4264" y="0"/>
+</item>
+<item active="true" historyLabel="dftAggreBolt.java" index="4">
+<position info="not_deleted" x="1804" y="0"/>
 </item>
 </navigationHistory>
 <input factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/" type="8"/>
@@ -450,11 +450,38 @@
 </trimLayout>
 </window>
 <mruList>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustHashGroupEnh.java" tooltip="robStream/src/grouping/AdjustHashGroupEnh.java">
-<persistable path="/robStream/src/grouping/AdjustHashGroupEnh.java"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustPreBolt.java" tooltip="robStream/src/bolts/AdjustPreBolt.java">
+<persistable path="/robStream/src/bolts/AdjustPreBolt.java"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="naivePreBolt.java" tooltip="robStream/src/bolts/naivePreBolt.java">
+<persistable path="/robStream/src/bolts/naivePreBolt.java"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="naiveAggreBolt.java" tooltip="robStream/src/bolts/naiveAggreBolt.java">
+<persistable path="/robStream/src/bolts/naiveAggreBolt.java"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="dftAggreBolt.java" tooltip="robStream/src/bolts/dftAggreBolt.java">
+<persistable path="/robStream/src/bolts/dftAggreBolt.java"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="gridAggreBolt.java" tooltip="robStream/src/bolts/gridAggreBolt.java">
+<persistable path="/robStream/src/bolts/gridAggreBolt.java"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="gridStatisBolt.java" tooltip="robStream/src/bolts/gridStatisBolt.java">
+<persistable path="/robStream/src/bolts/gridStatisBolt.java"/>
 </file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="naiveStatisBolt.java" tooltip="robStream/src/bolts/naiveStatisBolt.java">
 <persistable path="/robStream/src/bolts/naiveStatisBolt.java"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="gridPreBolt.java" tooltip="robStream/src/bolts/gridPreBolt.java">
+<persistable path="/robStream/src/bolts/gridPreBolt.java"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="dftCalBolt.java" tooltip="robStream/src/bolts/dftCalBolt.java">
+<persistable path="/robStream/src/bolts/dftCalBolt.java"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="dftPreBolt.java" tooltip="robStream/src/bolts/dftPreBolt.java">
+<persistable path="/robStream/src/bolts/dftPreBolt.java"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustHashGroupEnh.java" tooltip="robStream/src/grouping/AdjustHashGroupEnh.java">
+<persistable path="/robStream/src/grouping/AdjustHashGroupEnh.java"/>
 </file>
 <file factoryID="org.eclipse.jdt.ui.ClassFileEditorInputFactory" id="org.eclipse.jdt.ui.ClassFileEditor" name="BasicOutputCollector.class" tooltip="backtype.storm.topology.BasicOutputCollector">
 <persistable org.eclipse.jdt.ui.ClassFileIdentifier="=robStream/\/home\/guo\/storm-0.8.2\/storm-0.8.2.jar&lt;backtype.storm.topology(BasicOutputCollector.class"/>
@@ -465,35 +492,8 @@
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="streamReader.java" tooltip="robStream/src/spouts/streamReader.java">
 <persistable path="/robStream/src/spouts/streamReader.java"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="naiveAggreBolt.java" tooltip="robStream/src/bolts/naiveAggreBolt.java">
-<persistable path="/robStream/src/bolts/naiveAggreBolt.java"/>
-</file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustApproEnhBolt.java" tooltip="robStream/src/bolts/AdjustApproEnhBolt.java">
 <persistable path="/robStream/src/bolts/AdjustApproEnhBolt.java"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustApproBolt.java" tooltip="robStream/src/bolts/AdjustApproBolt.java">
-<persistable path="/robStream/src/bolts/AdjustApproBolt.java"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="naivePreBolt.java" tooltip="robStream/src/bolts/naivePreBolt.java">
-<persistable path="/robStream/src/bolts/naivePreBolt.java"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="dftAggreBolt.java" tooltip="robStream/src/bolts/dftAggreBolt.java">
-<persistable path="/robStream/src/bolts/dftAggreBolt.java"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustPreBolt.java" tooltip="robStream/src/bolts/AdjustPreBolt.java">
-<persistable path="/robStream/src/bolts/AdjustPreBolt.java"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="robAggreBolt.java" tooltip="robStream/src/bolts/robAggreBolt.java">
-<persistable path="/robStream/src/bolts/robAggreBolt.java"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="robCalBolt.java" tooltip="robStream/src/bolts/robCalBolt.java">
-<persistable path="/robStream/src/bolts/robCalBolt.java"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="robPreBolt.java" tooltip="robStream/src/bolts/robPreBolt.java">
-<persistable path="/robStream/src/bolts/robPreBolt.java"/>
-</file>
-<file factoryID="org.eclipse.jdt.ui.ClassFileEditorInputFactory" id="org.eclipse.jdt.ui.ClassFileEditor" name="TopologyContext.class" tooltip="backtype.storm.task.TopologyContext">
-<persistable org.eclipse.jdt.ui.ClassFileIdentifier="=robStream/\/home\/guo\/storm-0.8.2\/storm-0.8.2.jar&lt;backtype.storm.task(TopologyContext.class"/>
 </file>
 </mruList>
 </workbench>

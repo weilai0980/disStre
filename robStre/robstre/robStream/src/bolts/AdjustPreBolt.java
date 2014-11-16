@@ -57,7 +57,7 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 	final double disThre = 2 - 2 * TopologyMain.thre;
 
-	int localBoltNo = 0;
+	int localTaskIdx = 0;
 
 	public double[] curexp = new double[TopologyMain.nstreBolt + 10],
 			curdev = new double[TopologyMain.nstreBolt + 10],
@@ -110,7 +110,6 @@ public class AdjustPreBolt extends BaseBasicBolt {
 				
 				// .............test............
 				
-				
 //				if (curtime == 3 ) {
 //					System.out.printf("stream pair %d and %d \n", streid[i],streid[j]);
 //				}
@@ -139,10 +138,10 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 					// .............test............
 
-					if (curtime == 3
-							&& ((streid[i] == 3 && streid[j] == 5) || (streid[j] == 5 && streid[i] == 3))) {
-						System.out.printf("----------------- PreBolt %d direction emission\n", taskId);
-					}
+//					if (curtime == 3
+//							&& ((streid[i] == 3 && streid[j] == 5) || (streid[j] == 5 && streid[i] == 3))) {
+//						System.out.printf("----------------- PreBolt %d direction emission\n", taskId);
+//					}
 
 					// ..................
 
@@ -459,7 +458,7 @@ public class AdjustPreBolt extends BaseBasicBolt {
 		// TODO Auto-generated method stub
 
 		taskId = context.getThisTaskId();
-		localBoltNo = context.getThisTaskIndex();
+		localTaskIdx = context.getThisTaskIndex();
 
 		for (int j = 0; j < TopologyMain.nstreBolt + 1; j++) {
 			vecst[j] = 0;
@@ -481,7 +480,7 @@ public class AdjustPreBolt extends BaseBasicBolt {
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 
 		declarer.declareStream("interStre", new Fields("pidx", "pivotvec",
-				"adjaffine", "adjidx", "coord", "ts", "bolt", "taskid"));
+				"adjaffine", "adjidx", "coord", "ts", "taskIdx", "taskid"));
 
 		declarer.declareStream("qualStre", new Fields("pair", "ts"));
 
@@ -533,18 +532,18 @@ public class AdjustPreBolt extends BaseBasicBolt {
 				
 				// .............test............
 
-				if (ts == 3)
-				{
-					
-					System.out.printf("?????????? Prebolt %d has streams: ", taskId);
-					for (int k = 0; k < streidCnt; ++k) {
-
-						System.out.printf("%d, ", streid[k]);
-					}
-					System.out.printf("\n");
-					
-					
-				}
+//				if (ts == 15)
+//				{
+//					
+//					System.out.printf("?????????? Prebolt %d has streams: ", taskId);
+//					for (int k = 0; k < streidCnt; ++k) {
+//
+//						System.out.printf("%d, ", streid[k]);
+//					}
+//					System.out.printf("\n");
+//					
+//					
+//				}
 				
 		
 
@@ -567,7 +566,7 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 					collector.emit("interStre", new Values(streid[tmppivot],
 							streAffine[0], streAffine[1], streAffine[2],
-							coorStr, curtstamp, localBoltNo, taskId)); // modification
+							coorStr, curtstamp, localTaskIdx, taskId)); // modification
 
 					iniFlag = 0;
 

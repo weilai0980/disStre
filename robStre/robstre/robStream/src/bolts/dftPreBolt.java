@@ -34,7 +34,7 @@ public class dftPreBolt extends BaseBasicBolt {
 	public int iniFlag = 1;
 
 	public double[] curexp = new double[TopologyMain.nstreBolt + 10],
-			cursqrsum = new double[TopologyMain.nstreBolt + 10];
+			cursqsum = new double[TopologyMain.nstreBolt + 10];
 
 	// ...........computation parameter....................//
 
@@ -67,7 +67,7 @@ public class dftPreBolt extends BaseBasicBolt {
 
 	public void calCellCoor(int memidx, int dftNum, int curCnt, int cell[],
 			BasicOutputCollector collector, String strevec, String hostCoor,
-			double ts) {
+			double ts, String dftvec) {
 
 		if (curCnt >= dftNum) {
 			String cellCoor = new String();
@@ -75,12 +75,42 @@ public class dftPreBolt extends BaseBasicBolt {
 				cellCoor = cellCoor + Integer.toString(cell[i]) + ",";
 			}
 
+//			...........test.........
+			
+			if(curtstamp==2 && memidx==0)
+			{
+			System.out.printf("------- PreBolt %d produces cell coordination for stream %d in cell %s : %s\n",localTaskId,streid[memidx],hostCoor, cellCoor);
+			}
+//			........................
+			
+			
+			
 			if (cellCoor.compareTo(hostCoor) == 0) {
+				
+//				.............test.........
+
+				if(curtstamp==2)
+				{
+				System.out.printf("------- PreBolt %d send host stream: %d",localTaskId,streid[memidx]);
+				}
+//				..........................
+				
 				collector.emit("streamData", new Values(ts, streid[memidx],
-						cellCoor, strevec, 1)); // hostflag=1
+						cellCoor, strevec,dftvec, 1)); // hostflag=1
 			} else {
+				
+//				........test...............
+				
+//				("ts", "streId",
+//						"cellCoor", "strevec","dftvec", "hostFlag")
+			
+//				System.out.printf("%f   %d  %s %s\n", ts, streid[memidx],cellCoor, strevec);
+				
+//				...........................
+				
+				
 				collector.emit("streamData", new Values(ts, streid[memidx],
-						cellCoor, strevec, 0));
+						cellCoor, strevec,dftvec, 0));
 			}
 
 			return;
@@ -91,7 +121,7 @@ public class dftPreBolt extends BaseBasicBolt {
 			cell[curCnt] = dftCell[memidx][curCnt] + direcVec[i];
 
 			calCellCoor(memidx, dftNum, curCnt + 1, cell, collector, strevec,
-					hostCoor, ts);
+					hostCoor, ts,dftvec);
 
 		}
 
@@ -117,10 +147,20 @@ public class dftPreBolt extends BaseBasicBolt {
 		String coorstr = new String();
 
 		for (int i = 0; i < TopologyMain.dftN * 2; ++i) {
-			coorstr = coorstr + Double.toString(dftCell[idx][i]) + ",";
+			coorstr = coorstr + Integer.toString(dftCell[idx][i]) + ",";
 		}
 		return coorstr;
 	}
+	public String dftVecPrep(int idx) {
+
+		String dftstr = new String();
+
+		for (int i = 0; i < TopologyMain.dftN * 2; ++i) {
+			dftstr = dftstr + Double.toString(dft[idx][i]) + ",";
+		}
+		return dftstr;
+	}
+	
 
 	public double complexAng(double real, double img) {
 		return Math.atan2(img, real);
@@ -195,7 +235,7 @@ public class dftPreBolt extends BaseBasicBolt {
 		while (k != veced[memidx]) {
 
 			normvec[memidx][k] = (strevec[memidx][k] - curexp[memidx])
-					/ Math.sqrt(cursqrsum[memidx] - TopologyMain.winSize
+					/ Math.sqrt(cursqsum[memidx] - TopologyMain.winSize
 							* curexp[memidx] * curexp[memidx]);
 
 			k = (k + 1) % queueLen;
@@ -231,12 +271,13 @@ public class dftPreBolt extends BaseBasicBolt {
 
 			curexp[tmpsn] = curexp[tmpsn] - oldval / TopologyMain.winSize
 					* flag + newval / TopologyMain.winSize;
-			cursqrsum[tmpsn] = cursqrsum[tmpsn] - oldval * oldval * flag
+			cursqsum[tmpsn] = cursqsum[tmpsn] - oldval * oldval * flag
 					+ newval * newval;
 
 			vecflag[tmpsn] = 1;
 
 			streNorm(tmpsn);
+			
 			if (flag == 1) {
 				dftUpdate(tmpsn, oldval, newval);
 			}
@@ -267,7 +308,7 @@ public class dftPreBolt extends BaseBasicBolt {
 			streid[j] = 0;
 
 			curexp[j] = 0;
-			cursqrsum[j] = 0;
+			cursqsum[j] = 0;
 
 			// preTaskCoor[j] = -1;
 		}
@@ -312,6 +353,7 @@ public class dftPreBolt extends BaseBasicBolt {
 
 				idxNewTuple(sn, tmpval, 1 - iniFlag);
 			}
+			
 		} else if (streType.compareTo("contrStre") == 0) {
 
 			commandStr = input.getStringByField("command");
@@ -333,18 +375,20 @@ public class dftPreBolt extends BaseBasicBolt {
 
 				for (i = 0; i < streidCnt; ++i) {
 					calCellCoor(i, TopologyMain.dftN * 2, 0, cellCal,
-							collector, streamVecPrep(i), dftCellVecPrep(i), ts);
+							collector, streamVecPrep(i), dftCellVecPrep(i), ts,dftVecPrep(i));
 				}
 
 				iniFlag = 0;
+				
+				collector
+				.emit("calCommand",
+						new Values("done" + Double.toString(curtstamp),
+								localTaskId));
+
 
 			}
 
-			collector
-					.emit("calCommand",
-							new Values("done" + Double.toString(curtstamp),
-									localTaskId));
-
+			
 			// .....status update for the next tuple...............//
 			preCommandStr = commandStr;
 

@@ -1,5 +1,8 @@
 package bolts;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -12,7 +15,6 @@ import backtype.storm.tuple.Tuple;
 
 public class dftAggreBolt extends BaseBasicBolt {
 
-	
 	// .............aggregator....................//
 
 	HashSet<String> strePair = new HashSet<String>();
@@ -20,8 +22,11 @@ public class dftAggreBolt extends BaseBasicBolt {
 
 	double ts = 0.0;
 
-	public double curtstamp = TopologyMain.winSize - 1;
-	public double ststamp = 0.0;
+	double curtstamp = TopologyMain.winSize - 1;
+	double ststamp = 0.0;
+
+	FileWriter fstream; // =new FileWriter("", true);
+	BufferedWriter out; // = new BufferedWriter(fstream);
 
 	/**
 	 * At the end of the spout (when the cluster is shutdown We will show the
@@ -35,6 +40,13 @@ public class dftAggreBolt extends BaseBasicBolt {
 	@Override
 	public void prepare(Map stormConf, TopologyContext context) {
 		// TODO Auto-generated method stub
+
+		try {
+			fstream = new FileWriter("dftRes.txt", false);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		return;
 	}
@@ -54,7 +66,38 @@ public class dftAggreBolt extends BaseBasicBolt {
 
 		if (ts > curtstamp) {
 			
+			// ...........test........
 			
+			
+			
+			try {
+
+				
+				fstream = new FileWriter("dftRes.txt", true);
+				BufferedWriter out = new BufferedWriter(fstream);
+
+				out.write("Timestamp  " + Double.toString(curtstamp) + ", "
+						+ "total num  " + Integer.toString(strePair.size())
+						+ ": \n ");
+
+				int len = strePair.size();
+
+				for (String iter : strePair) {
+					out.write(iter + "\n");
+				}
+
+//				System.out.printf("timestamp %f  %d\n", ts, strePair.size());
+
+				out.write("\n");
+				out.close();
+				
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+			// ..................
+
 
 			// .........update for the next sliding window..........//
 
@@ -74,6 +117,5 @@ public class dftAggreBolt extends BaseBasicBolt {
 		return;
 
 	}
-	
-	
+
 }

@@ -33,8 +33,8 @@ public class dftCalBolt extends BaseBasicBolt {
 	HashSet<Long> preTaskIdx = new HashSet<Long>();
 	// .........memory management for sliding windows.................//
 
-	Double[][] streamVec = new Double[TopologyMain.nstreBolt + 10][TopologyMain.winSize + 10];
-	Double[][] dftVec = new Double[TopologyMain.nstreBolt + 10][TopologyMain.winSize + 10];
+	double[][] streamVec = new double[TopologyMain.nstreBolt + 10][TopologyMain.winSize + 10];
+	double[][] dftVec = new double[TopologyMain.nstreBolt + 10][TopologyMain.winSize + 10];
 	int[][] cellVec = new int[TopologyMain.gridIdxN + 5][TopologyMain.winSize + 5];
 
 	HashMap<Integer, Integer> streIdx = new HashMap<Integer, Integer>();
@@ -52,21 +52,22 @@ public class dftCalBolt extends BaseBasicBolt {
 	double disThre = 2 - 2 * TopologyMain.thre;
 	double cellEps = Math.sqrt(disThre);
 	
+	int recStreCnt=0;
+	
+	
 
-	public void vecAna(Double mem[][], int idx, String vecstr) {
-		int len = vecstr.length(), pre = 0, cnt = 0;
-		double tmpval = 0.0;
+	public int vecAna(double streamVec[][], int idx, String vecstr) {
 
+		int len = vecstr.length();
+		int cnt = 0, pre = 0;
 		for (int i = 0; i < len; ++i) {
 			if (vecstr.charAt(i) == ',') {
-
-				tmpval = Double.valueOf(vecstr.substring(pre, i));
-				mem[idx][cnt++] = tmpval;
-
+				streamVec[idx][cnt++] = Double
+						.valueOf(vecstr.substring(pre, i));
+				pre = i + 1;
 			}
 		}
-
-		return;
+		return cnt;
 	}
 
 	public void vecAnaInt(int mem[][], int idx, String vecstr) {
@@ -75,8 +76,8 @@ public class dftCalBolt extends BaseBasicBolt {
 		for (int i = 0; i < len; ++i) {
 			if (vecstr.charAt(i) == ',') {
 
-				tmpval = Integer.valueOf(vecstr.substring(pre, i));
-				mem[idx][cnt++] = tmpval;
+				mem[idx][cnt++] = Integer.valueOf(vecstr.substring(pre, i));
+				pre = i + 1;
 
 			}
 		}
@@ -86,13 +87,20 @@ public class dftCalBolt extends BaseBasicBolt {
 
 	public void IndexingStre(int streid, String streamStr, String dftStr,
 			String cellStr, int flag) {
+		//
 
+		int streNo = 0;
 		if (streIdx.containsKey(streid) == true) {
-			return;
+
+			streNo = streIdx.get(streid);
+
+		} else {
+			streNo = streIdx.size();
+			streIdx.put(streid, streNo);
 		}
 
-		int streNo = streIdx.size(), cellNo = cellIdx.size();
-		streIdx.put(streid, streNo);
+		int cellNo = cellIdx.size();
+		// streIdx.put(streid, streNo);
 
 		if (cellIdx.containsKey(cellStr) == true) {
 
@@ -142,10 +150,19 @@ public class dftCalBolt extends BaseBasicBolt {
 
 		double tmpres = 0.0;
 
-		for (k = 0; k < TopologyMain.winSize; ++k) {
+		for (k = 0; k < TopologyMain.dftN * 2; ++k) {
 			tmpres = tmpres + (dftVec[memidx1][k] - dftVec[memidx2][k])
 					* (dftVec[memidx1][k] - dftVec[memidx2][k]);
 		}
+
+		// ...............test..........
+//		if (curtstamp == 2) {
+//			System.out
+//					.printf("   ++++++  CalBolt %d compute correlation between %d and %d at %f to satisfy %f",
+//							locTaskId, streid1, streid2, curtstamp, thre);
+//		}
+
+		// .............................
 
 		return tmpres <= thre ? 1 : 0;
 
@@ -154,6 +171,17 @@ public class dftCalBolt extends BaseBasicBolt {
 	void cellWithinCal(int cellidx, ArrayList<String> res) {
 
 		int stre1 = 0, stre2 = 0;
+
+		// ...............test..........
+		// if (curtstamp == 2) {
+		// System.out
+		// .printf(" ------------------  CalBolt %d compute correlation: %d  %d\n",
+		// locTaskId,cellHostStre.get(cellidx).size(),cellHostStre.get(cellidx).size()
+		// );
+		// }
+
+		// .............................
+
 		for (int i = 0; i < cellHostStre.get(cellidx).size(); i++) {
 			for (int j = i + 1; j < cellHostStre.get(cellidx).size(); j++) {
 
@@ -212,6 +240,15 @@ public class dftCalBolt extends BaseBasicBolt {
 
 		for (int i = 0; i < cellcnt; ++i) {
 
+			// ...............test..........
+			// if (curtstamp == 2) {
+			// System.out
+			// .printf(" ------------------  CalBolt %d compute correlation in cell %d\n",
+			// locTaskId,cellHostStre.get(i).size());
+			// }
+
+			// .............................
+
 			cellWithinCal(i, resPair);
 		}
 		return;
@@ -225,7 +262,7 @@ public class dftCalBolt extends BaseBasicBolt {
 		cellHostStre.clear();
 		cellNbStre.clear();
 		resPair.clear();
-		
+
 		return;
 	}
 
@@ -244,7 +281,7 @@ public class dftCalBolt extends BaseBasicBolt {
 	@Override
 	public void prepare(Map stormConf, TopologyContext context) {
 
-		locTaskId = context.getThisTaskIndex();
+		locTaskId = context.getThisTaskId();
 
 		return;
 	}
@@ -262,6 +299,8 @@ public class dftCalBolt extends BaseBasicBolt {
 		streType = input.getSourceStreamId();
 
 		if (streType.compareTo("streamData") == 0) {
+			
+			recStreCnt++;
 
 			ts = input.getDoubleByField("ts");
 			String strestr = input.getStringByField("strevec");
@@ -279,16 +318,55 @@ public class dftCalBolt extends BaseBasicBolt {
 			commandStr = input.getStringByField("command");
 			preTaskId = input.getLongByField("taskid");
 
+			// // .............test..........
+			
+			
+			
+			// System.out.printf("???  compatation is performed \n");
+			//
+			// // ...........................
+
 			preTaskIdx.add(preTaskId);
 			if (preTaskIdx.size() < TopologyMain.preBoltNum) {
 				return;
 			}
 
+			// .............test..........
+//			System.out
+//					.printf("??? at %f,   CalBolt %d receives: %d streams, %d cells \n",
+//							curtstamp, locTaskId, streIdx.size(),
+//							cellIdx.size());
+//
+			if (curtstamp == 2) {
+				
+				
+				
+				System.out.printf("  ----------  CalBolt %d has totally %d streams \n",locTaskId,recStreCnt);
+				recStreCnt=0;
+
+//				for (int i = 0; i < cellIdx.size(); ++i) {
+//					System.out
+//							.printf("??? at %f,   CalBolt %d has %d, %d streams in cell %d \n",
+//									curtstamp, locTaskId,
+//									cellHostStre.get(i).size(),cellNbStre.get(i).size(),i);
+//				}
+
+			}
+
+			// ...........................
+
 			cellCorrCal();
+
+			// .............test..........
+			// System.out.printf("???  qualified streams at %f: %d \n",
+			// curtstamp, resPair.size());
+
+			// ...........................
 
 			for (String pair : resPair) {
 				collector.emit(new Values(curtstamp, pair));
 			}
+
 			localIdxRenew();
 
 			curtstamp = ts + 1;
