@@ -25,7 +25,8 @@ public class AdjustAggreBolt extends BaseBasicBolt {
 	HashSet<String> pairInter = new HashSet<String>();
 	HashSet<String> pairDirec = new HashSet<String>();
 
-	HashSet<String> pairRes = new HashSet<String>();
+	HashSet<String> pairRes = new HashSet<String>(), pairPreRes=new HashSet<String>();
+	
 
 	String streType = new String();
 
@@ -66,9 +67,14 @@ public class AdjustAggreBolt extends BaseBasicBolt {
 		String pairstr = input.getStringByField("pair");
 
 		streType = input.getSourceStreamId();
-
-		if (ts > curt) {
-
+		
+//		
+//		if(ts==curt+2)
+//		{
+//			
+//		}
+	   if (ts > curt) {
+			
 			// ...........test............................
 			if (curt == 2) {
 				System.out.printf("AggreBolt  time stamp %f:   %d \n ", curt,
@@ -99,6 +105,7 @@ public class AdjustAggreBolt extends BaseBasicBolt {
 
 			curt = ts;
 			pairRes.clear();
+			pairRes.add(pairstr);
 
 		} else {
 			pairRes.add(pairstr);

@@ -25,7 +25,7 @@ public class AdjustPreBolt extends BaseBasicBolt {
 	double ststamp = 0.0;
 	String streType = new String();
 	String commandStr = new String(), preCommandStr = new String();
-	double ts = 0.0,retriTs=0.0;
+	double ts = 0.0, retriTs = 0.0;
 	// .........memory......................//
 
 	int declrNum = (int) (TopologyMain.nstreBolt / TopologyMain.preBoltNum + 1);
@@ -107,6 +107,30 @@ public class AdjustPreBolt extends BaseBasicBolt {
 			for (i = j + 1; i < streidCnt; ++i) {
 
 				tmp = correCalDis(j, i, thre);
+				
+				// .............test............
+				
+				
+//				if (curtime == 3 ) {
+//					System.out.printf("stream pair %d and %d \n", streid[i],streid[j]);
+//				}
+
+//				&& ((streid[i] == 4 && streid[j] == 18) || (streid[j] == 4 && streid[i] == 18))
+//				
+//				if (curtime == 3) {
+//					System.out.printf("-------------------- PreBolt %d compute between %d and %d: %d\n", taskId, streid[i],streid[j],tmp);
+//				}
+				
+//				&& ((streid[i] == 3 && streid[j] == 5) || (streid[j] == 5 && streid[i] == 3))
+				
+//				if (curtime == 3
+//						) {
+//					System.out.printf("-------------------- PreBolt %d compute between %d and %d: %d\n", taskId,streid[i],streid[j], tmp);
+//				}
+
+				// ..................
+				
+				
 
 				if (tmp == 1) {
 					collector.emit("qualStre",
@@ -115,9 +139,9 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 					// .............test............
 
-					if (curtime == 2
-							&& ((streid[i] == 8 && streid[j] == 11) || (streid[j] == 11 && streid[i] == 8))) {
-						System.out.printf("PreBolt direction emission\n");
+					if (curtime == 3
+							&& ((streid[i] == 3 && streid[j] == 5) || (streid[j] == 5 && streid[i] == 3))) {
+						System.out.printf("----------------- PreBolt %d direction emission\n", taskId);
 					}
 
 					// ..................
@@ -355,59 +379,55 @@ public class AdjustPreBolt extends BaseBasicBolt {
 	}
 
 	String prepStream2Str(int id, double reqTs, int idx) {
-	
 
-		
-		String str=new String();
-//		............test........
-		
-		if (retriTs == 2 && (id == 8 || id == 11)) {
-			
-			System.out.printf("Prebolt has data %d for %d on %d\n", streidCnt,id, idx);
-		
-		}
-		
-//	    ........................	
-		
-		
-//		
-//		String str = new String();
-//		for (int i = 0; i < streidCnt; ++i) {
-//			if (streid[i] == id) {
-//				streIdx = i;
-//				break;
-//			}
+		String str = new String();
+		// ............test........
+
+//		if (retriTs == 2 && (id == 8 || id == 11)) {
+//
+//			System.out.printf("Prebolt %d has data %d for %d on %d\n", taskId,
+//					streidCnt, id, idx);
+//
 //		}
 
-//		............test........
-		
-		if (retriTs == 2 && (id == 8 || id == 11)) {
-			
-			System.out.printf("Prebolt has data %d for %d on %d\n", streidCnt,id, idx);
-		
-		}
-		
-//	    ........................	
-		
-		
-		
+		// ........................
+
+		//
+		// String str = new String();
+		// for (int i = 0; i < streidCnt; ++i) {
+		// if (streid[i] == id) {
+		// streIdx = i;
+		// break;
+		// }
+		// }
+
+		// ............test........
+
+//		if (retriTs == 2 && (id == 8 || id == 11)) {
+//
+//			System.out.printf("Prebolt %d has data %d for %d on %d\n", taskId,
+//					streidCnt, id, idx);
+//
+//		}
+
+		// ........................
+
 		if (reqTs == ts || (reqTs < ts && vecflag[idx] == 0)) {
 
-//			.........test.......
-			
-			
-			if (retriTs == 2 && (id == 8 || id == 11)){
-			System.out.printf("stream %d 's index is: %d \n", id, idx);
-			}
-			
-//			....................
-			
+			// .........test.......
+
+//			if (retriTs == 2 && (id == 8 || id == 11)) {
+//				System.out.printf("stream %d 's index is: %d \n", id, idx);
+//			}
+
+			// ....................
+
 			int k = vecst[idx];
 			while (k != veced[idx]) {
 				str = str + Double.toString(strevec[idx][k]) + ",";
 				k = (k + 1) % queueLen;
 			}
-		} else if(reqTs< ts && vecflag[idx] == 1){
+		} else if (reqTs < ts && vecflag[idx] == 1) {
 
 			int k = (vecst[idx] == 0 ? queueLen - 1 : (vecst[idx] - 1)), cnt = 0;
 			while (cnt < TopologyMain.winSize) {
@@ -479,7 +499,7 @@ public class AdjustPreBolt extends BaseBasicBolt {
 		int i = 0, tmppivot = 0;
 		int[] pivotset = new int[TopologyMain.nstream + 5];
 		int pivotcnt = 0;
-        int streIdx=0;
+		int streIdx = 0;
 
 		String coorStr = new String();
 		String[] streAffine = new String[4];
@@ -510,6 +530,31 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 				ststamp++;
 
+				
+				// .............test............
+
+				if (ts == 3)
+				{
+					
+					System.out.printf("?????????? Prebolt %d has streams: ", taskId);
+					for (int k = 0; k < streidCnt; ++k) {
+
+						System.out.printf("%d, ", streid[k]);
+					}
+					System.out.printf("\n");
+					
+					
+				}
+				
+		
+
+				// ..................
+				
+				
+				
+				
+				
+				
 				graphCons(TopologyMain.thre, collector, curtstamp);
 				pivotcnt = affineSelec(pivotset);
 
@@ -562,34 +607,52 @@ public class AdjustPreBolt extends BaseBasicBolt {
 			// System.out.printf("+++++++++++++++++++++++  PreBolt got request on %d \n",
 			// id);
 
-			
+			// ....test.....
+//			if (retriTs == 2 && (id == 8 || id == 11)) {
+//				System.out
+//						.printf("??????????  PreBolt %d enumerates: ", taskId);
+//			}
+			// .............
 			for (int k = 0; k < streidCnt; ++k) {
+
+				// .........test......
+//				if (retriTs == 2 && (id == 8 || id == 11)) {
+//					System.out.printf(" %d ", k);
+//				}
+
+				// ..................
+
 				if (streid[k] == id) {
 					streIdx = k;
 					break;
 				}
 			}
-			
+
+			// ........test.......
+//			if (retriTs == 2 && (id == 8 || id == 11)) {
+//				System.out.printf("\n");
+//			}
+
+			// ...................
 			// .....test........
 
-			if (retriTs == 2 && (id == 8 || id == 11)) {
-				System.out
-						.printf("+++++++++++++++++++++++  PreBolt got request on %d at %f\n",
-								id, ts);
-				
-				
-				for (int k = 0; k < streidCnt; ++k) {
-					 System.out.printf("  %d  ", streid[k]);
-				}
-				System.out.printf("\n");
-				
-			}
+//			if (retriTs == 2 && (id == 8 || id == 11)) {
+//				System.out
+//						.printf("+++++++++++++++++++++++  PreBolt %d got request on %d at %f\n",
+//								taskId, id, ts);
+//
+//				System.out.printf("!!!!!!  PreBolt %d has streams:", taskId);
+//				for (int k = 0; k < streidCnt; ++k) {
+//					System.out.printf("  %d  ", streid[k]);
+//				}
+//				System.out.printf("\n");
+//
+//			}
 
 			// .................
-		
-	
+
 			collector.emitDirect(task, "winStre", new Values(retriTs, id,
-					prepStream2Str(id,retriTs,streIdx)));
+					prepStream2Str(id, retriTs, streIdx)));
 
 		}
 	}
