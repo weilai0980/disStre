@@ -23,6 +23,10 @@ public class dftCalBolt extends BaseBasicBolt {
 
 	// ............input time order..............//
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	double curtstamp = TopologyMain.winSize - 1;
 	String streType = new String();
 	double ts = 0.0;
@@ -33,33 +37,31 @@ public class dftCalBolt extends BaseBasicBolt {
 	HashSet<Long> preTaskIdx = new HashSet<Long>();
 	// .........memory management for sliding windows.................//
 
-	double[][] streamVec = new double[TopologyMain.nstreBolt + 10][TopologyMain.winSize + 10];
-	double[][] dftVec = new double[TopologyMain.nstreBolt + 10][TopologyMain.winSize + 10];
-	int[][] cellVec = new int[TopologyMain.gridIdxN + 5][TopologyMain.winSize + 5];
+	double[][] streamVec = new double[TopologyMain.nstreBolt + 1][TopologyMain.winSize + 1];
+	double[][] dftVec = new double[TopologyMain.nstreBolt + 1][TopologyMain.winSize + 1];
+	int[][] cellVec = new int[TopologyMain.gridIdxN + 1][TopologyMain.winSize + 1];
 
 	HashMap<Integer, Integer> streIdx = new HashMap<Integer, Integer>();
 	HashMap<String, Integer> cellIdx = new HashMap<String, Integer>();
 
 	List<List<Integer>> cellHostStre = new ArrayList<List<Integer>>(
-			TopologyMain.gridIdxN + 5);
+			TopologyMain.gridIdxN + 1);
 	List<List<Integer>> cellNbStre = new ArrayList<List<Integer>>(
-			TopologyMain.gridIdxN + 5);
+			TopologyMain.gridIdxN + 1);
 
-	ArrayList<String> resPair = new ArrayList<String>();
+	// ArrayList<String> resPair = new ArrayList<String>();
+	// HashSet<String> resPair = new HashSet<String>();
 
 	// ...........computation parameter....................//
 	int locTaskId;
 	double disThre = 2 - 2 * TopologyMain.thre;
 	double cellEps = Math.sqrt(disThre);
-	
-	int recStreCnt=0;
-	
-	
+
+	int recStreCnt = 0;
 
 	public int vecAna(double streamVec[][], int idx, String vecstr) {
 
-		int len = vecstr.length();
-		int cnt = 0, pre = 0;
+		int len = vecstr.length(), cnt = 0, pre = 0;
 		for (int i = 0; i < len; ++i) {
 			if (vecstr.charAt(i) == ',') {
 				streamVec[idx][cnt++] = Double
@@ -71,7 +73,8 @@ public class dftCalBolt extends BaseBasicBolt {
 	}
 
 	public void vecAnaInt(int mem[][], int idx, String vecstr) {
-		int len = vecstr.length(), pre = 0, cnt = 0, tmpval = 0;
+		
+		int len = vecstr.length(), pre = 0, cnt = 0;
 
 		for (int i = 0; i < len; ++i) {
 			if (vecstr.charAt(i) == ',') {
@@ -87,7 +90,6 @@ public class dftCalBolt extends BaseBasicBolt {
 
 	public void IndexingStre(int streid, String streamStr, String dftStr,
 			String cellStr, int flag) {
-		//
 
 		int streNo = 0;
 		if (streIdx.containsKey(streid) == true) {
@@ -100,7 +102,6 @@ public class dftCalBolt extends BaseBasicBolt {
 		}
 
 		int cellNo = cellIdx.size();
-		// streIdx.put(streid, streNo);
 
 		if (cellIdx.containsKey(cellStr) == true) {
 
@@ -121,7 +122,7 @@ public class dftCalBolt extends BaseBasicBolt {
 				cellNbStre.get(cellIdx.get(cellStr)).add(streid);
 			}
 		}
-
+		
 		vecAna(streamVec, streNo, streamStr);
 		vecAna(dftVec, streNo, dftStr);
 		vecAnaInt(cellVec, cellNo, cellStr);
@@ -155,32 +156,13 @@ public class dftCalBolt extends BaseBasicBolt {
 					* (dftVec[memidx1][k] - dftVec[memidx2][k]);
 		}
 
-		// ...............test..........
-//		if (curtstamp == 2) {
-//			System.out
-//					.printf("   ++++++  CalBolt %d compute correlation between %d and %d at %f to satisfy %f",
-//							locTaskId, streid1, streid2, curtstamp, thre);
-//		}
-
-		// .............................
-
 		return tmpres <= thre ? 1 : 0;
 
 	}
 
-	void cellWithinCal(int cellidx, ArrayList<String> res) {
+	int cellWithinCal(int cellidx, BasicOutputCollector collector) {
 
-		int stre1 = 0, stre2 = 0;
-
-		// ...............test..........
-		// if (curtstamp == 2) {
-		// System.out
-		// .printf(" ------------------  CalBolt %d compute correlation: %d  %d\n",
-		// locTaskId,cellHostStre.get(cellidx).size(),cellHostStre.get(cellidx).size()
-		// );
-		// }
-
-		// .............................
+		int stre1 = 0, stre2 = 0, resCnt = 0;
 
 		for (int i = 0; i < cellHostStre.get(cellidx).size(); i++) {
 			for (int j = i + 1; j < cellHostStre.get(cellidx).size(); j++) {
@@ -190,16 +172,22 @@ public class dftCalBolt extends BaseBasicBolt {
 
 				if (correCalDisDFT(2 - 2 * TopologyMain.thre, stre1, stre2) == 1) {
 
-					// if (correCalDisReal(2 - 2 * TopologyMain.thre, stre1,
-					// stre2) == 1)
-					{
+					if (correCalDisReal(2 - 2 * TopologyMain.thre, stre1, stre2) == 1) {
 
-						if (stre1 > stre2)
-							res.add(Integer.toString(stre2) + ","
-									+ Integer.toString(stre1));
-						else
-							res.add(Integer.toString(stre1) + ","
-									+ Integer.toString(stre2));
+						String tmpstr = new String();
+
+						if (stre1 > stre2) {
+							tmpstr = Integer.toString(stre2) + ","
+									+ Integer.toString(stre1);
+							// resPair.add(tmpstr);
+						} else {
+							tmpstr = Integer.toString(stre1) + ","
+									+ Integer.toString(stre2);
+							// resPair.add(tmpstr);
+						}
+
+						resCnt++;
+						collector.emit(new Values(curtstamp, tmpstr));
 					}
 				}
 
@@ -212,46 +200,44 @@ public class dftCalBolt extends BaseBasicBolt {
 				stre1 = cellHostStre.get(cellidx).get(i);
 				stre2 = cellNbStre.get(cellidx).get(j);
 
-				if (correCalDisDFT(TopologyMain.thre, stre1, stre2) == 1) {
+				if (correCalDisDFT(2 - 2 * TopologyMain.thre, stre1, stre2) == 1) {
 
-					// if (correCalDisReal(2 - 2 * TopologyMain.thre, stre1,
-					// stre2) == 1)
-					{
+					if (correCalDisReal(2 - 2 * TopologyMain.thre, stre1, stre2) == 1) {
 
-						if (stre1 > stre2)
-							res.add(Integer.toString(stre2) + ","
-									+ Integer.toString(stre1));
-						else
-							res.add(Integer.toString(stre1) + ","
-									+ Integer.toString(stre2));
+						String tmpstr = new String();
+
+						if (stre1 > stre2) {
+							tmpstr = Integer.toString(stre2) + ","
+									+ Integer.toString(stre1);
+							// resPair.add(tmpstr);
+						} else {
+							tmpstr = Integer.toString(stre1) + ","
+									+ Integer.toString(stre2);
+							// resPair.add(tmpstr);
+						}
+
+						resCnt++;
+						collector.emit(new Values(curtstamp, tmpstr));
 					}
 				}
 
 			}
 		}
 
-		return;
+		return resCnt;
 	}
 
-	void cellCorrCal() {
+	int cellCorrCal(BasicOutputCollector collector) {
 
-		resPair.clear();
+		// resPair.clear();
+		int rescnt = 0;
 		int cellcnt = cellIdx.size();
 
 		for (int i = 0; i < cellcnt; ++i) {
 
-			// ...............test..........
-			// if (curtstamp == 2) {
-			// System.out
-			// .printf(" ------------------  CalBolt %d compute correlation in cell %d\n",
-			// locTaskId,cellHostStre.get(i).size());
-			// }
-
-			// .............................
-
-			cellWithinCal(i, resPair);
+			rescnt += cellWithinCal(i, collector);
 		}
-		return;
+		return rescnt;
 	}
 
 	public void localIdxRenew() {
@@ -261,7 +247,7 @@ public class dftCalBolt extends BaseBasicBolt {
 
 		cellHostStre.clear();
 		cellNbStre.clear();
-		resPair.clear();
+		// resPair.clear();
 
 		return;
 	}
@@ -299,7 +285,7 @@ public class dftCalBolt extends BaseBasicBolt {
 		streType = input.getSourceStreamId();
 
 		if (streType.compareTo("streamData") == 0) {
-			
+
 			recStreCnt++;
 
 			ts = input.getDoubleByField("ts");
@@ -309,63 +295,21 @@ public class dftCalBolt extends BaseBasicBolt {
 			int streid = input.getIntegerByField("streId");
 			int hostflag = input.getIntegerByField("hostFlag");
 
-			if (Math.abs(curtstamp - ts) <= 1e-3) {
-				IndexingStre(streid, strestr, dftstr, cellstr, hostflag);
-			}
+			// if (Math.abs(curtstamp - ts) <= 1e-3) {
+			IndexingStre(streid, strestr, dftstr, cellstr, hostflag);
+			// }
 
 		} else if (streType.compareTo("calCommand") == 0) {
 
 			commandStr = input.getStringByField("command");
 			preTaskId = input.getLongByField("taskid");
 
-			// // .............test..........
-			
-			
-			
-			// System.out.printf("???  compatation is performed \n");
-			//
-			// // ...........................
-
 			preTaskIdx.add(preTaskId);
 			if (preTaskIdx.size() < TopologyMain.preBoltNum) {
 				return;
 			}
 
-			// .............test..........
-//			System.out
-//					.printf("??? at %f,   CalBolt %d receives: %d streams, %d cells \n",
-//							curtstamp, locTaskId, streIdx.size(),
-//							cellIdx.size());
-//
-			if (curtstamp == 2) {
-				
-				
-				
-				System.out.printf("  ----------  CalBolt %d has totally %d streams \n",locTaskId,recStreCnt);
-				recStreCnt=0;
-
-//				for (int i = 0; i < cellIdx.size(); ++i) {
-//					System.out
-//							.printf("??? at %f,   CalBolt %d has %d, %d streams in cell %d \n",
-//									curtstamp, locTaskId,
-//									cellHostStre.get(i).size(),cellNbStre.get(i).size(),i);
-//				}
-
-			}
-
-			// ...........................
-
-			cellCorrCal();
-
-			// .............test..........
-			// System.out.printf("???  qualified streams at %f: %d \n",
-			// curtstamp, resPair.size());
-
-			// ...........................
-
-			for (String pair : resPair) {
-				collector.emit(new Values(curtstamp, pair));
-			}
+			recStreCnt = cellCorrCal(collector);
 
 			localIdxRenew();
 

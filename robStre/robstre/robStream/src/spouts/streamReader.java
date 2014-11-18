@@ -176,6 +176,7 @@ public class streamReader extends BaseRichSpout {
 		double[] streRow = new double[TopologyMain.nstream + 10];
 
 		try {
+
 			if (nextRowData(streRow) == 1) {
 
 				for (int i = 0; i < TopologyMain.nstream; ++i) {
@@ -202,7 +203,8 @@ public class streamReader extends BaseRichSpout {
 
 			}
 
-			collector.emit("contrStre", new Values("done"+Double.toString(tupTs)));
+			collector.emit("contrStre",
+					new Values("done" + Double.toString(tupTs)));
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -227,9 +229,9 @@ public class streamReader extends BaseRichSpout {
 			collector.emit("dataStre", new Values(i, tupTs, curStreRand[i]
 					- tupTs * curStreBias[i] + curStreConst[i]));
 		}
-		collector
-				.emit("contrStre", new Values("done" + Double.toString(tupTs)),Integer.toString(i) + ','
-						+ Double.toString(tupTs));
+		collector.emit("contrStre",
+				new Values("done" + Double.toString(tupTs)),
+				Integer.toString(i) + ',' + Double.toString(tupTs));
 
 		return;
 	}
@@ -273,7 +275,7 @@ public class streamReader extends BaseRichSpout {
 		 * we will wait and then return
 		 */
 
-		Utils.sleep(20);
+		Utils.sleep(TopologyMain.tinterval);
 
 		if (TopologyMain.datasrc == 0) {
 

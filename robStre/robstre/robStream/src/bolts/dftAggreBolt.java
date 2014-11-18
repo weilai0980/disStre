@@ -17,13 +17,16 @@ public class dftAggreBolt extends BaseBasicBolt {
 
 	// .............aggregator....................//
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	HashSet<String> strePair = new HashSet<String>();
 	// ............input time order..............//
 
 	double ts = 0.0;
-
 	double curtstamp = TopologyMain.winSize - 1;
-	double ststamp = 0.0;
 
 	FileWriter fstream; // =new FileWriter("", true);
 	BufferedWriter out; // = new BufferedWriter(fstream);
@@ -65,14 +68,13 @@ public class dftAggreBolt extends BaseBasicBolt {
 		String pairstr = input.getStringByField("pair");
 
 		if (ts > curtstamp) {
-			
+
 			// ...........test........
-			
-			
-			
+
+			System.out.printf("AggreBolt at timestamp %f has %d\n", curtstamp,
+					strePair.size());
 			try {
 
-				
 				fstream = new FileWriter("dftRes.txt", true);
 				BufferedWriter out = new BufferedWriter(fstream);
 
@@ -80,42 +82,33 @@ public class dftAggreBolt extends BaseBasicBolt {
 						+ "total num  " + Integer.toString(strePair.size())
 						+ ": \n ");
 
-				int len = strePair.size();
-
 				for (String iter : strePair) {
 					out.write(iter + "\n");
 				}
 
-//				System.out.printf("timestamp %f  %d\n", ts, strePair.size());
-
 				out.write("\n");
 				out.close();
-				
 
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}	
+			}
 			// ..................
-
 
 			// .........update for the next sliding window..........//
 
 			curtstamp = ts;
 			strePair.clear();
-
 			strePair.add(pairstr);
 
 		} else if (ts < curtstamp) {
 			System.out
-					.printf("!!!!!!!!!!!!! direct robAggreBolt time sequence disorder\n");
+					.printf("!!!!!!!!!!!!! dftAggreBolt time sequence disorder\n");
 		} else if (Math.abs(ts - curtstamp) <= 1e-3) {
 
 			strePair.add(pairstr);
+
 		}
-
 		return;
-
 	}
-
 }

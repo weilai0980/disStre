@@ -84,10 +84,10 @@ public class AdjustAggreBolt extends BaseBasicBolt {
 
 		if (ts > curt + 1) {
 			// ...........test............................
-			if (curt == 2) {
-				System.out.printf("AggreBolt  time stamp %f:   %d \n ", curt,
-						pairs[curset].size());
-			}
+//			if (curt == 2) {
+//				System.out.printf("AggreBolt  time stamp %f:   %d \n ", curt,
+//						pairs[curset].size());
+//			}
 
 			try {
 
@@ -130,6 +130,11 @@ public class AdjustAggreBolt extends BaseBasicBolt {
 			pairs[curset].add(pairstr);
 
 			// pairRes.add(pairstr);
+		}
+		else if (ts<curt)
+		{
+			System.out.printf("!!!!!!!!!!!!! AjustAggreBolt time sequence disorder\n");
+			
 		}
 
 		// if (streType.compareTo("qualStre") == 0) {

@@ -95,7 +95,6 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 			tmpid = (tmpid + (partCoor - 1) * Math.pow(subDivNum, i));
 		}
 
-		
 		if (Math.ceil(tmpid) > TopologyMain.calBoltNum) {
 			tmpid = TopologyMain.calBoltNum;
 		}
@@ -154,15 +153,15 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 				// .......test............
 
-//				if (ts == 15
-//						&& (Integer.valueOf(orgstr.substring(pre, i)) == 0 || Integer
-//								.valueOf(orgstr.substring(pre, i)) == 1)) {
-//					System.out
-//							.printf("+++++++++++++++++++++++  ApproBolt %d receives stream  %d from PreBolt %d\n",
-//									localTask,
-//									Integer.valueOf(orgstr.substring(pre, i)),
-//									srctask);
-//				}
+				// if (ts == 15
+				// && (Integer.valueOf(orgstr.substring(pre, i)) == 0 || Integer
+				// .valueOf(orgstr.substring(pre, i)) == 1)) {
+				// System.out
+				// .printf("+++++++++++++++++++++++  ApproBolt %d receives stream  %d from PreBolt %d\n",
+				// localTask,
+				// Integer.valueOf(orgstr.substring(pre, i)),
+				// srctask);
+				// }
 				// .......................
 
 				pre = i + 1;
@@ -194,20 +193,18 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 	}
 
 	public int checkGrids(int idx1, int idx2) {
-		
-		
-		
+
 		// .............test............
 
-//		gridPivot[i],gridPivot[j]
-		
-//		if (curtstamp == 15  && ((gridPivot[idx1]==0 && gridPivot[idx2]==1)|| (gridPivot[idx1]==1 && gridPivot[idx2]==0)  )  ) {
-//			System.out.printf("   !!!!!    %d %d  %d  %d %d", gridSrcTask[idx1],gridSrcTask[idx2] ,gpTaskId[idx1],gpTaskId[idx2],locTaskIdx);
-//		}
+		// gridPivot[i],gridPivot[j]
+
+		// if (curtstamp == 15 && ((gridPivot[idx1]==0 && gridPivot[idx2]==1)||
+		// (gridPivot[idx1]==1 && gridPivot[idx2]==0) ) ) {
+		// System.out.printf("   !!!!!    %d %d  %d  %d %d",
+		// gridSrcTask[idx1],gridSrcTask[idx2]
+		// ,gpTaskId[idx1],gpTaskId[idx2],locTaskIdx);
+		// }
 		// .............................
-		
-		
-		
 
 		if (gridSrcTask[idx1] == gridSrcTask[idx2]) {
 			return 0;
@@ -219,19 +216,19 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 		for (int j = 0; j < TopologyMain.winSize; ++j) {
 			if ((gridCoors[idx1][j] + 1) < gridCoors[idx2][j] - 1
 					|| (gridCoors[idx1][j] - 1) > gridCoors[idx2][j] + 1) {
-				
+
 				// .............test............
 
-//				gridPivot[i],gridPivot[j]
-				
-//				if (curtstamp == 15  && ((gridPivot[idx1]==0 && gridPivot[idx2]==1)|| (gridPivot[idx1]==1 && gridPivot[idx2]==0)  )  ) {
-//					System.out.printf("  !!!!! disrupt at %d:  %d %d \n",j, gridCoors[idx1][j],gridCoors[idx2][j]);
-//				}
+				// gridPivot[i],gridPivot[j]
+
+				// if (curtstamp == 15 && ((gridPivot[idx1]==0 &&
+				// gridPivot[idx2]==1)|| (gridPivot[idx1]==1 &&
+				// gridPivot[idx2]==0) ) ) {
+				// System.out.printf("  !!!!! disrupt at %d:  %d %d \n",j,
+				// gridCoors[idx1][j],gridCoors[idx2][j]);
+				// }
 				// .............................
-				
-				
-				
-				
+
 				return 0;
 			}
 		}
@@ -246,14 +243,14 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 		// ..........test............
 
-//		if (tStamp == 15
-//				&& ((stre1 == 0 && stre2 == 1) || (stre1 == 1 && stre2 == 0))) {
-//
-//			System.out
-//					.printf("--------------------------  ApproBolt %d at %f:  %f   %f \n",
-//							localTask, thre, up, low);
-//
-//		}
+		// if (tStamp == 15
+		// && ((stre1 == 0 && stre2 == 1) || (stre1 == 1 && stre2 == 0))) {
+		//
+		// System.out
+		// .printf("--------------------------  ApproBolt %d at %f:  %f   %f \n",
+		// localTask, thre, up, low);
+		//
+		// }
 
 		// ........................
 
@@ -585,12 +582,12 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 		// ...........test.................
 
-//		if (tStamp == 15 && (gridPivot[idx1] == 0 && gridPivot[idx2] == 1)
-//				|| (gridPivot[idx1] == 1 && gridPivot[idx2] == 0)) {
-//			System.out
-//					.printf("--------- ApproBolt %d check pivot streams betwee %d and %d: %f to satisfy %f at %f\n",
-//							localTask, gridPivot[idx1], gridPivot[idx2], tmpdis,sqthre, tStamp);
-//		}
+		// if (tStamp == 15 && (gridPivot[idx1] == 0 && gridPivot[idx2] == 1)
+		// || (gridPivot[idx1] == 1 && gridPivot[idx2] == 0)) {
+		// System.out
+		// .printf("--------- ApproBolt %d check pivot streams betwee %d and %d: %f to satisfy %f at %f\n",
+		// localTask, gridPivot[idx1], gridPivot[idx2], tmpdis,sqthre, tStamp);
+		// }
 
 		// ................................
 
@@ -770,11 +767,11 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 				// ...........test............
 
-//				if (ts == 15 && (pivotId == 0 || pivotId == 1)) {
-//					System.out
-//							.printf("+++++++++++++++++++++++  ApproBolt %d recevie stream %d from PreBolt %d\n",
-//									localTask, pivotId, srctask);
-//				}
+				// if (ts == 15 && (pivotId == 0 || pivotId == 1)) {
+				// System.out
+				// .printf("+++++++++++++++++++++++  ApproBolt %d recevie stream %d from PreBolt %d\n",
+				// localTask, pivotId, srctask);
+				// }
 				// ...........................
 
 			}
@@ -793,55 +790,51 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 			if (ts >= curtstamp) {
 
+				// ...update the post-filtering
 				adjPair.clear();
 				receStre.clear();
 				checkedPair.clear();
 				retriStre.clear();
 				retriStreVec.clear();
+				// ..........................
 
 				// .............test............
 
-				if (curtstamp == 15) {
-					System.out.printf("ApproBolt %d has pivot streams %d: ",
-							localTask,gridIdxcnt);
-					for (int l = 0; l < gridIdxcnt; ++l) {
-						System.out.printf("%d  ", gridPivot[l]);
-					}
-					System.out.printf("\n");
-					
-					System.out.printf("  ++++  ApproBolt %d checked stream pairs : ", localTask);
-				}
+//				if (curtstamp == 15) {
+//					System.out.printf("ApproBolt %d has pivot streams %d: ",
+//							localTask, gridIdxcnt);
+//					for (int l = 0; l < gridIdxcnt; ++l) {
+//						System.out.printf("%d  ", gridPivot[l]);
+//					}
+//					System.out.printf("\n");
+//
+//					System.out.printf(
+//							"  ++++  ApproBolt %d checked stream pairs : ",
+//							localTask);
+//				}
 
-				
-				
 				// .............................
-				
-				
-				
 
 				for (i = 0; i < gridIdxcnt; ++i) {
 					for (j = i + 1; j < gridIdxcnt; ++j) {
-						
-						
-						
-//						// .............test............
-//
-//						if (curtstamp == 15) {
-//							System.out.printf("<%d , %d> :",gridPivot[i],gridPivot[j]);
-//						}
-//						// .............................
-					
-						
+
+						// // .............test............
+						//
+						// if (curtstamp == 15) {
+						// System.out.printf("<%d , %d> :",gridPivot[i],gridPivot[j]);
+						// }
+						// // .............................
+
 						// .............test............
 
-//						gridPivot[i],gridPivot[j]
-						
-//						if (curtstamp == 15 && ( localTask==5 )) {
-//							System.out.printf("<%d , %d, %d>  :",i,j,checkGrids(i, j));
-//						}
+						// gridPivot[i],gridPivot[j]
+
+						// if (curtstamp == 15 && ( localTask==5 )) {
+						// System.out.printf("<%d , %d, %d>  :",i,j,checkGrids(i,
+						// j));
+						// }
 						// .............................
-						
-								
+
 						if (checkGrids(i, j) == 1) {
 							resnum += corBtwAffInGrids(i, j,
 									2 - 2 * TopologyMain.thre, collector,
@@ -849,15 +842,14 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 							resnum += corBtwPivots(i, j,
 									2 - 2 * TopologyMain.thre, collector,
 									curtstamp);
-							
+
 						}
 					}
 				}
-				
-				
+
 				// .............test............
 
-				if (curtstamp == 15 &&  ( localTask==5 )) {
+				if (curtstamp == 15 && (localTask == 5)) {
 					System.out.printf("\n");
 				}
 				// .............................

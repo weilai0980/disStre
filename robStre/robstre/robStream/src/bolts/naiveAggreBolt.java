@@ -16,6 +16,11 @@ import backtype.storm.tuple.Tuple;
 
 public class naiveAggreBolt extends BaseBasicBolt {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	double curtstamp = TopologyMain.winSize - 1;
 
 	FileWriter fstream; // =new FileWriter("", true);
@@ -54,7 +59,6 @@ public class naiveAggreBolt extends BaseBasicBolt {
 			// ...........test........
 			try {
 
-				
 				fstream = new FileWriter("naiveRes.txt", true);
 				BufferedWriter out = new BufferedWriter(fstream);
 
@@ -68,7 +72,7 @@ public class naiveAggreBolt extends BaseBasicBolt {
 					out.write(iter + "\n");
 				}
 
-				System.out.printf("timestamp %f  %d\n", ts, pairHset.size());
+				System.out.printf("timestamp %f  %d\n", curtstamp, pairHset.size());
 
 				out.write("\n");
 				out.close();

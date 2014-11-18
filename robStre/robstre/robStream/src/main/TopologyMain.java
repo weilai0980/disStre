@@ -20,7 +20,10 @@ public class TopologyMain {
 
 	// .................DFT approach...........................//
 
-	public static int dftN = 1;
+	public static int dftN = 2;
+
+	// ..................RobStream approach....................//
+	public static int cellTask = 2;
 
 	// .................Random projection......................//
 
@@ -31,36 +34,23 @@ public class TopologyMain {
 	// ..................data set.....................
 	public static int datasrc = 1; // 0: synthetic 1: real
 
-
-
 	public static int nstreBolt = 20;
 	public static int nstream = 20;
 	public static int gridIdxN = 500;
 
+	public static int nstrFile = 20;
+	public static int offsetRow = 0;
+
 	// .................local parallelism record...........................//
-	
+
 	public static int winSize = 3;
 	public static double thre = 0.98;
-	public static int tinterval = 100;
+	public static int tinterval = 70;
 	public static int wokernum = 2;
 
 	public static int preBoltNum = 2;
 	public static int calBoltNum = 4;
 	public static int aggreBoltNum = 1;
-
-	public static int tasknum = 2;
-	public static int cellTask = 2;
-
-	// ..............real data set para................................//
-
-	// public static int nstreBolt = 30;
-	// public static double thre = 0.98;
-	// public static int nstream = 20;
-	// public static int winSize = 3;
-	// public static int gridIdxN=1000;
-
-	public static int nstrFile = 20;
-	public static int offsetRow = 0;
 
 	// ............cluster parameter ..............//
 
@@ -214,8 +204,8 @@ public class TopologyMain {
 						builderAdjust.createTopology());
 			}
 
-		} 
-		
+		}
+
 		else if (appro == 3) {
 
 			String runenv = args[1];
@@ -229,23 +219,24 @@ public class TopologyMain {
 
 			builderRob
 					.setBolt("dftCal", new dftCalBolt(), calBoltNum)
-					.fieldsGrouping("dftPre", "streamData", new Fields("cellCoor"))
+					.fieldsGrouping("dftPre", "streamData",
+							new Fields("cellCoor"))
 					.allGrouping("dftPre", "calCommand");
 
-			 builderRob.setBolt("dftAggre", new dftAggreBolt(), calBoltNum)
-			 .fieldsGrouping("dftCal", new Fields("pair"));
+			builderRob.setBolt("dftAggre", new dftAggreBolt(), aggreBoltNum)
+					.fieldsGrouping("dftCal", new Fields("pair"));
 
 			if (runenv.compareTo("local") == 0) {
 				cluster.submitTopology("strqry", conf,
 						builderRob.createTopology());
-				Thread.sleep(2000);
+				Thread.sleep(5000);
 			} else if (runenv.compareTo("cluster") == 0) {
 				StormSubmitter.submitTopology("conqry", conf,
 						builderRob.createTopology());
 			}
 
 		}
-		
+
 		else if (appro == 4) {
 
 			String runenv = args[1];
@@ -268,7 +259,7 @@ public class TopologyMain {
 			if (runenv.compareTo("local") == 0) {
 				cluster.submitTopology("strqry", conf,
 						builderRob.createTopology());
-				Thread.sleep(2000);
+				Thread.sleep(5000);
 			} else if (runenv.compareTo("cluster") == 0) {
 				StormSubmitter.submitTopology("conqry", conf,
 						builderRob.createTopology());
