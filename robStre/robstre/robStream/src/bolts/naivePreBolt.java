@@ -38,10 +38,24 @@ public class naivePreBolt extends BaseBasicBolt {
 	double ts = 0.0;
 	int localTaskId = 0;
 
-	/**
-	 * At the end of the spout (when the cluster is shutdown We will show the
-	 * word counters
-	 */
+	// ............custom metric............
+
+	// transient CountMetric _contByte;
+
+	void iniMetrics(TopologyContext context) {
+		// _contByte= new CountMetric();
+		//
+		// context.registerMetric("emByte_count", _contByte, 5);
+
+	}
+
+	void updateMetrics(double val) {
+		// _contByte.incrBy(val);
+		return;
+	}
+
+	// .....................................
+
 	@Override
 	public void cleanup() {
 
@@ -71,6 +85,8 @@ public class naivePreBolt extends BaseBasicBolt {
 		}
 
 		localTaskId = context.getThisTaskId();
+
+		iniMetrics(context);
 
 	}
 
@@ -109,22 +125,22 @@ public class naivePreBolt extends BaseBasicBolt {
 		} else if (streType.compareTo("contrStre") == 0) {
 
 			String tspairstr = new String();
-			
-//			System.out.printf("---------  got control stream \n");
 
-			if (ts - ststamp >= TopologyMain.winSize-1) {
+			// System.out.printf("---------  got control stream \n");
+
+			if (ts - ststamp >= TopologyMain.winSize - 1) {
 				ststamp++;
 				curtstamp = ts;
 
 				// ..........test.............
-//				System.out.printf("%f %d\n", curtstamp, streidCnt);
+				// System.out.printf("%f %d\n", curtstamp, streidCnt);
 				// .........................
 
 				int tmpstrid = 0, k = 0;
 				String vecstr = new String();
 
 				for (int j = 0; j < streidCnt; ++j) {
-					
+
 					tmpstrid = streid[j];
 					vecstr = "";
 
@@ -157,6 +173,9 @@ public class naivePreBolt extends BaseBasicBolt {
 				for (int j = 0; j < TopologyMain.nstreBolt + 5; ++j) {
 					vecst[j] = (vecst[j] + 1) % queueLen;
 				}
+
+				// .......... custom metrics........
+				updateMetrics(streidCnt * TopologyMain.winSize);
 
 			}
 

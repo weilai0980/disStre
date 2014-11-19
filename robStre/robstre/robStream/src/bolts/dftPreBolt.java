@@ -68,6 +68,25 @@ public class dftPreBolt extends BaseBasicBolt {
 	String commandStr = new String(), preCommandStr = new String();
 
 	// ..........................................//
+	
+	// ............custom metric............
+
+	double emByte=0.0;
+	// transient CountMetric _contByte;
+
+	void iniMetrics(TopologyContext context) {
+		// _contByte= new CountMetric();
+		//
+		// context.registerMetric("emByte_count", _contByte, 5);
+
+	}
+
+	void updateMetrics(double val) {
+		// _contByte.incrBy(val);
+		return;
+	}
+
+	// .....................................
 
 	public void calCellCoor(int memidx, int dftNum, int curCnt, int cell[],
 			BasicOutputCollector collector, String strevec, String hostCoor,
@@ -352,6 +371,8 @@ public class dftPreBolt extends BaseBasicBolt {
 		vecOutputStr = new String();
 
 		localTaskId = context.getThisTaskId();
+		
+		iniMetrics(context); 
 
 		return;
 	}
@@ -453,6 +474,14 @@ public class dftPreBolt extends BaseBasicBolt {
 				collector.emit("calCommand",
 						new Values("done" + Double.toString(curtstamp),
 								localTaskId));
+				
+				
+//				...........comm byte metric............
+				
+				updateMetrics(streidCnt * TopologyMain.winSize+ streidCnt*TopologyMain.dftN);
+				
+//				.......................................
+				
 
 			}
 

@@ -20,42 +20,47 @@ public class TopologyMain {
 
 	// .................DFT approach...........................//
 
-	public static int dftN = 2;
+	public static final int dftN = 2;
 
 	// ..................RobStream approach....................//
-	public static int cellTask = 2;
+	public static final int cellTask = 2;
 
 	// .................Random projection......................//
 
-	public static int rp_vecnum = 10;
-	public static int rp_dimnum = 2;
-	public static String rp_matFile = "rhp-vectors.txt";
+	public static final int rp_vecnum = 10;
+	public static final int rp_dimnum = 4;
+	public static final String rp_matFile = "rhp-vectors.txt";
 
 	// ..................data set.....................
-	public static int datasrc = 1; // 0: synthetic 1: real
+	public static final int datasrc = 1; // 0: synthetic 1: real
 
-	public static int nstreBolt = 20;
-	public static int nstream = 20;
-	public static int gridIdxN = 500;
+	public static final int nstreBolt = 20;
+	public static final int nstream = 20;
+	public static final int gridIdxN = 500;
 
-	public static int nstrFile = 20;
-	public static int offsetRow = 0;
+	public static final int nstrFile = 20;
+	public static final int offsetRow = 0;
+	
+//	...............sampling..................
+	
+    final static int sampRate = 500;
+    final static int sampleTimes=5;
 
 	// .................local parallelism record...........................//
 
-	public static int winSize = 3;
-	public static double thre = 0.8;
-	public static int tinterval = 20;
-	public static int wokernum = 2;
+	public static final int winSize = 6;
+	public static final double thre = 0.9;
+	public static final int tinterval = 200;
+	public static final int wokernum = 2;
 
-	public static int preBoltNum = 2;
-	public static int calBoltNum = 4;
-	public static int aggreBoltNum = 1;
+	public static final int preBoltNum = 2;
+	public static final int calBoltNum = 4;
+	public static final int aggreBoltNum = 1;
 
 	// ............cluster parameter ..............//
 
-	public static int sampRate = 10000;
-	//
+
+	
 	// public static int tinterval = 5000;
 	// public static int winSize = 10; // 9 12 15 18: 2500 * 10 20 40 80 160 320
 	// 640
@@ -66,7 +71,7 @@ public class TopologyMain {
 	// public static int calBoltNum = 128; // 58 118
 	// public static int aggreBoltNum = 30;
 	//
-	public static int winh = (int) (Math.log(calBoltNum) / Math.log(2));
+	public static final int winh = (int) (Math.log(calBoltNum) / Math.log(2));
 
 	//
 	// public static int NUM=1000; // naive: 1400, gbc: 2400, aps: 80000
@@ -76,25 +81,6 @@ public class TopologyMain {
 	//
 	// public static int datasrc = 0; // 0: synthetic 1: real
 
-	// ---------------------rough results-------------------------------//
-
-	// ti: naive 1400 2300 3000s
-	// gbc 2400 3500 4500
-	// aps 8000 10000 12000
-
-	// p: naive 1500 1700 1850
-	// gbc 2750 2850
-	// aps 9000 9800
-
-	// epsilon:
-	// naive: 1450 1460 1490
-	// gbc: 2700 2820 2970
-	// aps: 9300 9650 9850
-
-	// window:
-	// naive: 1350 1240 1160(1130) 1050 1000 930 830
-	// gbc:
-	// aps: 7600
 
 	public static void main(String[] args) throws InterruptedException,
 			IOException, AlreadyAliveException, InvalidTopologyException {
@@ -137,7 +123,7 @@ public class TopologyMain {
 			if (runenv.compareTo("local") == 0) {
 				cluster.submitTopology("strqry", conf,
 						builderNavie.createTopology());
-				Thread.sleep(12000);
+				Thread.sleep(15000);
 			} else if (runenv.compareTo("cluster") == 0) {
 				StormSubmitter.submitTopology("conqry", conf,
 						builderNavie.createTopology());
@@ -313,9 +299,9 @@ public class TopologyMain {
 		else if (appro.compareTo("sample") == 0) {
 
 			int sampcnt = 0, recFlag = 1;
-			int curApp = Integer.valueOf(args[1]);
+			String curApp=args[1];
 
-			while (sampcnt < 10) {
+			while (sampcnt < sampleTimes) {
 
 				Thread.sleep(sampRate);
 

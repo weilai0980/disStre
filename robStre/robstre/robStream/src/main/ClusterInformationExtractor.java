@@ -38,8 +38,8 @@ public class ClusterInformationExtractor {
 
 	FileWriter fstream;// =new FileWriter("res.txt", true);
 	BufferedWriter out;// = new BufferedWriter(fstream);
-	
-	FileWriter fstream2; //=new FileWriter("check.txt", true);
+
+	FileWriter fstream2; // =new FileWriter("check.txt", true);
 	BufferedWriter out2;//
 
 	// try {
@@ -59,14 +59,13 @@ public class ClusterInformationExtractor {
 	// e.printStackTrace();
 	// }
 
-	public void infoExtractor(int app, int ini) throws IOException {
+	public void infoExtractor(String app, int ini) throws IOException {
 
 		// try {
-		fstream = new FileWriter("res-"+Integer.toString(app)+"-ft.txt", true);
+		fstream = new FileWriter("res-" + (app) + "-ft.txt", true);
 		BufferedWriter out = new BufferedWriter(fstream);
-		
-		
-		fstream2 = new FileWriter("check-"+Integer.toString(app)+"-ft.txt", true);
+
+		fstream2 = new FileWriter("check-" + (app) + "-ft.txt", true);
 		BufferedWriter out2 = new BufferedWriter(fstream2);
 
 		// out.write("Timestamp  " + Double.toString(curtstamp) + ", "
@@ -82,7 +81,10 @@ public class ClusterInformationExtractor {
 		// e.printStackTrace();
 		// }
 
-		TSocket socket = new TSocket("lsir-cluster-01.epfl.ch", 6627);
+//		TSocket socket = new TSocket("lsir-cluster-01.epfl.ch", 6627);
+		
+		TSocket socket = new TSocket("localhost", 6627);
+		
 		TFramedTransport transport = new TFramedTransport(socket);
 		TBinaryProtocol protocol = new TBinaryProtocol(transport);
 		Client client = new Client(protocol);
@@ -225,6 +227,8 @@ public class ClusterInformationExtractor {
 								+ getStatValueFromMap(execStats.get_emitted(),
 										":all-time"));
 
+						//
+
 						emTupSpout += getStatValueFromMap(
 								execStats.get_emitted(), ":all-time");
 
@@ -245,14 +249,24 @@ public class ClusterInformationExtractor {
 
 				double[] exeTSum = new double[5], proTSum = new double[5], exeCnt = new double[5], emTupBolt = new double[5], transTupBolt = new double[5];
 				;
+				double[] emSize = new double[5];
 
 				proTSum[1] = 0;
 				exeTSum[1] = 0;
 
 				String boltstr[] = { "naviepre", "naviestatis", "navieaggre",
 						"gridpre", "gridstatis", "gridaggre", "adjPre",
-						"adjAppro", "adjAggre" };
-				int boltStrPnt = 3 * (app);
+						"adjAppro", "adjAggre", "dftPre", "dftCal", "dftAggre",
+						"rpPre", "rpCal", "rpAggre" };
+				// int boltStrPnt = 3 * (app);
+
+				int boltStrPnt = -1;
+				for (int i = 0; i < 15; ++i) {
+					if (app.compareTo(boltstr[i]) == 0) {
+						boltStrPnt = i;
+						break;
+					}
+				}
 
 				System.out.println("****Bolts (All time)****");
 				executorStatusItr = topology_info.get_executors_iterator();
@@ -262,6 +276,7 @@ public class ClusterInformationExtractor {
 					ExecutorStats execStats = executor_summary.get_stats();
 					ExecutorSpecificStats execSpecStats = execStats
 							.get_specific();
+
 					String componentId = executor_summary.get_component_id();
 					if (execSpecStats.is_set_bolt()) {
 						BoltStats boltStats = execSpecStats.get_bolt();
@@ -273,6 +288,7 @@ public class ClusterInformationExtractor {
 								proTSum[0] += getBoltStatDoubleValueFromMap(
 										boltStats.get_process_ms_avg(),
 										":all-time");
+
 							}
 
 							if (getBoltStatDoubleValueFromMap(
@@ -301,41 +317,42 @@ public class ClusterInformationExtractor {
 										boltStats.get_executed(), ":all-time");
 							}
 
+							emSize[0] += boltStats.get_executed_size();
+
 						} else if (componentId
 								.compareTo(boltstr[boltStrPnt + 1]) == 0) {
 
 							if (getBoltStatDoubleValueFromMap(
 									boltStats.get_process_ms_avg(), ":all-time") != null) {
-								
-								proTSum[1] += getBoltStatDoubleValueFromMap(
-								 boltStats.get_process_ms_avg(),
-								 ":all-time");
 
-//								proTSum[1] = Math.max(
-//										getBoltStatDoubleValueFromMap(
-//												boltStats.get_process_ms_avg(),
-//												":all-time"), proTSum[1]);
+								proTSum[1] += getBoltStatDoubleValueFromMap(
+										boltStats.get_process_ms_avg(),
+										":all-time");
+
+								// proTSum[1] = Math.max(
+								// getBoltStatDoubleValueFromMap(
+								// boltStats.get_process_ms_avg(),
+								// ":all-time"), proTSum[1]);
 							}
 							if (getBoltStatDoubleValueFromMap(
 									boltStats.get_execute_ms_avg(), ":all-time") != null) {
-								 
-								exeTSum[1] += getBoltStatDoubleValueFromMap(
-								 boltStats.get_execute_ms_avg(),
-								 ":all-time");
 
-//								exeTSum[1] = Math.max(
-//										getBoltStatDoubleValueFromMap(
-//												boltStats.get_execute_ms_avg(),
-//												":all-time"), exeTSum[1]);
+								exeTSum[1] += getBoltStatDoubleValueFromMap(
+										boltStats.get_execute_ms_avg(),
+										":all-time");
+
+								// exeTSum[1] = Math.max(
+								// getBoltStatDoubleValueFromMap(
+								// boltStats.get_execute_ms_avg(),
+								// ":all-time"), exeTSum[1]);
 
 							}
 
-							
 							if (getStatValueFromMap(
 									execStats.get_transferred(), ":all-time") != null) {
 								transTupBolt[1] += getStatValueFromMap(
-										 execStats.get_transferred(),
-										 ":all-time");
+										execStats.get_transferred(),
+										":all-time");
 							}
 							if (getStatValueFromMap(execStats.get_emitted(),
 									":all-time") != null) {
@@ -343,17 +360,17 @@ public class ClusterInformationExtractor {
 										execStats.get_emitted(), ":all-time");
 							}
 
-							
 							if (getBoltStatLongValueFromMap(
 									boltStats.get_executed(), ":all-time") != null) {
 								exeCnt[1] += getBoltStatLongValueFromMap(
 										boltStats.get_executed(), ":all-time");
 							}
 
+							emSize[1] += boltStats.get_executed_size();
+
 						} else if (componentId
 								.compareTo(boltstr[boltStrPnt + 2]) == 0) {
 
-							
 							if (getBoltStatDoubleValueFromMap(
 									boltStats.get_process_ms_avg(), ":all-time") != null) {
 								proTSum[2] += getBoltStatDoubleValueFromMap(
@@ -367,12 +384,12 @@ public class ClusterInformationExtractor {
 										":all-time");
 							}
 
-
 							if (getBoltStatLongValueFromMap(
 									boltStats.get_executed(), ":all-time") != null) {
 								exeCnt[2] += getBoltStatLongValueFromMap(
 										boltStats.get_executed(), ":all-time");
 							}
+							emSize[2] += boltStats.get_executed_size();
 
 						}
 
@@ -412,74 +429,69 @@ public class ClusterInformationExtractor {
 								exeTSum[1], exeCnt[2], emTupBolt[2],
 								transTupBolt[2], proTSum[2], exeTSum[2]);
 
-				
-				//........for matlab data........................//
-				
-				if(ini==1)
-				{
+				// ........for matlab data........................//
+
+				if (ini == 1) {
 					out.write("\n");
 				}
 
-				out.write(Double.toString(app)+","
-						+Double.toString(TopologyMain.nstream)+","
-						+Double.toString(TopologyMain.tinterval)+","
-						+ Double.toString(TopologyMain.preBoltNum)+","
-						+ Double.toString(TopologyMain.calBoltNum)+","
-						+ Double.toString(TopologyMain.winSize)+","
-						+ Double.toString(TopologyMain.thre)+","
-						+ Double.toString(emTupSpout)+","
-						+ Double.toString(emTupSpout / tupPer)
-				);
+				out.write(app + "," + Double.toString(TopologyMain.nstream)
+						+ "," + Double.toString(TopologyMain.tinterval) + ","
+						+ Double.toString(TopologyMain.preBoltNum) + ","
+						+ Double.toString(TopologyMain.calBoltNum) + ","
+						+ Double.toString(TopologyMain.winSize) + ","
+						+ Double.toString(TopologyMain.thre) + ","
+						+ Double.toString(emTupSpout) + ","
+						+ Double.toString(emTupSpout / tupPer));
 				out.write("\n");
-				
-				out.write(Double.toString(exeCnt[0])+","
-						+ Double.toString(emTupBolt[0])+","
-						+ Double.toString(proTSum[0])+","
+
+				out.write(Double.toString(exeCnt[0]) + ","
+						+ Double.toString(emTupBolt[0]) + ","
+						+ Double.toString(proTSum[0]) + ","
 						+ Double.toString(exeTSum[0]));
 				out.write("\n");
-				
-				out.write(Double.toString(exeCnt[1])+","
-						+ Double.toString(emTupBolt[1])+","
-						+ Double.toString(proTSum[1])+","
+
+				out.write(Double.toString(exeCnt[1]) + ","
+						+ Double.toString(emTupBolt[1]) + ","
+						+ Double.toString(proTSum[1]) + ","
 						+ Double.toString(exeTSum[1]));
 				out.write("\n");
-				
-				out.write(Double.toString(exeCnt[2])+","
-						+ Double.toString(emTupBolt[2])+","
-						+ Double.toString(proTSum[2])+","
+
+				out.write(Double.toString(exeCnt[2]) + ","
+						+ Double.toString(emTupBolt[2]) + ","
+						+ Double.toString(proTSum[2]) + ","
 						+ Double.toString(exeTSum[2]));
 				out.write("\n");
-				
-				
-			
+
 				out.close();
 
 				// ---------------------------------------------------------------------
-				
-				//.......................for cluster-side check................//
-				
-				double lat1=0.0, lat2=0.0, times=(double)emTupSpout/tupPer;
-                double protime=Math.min(proTSum[1], exeTSum[1]);
-				
-				lat1=proTSum[0]/TopologyMain.preBoltNum*exeCnt[0]/TopologyMain.preBoltNum/times;
-//				lat2=proTSum[1]/TopologyMain.calBoltNum*exeCnt[1]/TopologyMain.calBoltNum/times;
-				lat2=protime/TopologyMain.calBoltNum*exeCnt[1]/TopologyMain.calBoltNum/times;
-				
-				if(ini==1)
-				{
+
+				// .......................for cluster-side
+				// check................//
+
+				double lat1 = 0.0, lat2 = 0.0, times = (double) emTupSpout
+						/ tupPer;
+				double protime = Math.min(proTSum[1], exeTSum[1]);
+
+				lat1 = proTSum[0] / TopologyMain.preBoltNum * exeCnt[0]
+						/ TopologyMain.preBoltNum / times;
+				// lat2=proTSum[1]/TopologyMain.calBoltNum*exeCnt[1]/TopologyMain.calBoltNum/times;
+				lat2 = protime / TopologyMain.calBoltNum * exeCnt[1]
+						/ TopologyMain.calBoltNum / times;
+
+				if (ini == 1) {
 					out2.write("\n");
 				}
-				
-				double execnt1=0.0, execnt2=0.0;
-				execnt1=exeCnt[1]/TopologyMain.calBoltNum/times;
-				
-				out2.write(Double.toString(lat1)+","
-						+Double.toString(lat2)+","+Double.toString(execnt1)	
-				);
+
+				double execnt1 = 0.0, execnt2 = 0.0;
+				execnt1 = exeCnt[1] / TopologyMain.calBoltNum / times;
+
+				out2.write(Double.toString(lat1) + "," + Double.toString(lat2)
+						+ "," + Double.toString(execnt1));
 				out2.write("\n");
-				
+
 				out2.close();
-				
 
 				// Topology Configuration
 				// System.out.println("**** Topology Configuration ****");

@@ -31,7 +31,7 @@ public class rpPreBolt extends BaseBasicBolt {
 
 	public int[] vecst = new int[declrNum + 1];
 	public int[] veced = new int[declrNum + 1];
-	public int queueLen = TopologyMain.winSize+1;
+	public int queueLen = TopologyMain.winSize + 1;
 
 	public int[] vecflag = new int[declrNum + 1];
 
@@ -66,6 +66,24 @@ public class rpPreBolt extends BaseBasicBolt {
 
 	// ..........................................//
 
+	// ............custom metric............
+
+	// transient CountMetric _contByte;
+
+	void iniMetrics(TopologyContext context) {
+		// _contByte= new CountMetric();
+		//
+		// context.registerMetric("emByte_count", _contByte, 5);
+
+	}
+
+	void updateMetrics(double val) {
+		// _contByte.incrBy(val);
+		return;
+	}
+
+	// .....................................
+
 	public String streamVecPrep(int idx) {
 
 		String coorstr = new String();
@@ -83,27 +101,27 @@ public class rpPreBolt extends BaseBasicBolt {
 	public String normStreamVecPrep(int idx) {
 
 		String coorstr = new String();
-		
-//		.......test.......
-//		System.out.printf("%d  %d  ",vecst[idx],veced[idx]);
-//		..................
-		
+
+		// .......test.......
+		// System.out.printf("%d  %d  ",vecst[idx],veced[idx]);
+		// ..................
+
 		int k = vecst[idx];
 		while (k != veced[idx]) {
 
-//			.......test.......
-//			System.out.printf("%f  ",normvec[idx][k] );
-//			..................
-			
+			// .......test.......
+			// System.out.printf("%f  ",normvec[idx][k] );
+			// ..................
+
 			coorstr = coorstr + Double.toString(normvec[idx][k]) + ",";
 
 			k = (k + 1) % queueLen;
 		}
 
-//		.......test.......
-//		System.out.printf("\n ");
-//		..................
-		
+		// .......test.......
+		// System.out.printf("\n ");
+		// ..................
+
 		return coorstr;
 	}
 
@@ -148,51 +166,47 @@ public class rpPreBolt extends BaseBasicBolt {
 
 			vecst[tmpsn] = (vecst[tmpsn] + 1 * flag) % queueLen;
 
-			
-///			.......test.....
-			
-//			if(curtstamp==2)
-//			{
-//				System.out.printf("Prebolt %d front: %d %d\n",localTaskId,veced[tmpsn],(veced[tmpsn] + 1) % queueLen);
-//			}
-//			................
-			
+			// / .......test.....
+
+			// if(curtstamp==2)
+			// {
+			// System.out.printf("Prebolt %d front: %d %d\n",localTaskId,veced[tmpsn],(veced[tmpsn]
+			// + 1) % queueLen);
+			// }
+			// ................
+
 			veced[tmpsn] = (veced[tmpsn] + 1) % queueLen;
 
-///			.......test.....
-			
-//			if(curtstamp==2)
-//			{
-//				System.out.printf("Prebolt %d after: %d  %d\n",localTaskId,(veced[tmpsn] + 1) % queueLen, queueLen);
-//			}
-//			................
-			
-			
+			// / .......test.....
+
+			// if(curtstamp==2)
+			// {
+			// System.out.printf("Prebolt %d after: %d  %d\n",localTaskId,(veced[tmpsn]
+			// + 1) % queueLen, queueLen);
+			// }
+			// ................
+
 			curexp[tmpsn] = curexp[tmpsn] - oldval / TopologyMain.winSize
 					* flag + newval / TopologyMain.winSize;
 			cursqsum[tmpsn] = cursqsum[tmpsn] - oldval * oldval * flag + newval
 					* newval;
 
-			
-//			.......test.....
-			
-//			if(curtstamp==2)
-//			{
-//				System.out.printf("Prebolt %d update stream %d with flag %d sliding window %d %d: %f %f \n", localTaskId,strid,vecflag[tmpsn],vecst[tmpsn],veced[tmpsn],
-//						curexp[tmpsn],cursqsum[tmpsn] );
-//			}
-//			................
-			
-			
+			// .......test.....
+
+			// if(curtstamp==2)
+			// {
+			// System.out.printf("Prebolt %d update stream %d with flag %d sliding window %d %d: %f %f \n",
+			// localTaskId,strid,vecflag[tmpsn],vecst[tmpsn],veced[tmpsn],
+			// curexp[tmpsn],cursqsum[tmpsn] );
+			// }
+			// ................
+
 			vecflag[tmpsn] = 1;
 
 			streNorm(tmpsn);
 
 		}
-		
-		
 
-		
 	}
 
 	void rpCal(int idx) {
@@ -242,18 +256,16 @@ public class rpPreBolt extends BaseBasicBolt {
 		int len = 0, pre = 0, dimcnt = 0, cnt = 0, veccnt = 0;
 		try {
 
-			
 			while ((line = reader.readLine()) != null) {
 
 				len = line.length();
-				
-//				.....test.....
-//				System.out.printf("%s\n", line);
-//				..............
-				
+
+				// .....test.....
+				// System.out.printf("%s\n", line);
+				// ..............
+
 				pre = 0;
 				cnt = 0;
-			
 
 				if ((int) Math.floor((dimcnt / TopologyMain.rp_dimnum)) == 1) {
 					veccnt++;
@@ -275,14 +287,14 @@ public class rpPreBolt extends BaseBasicBolt {
 
 			// ..............test.............
 
-//			for (int i = 0; i < TopologyMain.rp_vecnum; ++i) {
-//				for (int j = 0; j < TopologyMain.rp_dimnum; ++j) {
-//					for (int k = 0; k < TopologyMain.winSize; ++k) {
-//						System.out.printf(" %f ", rpMat[i][j][k]);
-//					}
-//					System.out.printf("\n");
-//				}
-//			}
+			// for (int i = 0; i < TopologyMain.rp_vecnum; ++i) {
+			// for (int j = 0; j < TopologyMain.rp_dimnum; ++j) {
+			// for (int k = 0; k < TopologyMain.winSize; ++k) {
+			// System.out.printf(" %f ", rpMat[i][j][k]);
+			// }
+			// System.out.printf("\n");
+			// }
+			// }
 
 			// ...............................
 
@@ -336,6 +348,8 @@ public class rpPreBolt extends BaseBasicBolt {
 			e.printStackTrace();
 		}
 
+		iniMetrics(context);
+
 		return;
 	}
 
@@ -385,9 +399,9 @@ public class rpPreBolt extends BaseBasicBolt {
 
 					// .........test..........
 
-//					if (curtstamp == 2) {
-//						System.out.printf("%d  %d\n", vecst[i], veced[i]);
-//					}
+					// if (curtstamp == 2) {
+					// System.out.printf("%d  %d\n", vecst[i], veced[i]);
+					// }
 
 					// .......................
 
@@ -410,6 +424,11 @@ public class rpPreBolt extends BaseBasicBolt {
 								localTaskId));
 
 				iniFlag = 0;
+
+				// .......... custom metrics........
+				updateMetrics(streidCnt * TopologyMain.winSize
+						* TopologyMain.rp_vecnum + streidCnt
+						* TopologyMain.rp_dimnum * TopologyMain.rp_vecnum);
 
 			}
 

@@ -71,11 +71,7 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 	final double taskGridCap = taskRange / Math.sqrt(disThre);
 	int locTaskIdx, localTask;
 
-	// ...........test...................//
-	// public int ta = 3, tb = 8;
-	// public double tt = 21;
-
-	// ...................................//
+	
 
 	public int groupTaskId(int cell[][], int id, int dimN) {
 

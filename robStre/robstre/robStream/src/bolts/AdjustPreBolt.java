@@ -56,8 +56,27 @@ public class AdjustPreBolt extends BaseBasicBolt {
 	// ...........Computation parameter....................//
 
 	final double disThre = 2 - 2 * TopologyMain.thre;
-
 	int localTaskIdx = 0;
+	
+	
+	// ............custom metric............
+
+	double emByte=0.0;
+	// transient CountMetric _contByte;
+
+	void iniMetrics(TopologyContext context) {
+		// _contByte= new CountMetric();
+		//
+		// context.registerMetric("emByte_count", _contByte, 5);
+
+	}
+
+	void updateMetrics(double val) {
+		// _contByte.incrBy(val);
+		return;
+	}
+
+	// .....................................
 
 	public double[] curexp = new double[TopologyMain.nstreBolt + 10],
 			curdev = new double[TopologyMain.nstreBolt + 10],
@@ -470,8 +489,9 @@ public class AdjustPreBolt extends BaseBasicBolt {
 			curdev[j] = 0;
 			cursqr[j] = 0;
 			cursum[j] = 0;
-
 		}
+		
+		iniMetrics(context);
 	}
 
 	@Override
@@ -561,11 +581,24 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 					iniFlag = 0;
 
+//					.......comm byte metric........
+					emByte+= (adjList.get(i).size()*3+ 2*TopologyMain.winSize);
+					
+//					...............................
+					
+					
 				}
 				collector
 						.emit("calCommand",
 								new Values("done" + Double.toString(curtstamp),
 										taskId));
+				
+				
+				
+				
+				// .......... custom metrics........
+				updateMetrics(emByte);
+				
 
 			}
 
