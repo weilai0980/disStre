@@ -20,33 +20,33 @@ import backtype.storm.tuple.Values;
 public class rpPreBolt extends BaseBasicBolt {
 
 	// .........memory management for sliding windows.................//
-	int declrNum = (int) (TopologyMain.nstreBolt / TopologyMain.preBoltNum + 10);
-	public double[][] strevec = new double[declrNum][TopologyMain.winSize + 6];
-	public double[][] normvec = new double[declrNum][TopologyMain.winSize + 6];
+	int declrNum = (int) (TopologyMain.nstreBolt / TopologyMain.preBoltNum + 1);
+	public double[][] strevec = new double[declrNum][TopologyMain.winSize + 1];
+	public double[][] normvec = new double[declrNum][TopologyMain.winSize + 1];
 
-	public double[][][] rpvec = new double[declrNum][TopologyMain.rp_vecnum][TopologyMain.rp_dimnum + 1];
+	public double[][][] rpvec = new double[declrNum][TopologyMain.rp_vecnum + 1][TopologyMain.rp_dimnum + 1];
 
-	public int[] streid = new int[TopologyMain.nstreBolt + 10];
+	public int[] streid = new int[TopologyMain.nstreBolt + 1];
 	public int streidCnt = 0;
 
-	public int[] vecst = new int[TopologyMain.nstreBolt + 10];
-	public int[] veced = new int[TopologyMain.nstreBolt + 10];
-	public int queueLen = TopologyMain.winSize + 5;
+	public int[] vecst = new int[declrNum + 1];
+	public int[] veced = new int[declrNum + 1];
+	public int queueLen = TopologyMain.winSize+1;
 
-	public int[] vecflag = new int[TopologyMain.nstreBolt + 10];
+	public int[] vecflag = new int[declrNum + 1];
 
 	public int iniFlag = 1;
 
-	public double[] curexp = new double[TopologyMain.nstreBolt + 10],
-			cursqrsum = new double[TopologyMain.nstreBolt + 10];
+	public double[] curexp = new double[declrNum + 1],
+			cursqsum = new double[declrNum + 1];
 
 	// ...........computation parameter....................//
 
-	public final double disThre = 2 - 2 * TopologyMain.thre;
-	public final double cellEps = Math.sqrt(disThre);
-	public final double taskEps = cellEps / TopologyMain.cellTask;
-	public int hSpaceTaskNum;
-	public int hSpaceCellNum;
+	final double disThre = 2 - 2 * TopologyMain.thre;
+	final double cellEps = Math.sqrt(disThre);
+	final double taskEps = cellEps / TopologyMain.cellTask;
+	int hSpaceTaskNum;
+	int hSpaceCellNum;
 
 	double[][][] rpMat = new double[TopologyMain.rp_vecnum | +1][TopologyMain.rp_dimnum + 1][TopologyMain.winSize + 1];
 
@@ -83,14 +83,27 @@ public class rpPreBolt extends BaseBasicBolt {
 	public String normStreamVecPrep(int idx) {
 
 		String coorstr = new String();
+		
+//		.......test.......
+//		System.out.printf("%d  %d  ",vecst[idx],veced[idx]);
+//		..................
+		
 		int k = vecst[idx];
 		while (k != veced[idx]) {
 
+//			.......test.......
+//			System.out.printf("%f  ",normvec[idx][k] );
+//			..................
+			
 			coorstr = coorstr + Double.toString(normvec[idx][k]) + ",";
 
 			k = (k + 1) % queueLen;
 		}
 
+//		.......test.......
+//		System.out.printf("\n ");
+//		..................
+		
 		return coorstr;
 	}
 
@@ -103,7 +116,7 @@ public class rpPreBolt extends BaseBasicBolt {
 		while (k != veced[memidx]) {
 
 			normvec[memidx][k] = (strevec[memidx][k] - curexp[memidx])
-					/ Math.sqrt(cursqrsum[memidx] - TopologyMain.winSize
+					/ Math.sqrt(cursqsum[memidx] - TopologyMain.winSize
 							* curexp[memidx] * curexp[memidx]);
 
 			k = (k + 1) % queueLen;
@@ -135,18 +148,51 @@ public class rpPreBolt extends BaseBasicBolt {
 
 			vecst[tmpsn] = (vecst[tmpsn] + 1 * flag) % queueLen;
 
+			
+///			.......test.....
+			
+//			if(curtstamp==2)
+//			{
+//				System.out.printf("Prebolt %d front: %d %d\n",localTaskId,veced[tmpsn],(veced[tmpsn] + 1) % queueLen);
+//			}
+//			................
+			
 			veced[tmpsn] = (veced[tmpsn] + 1) % queueLen;
 
+///			.......test.....
+			
+//			if(curtstamp==2)
+//			{
+//				System.out.printf("Prebolt %d after: %d  %d\n",localTaskId,(veced[tmpsn] + 1) % queueLen, queueLen);
+//			}
+//			................
+			
+			
 			curexp[tmpsn] = curexp[tmpsn] - oldval / TopologyMain.winSize
 					* flag + newval / TopologyMain.winSize;
-			cursqrsum[tmpsn] = cursqrsum[tmpsn] - oldval * oldval * flag
-					+ newval * newval;
+			cursqsum[tmpsn] = cursqsum[tmpsn] - oldval * oldval * flag + newval
+					* newval;
 
+			
+//			.......test.....
+			
+//			if(curtstamp==2)
+//			{
+//				System.out.printf("Prebolt %d update stream %d with flag %d sliding window %d %d: %f %f \n", localTaskId,strid,vecflag[tmpsn],vecst[tmpsn],veced[tmpsn],
+//						curexp[tmpsn],cursqsum[tmpsn] );
+//			}
+//			................
+			
+			
 			vecflag[tmpsn] = 1;
 
 			streNorm(tmpsn);
 
 		}
+		
+		
+
+		
 	}
 
 	void rpCal(int idx) {
@@ -164,7 +210,7 @@ public class rpPreBolt extends BaseBasicBolt {
 					tmpDot = tmpDot + normvec[idx][k] * rpMat[i][j][k];
 
 				}
-				rpvec[idx][i][j] = tmpDot > 0 ? 1 : 0;
+				rpvec[idx][i][j] = (tmpDot > 0 ? 1 : 0);
 
 			}
 		}
@@ -172,12 +218,13 @@ public class rpPreBolt extends BaseBasicBolt {
 		return;
 	}
 
-	public String rpBucketPrep(int idx, int bucketCnt) {
+	public String rpBucketPrep(int streidx, int hashtab) {
 
 		String str = new String();
+		str = Integer.toString(hashtab) + ",";
 
 		for (int i = 0; i < TopologyMain.rp_dimnum; ++i) {
-			str = str + rpvec[idx][bucketCnt][i] + ",";
+			str = str + rpvec[streidx][hashtab][i] + ",";
 
 		}
 
@@ -187,6 +234,7 @@ public class rpPreBolt extends BaseBasicBolt {
 
 	// ............random project.............//
 	public void readProjectMatrix() throws FileNotFoundException {
+
 		FileReader fstream = new FileReader(TopologyMain.rp_matFile);
 		BufferedReader reader = new BufferedReader(fstream);
 
@@ -194,14 +242,20 @@ public class rpPreBolt extends BaseBasicBolt {
 		int len = 0, pre = 0, dimcnt = 0, cnt = 0, veccnt = 0;
 		try {
 
+			
 			while ((line = reader.readLine()) != null) {
 
 				len = line.length();
+				
+//				.....test.....
+//				System.out.printf("%s\n", line);
+//				..............
+				
 				pre = 0;
 				cnt = 0;
-				dimcnt++;
+			
 
-				if ((int) (dimcnt / TopologyMain.rp_dimnum) == 1) {
+				if ((int) Math.floor((dimcnt / TopologyMain.rp_dimnum)) == 1) {
 					veccnt++;
 					dimcnt = 0;
 				}
@@ -213,10 +267,25 @@ public class rpPreBolt extends BaseBasicBolt {
 						pre = i + 1;
 					}
 				}
+				dimcnt++;
 			}
 
 			reader.close();
 			fstream.close();
+
+			// ..............test.............
+
+//			for (int i = 0; i < TopologyMain.rp_vecnum; ++i) {
+//				for (int j = 0; j < TopologyMain.rp_dimnum; ++j) {
+//					for (int k = 0; k < TopologyMain.winSize; ++k) {
+//						System.out.printf(" %f ", rpMat[i][j][k]);
+//					}
+//					System.out.printf("\n");
+//				}
+//			}
+
+			// ...............................
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -239,7 +308,7 @@ public class rpPreBolt extends BaseBasicBolt {
 	public void prepare(Map stormConf, TopologyContext context) {
 		// TODO Auto-generated method stub
 
-		for (int j = 0; j < TopologyMain.nstreBolt + 10; j++) {
+		for (int j = 0; j < declrNum + 1; j++) {
 			vecst[j] = 0;
 			veced[j] = 0;
 
@@ -250,15 +319,13 @@ public class rpPreBolt extends BaseBasicBolt {
 			streid[j] = 0;
 
 			curexp[j] = 0;
-			cursqrsum[j] = 0;
+			cursqsum[j] = 0;
 
 		}
-
 
 		hSpaceTaskNum = (int) Math.floor(1.0 / cellEps) * TopologyMain.cellTask
 				+ 1;
 		hSpaceCellNum = (int) Math.ceil(1.0 / cellEps);
-
 
 		localTaskId = context.getThisTaskId();
 
@@ -295,10 +362,11 @@ public class rpPreBolt extends BaseBasicBolt {
 			double tmpval = input.getDoubleByField("value");
 			int sn = input.getIntegerByField("sn");
 
-			if (Math.abs(ts - curtstamp) <= 1e-3) {
+			// if (Math.abs(ts - curtstamp) <= 1e-3) {
 
-				idxNewTuple(sn, tmpval, 1 - iniFlag);
-			}
+			idxNewTuple(sn, tmpval, 1 - iniFlag);
+			// }
+
 		} else if (streType.compareTo("contrStre") == 0) {
 
 			commandStr = input.getStringByField("command");
@@ -315,6 +383,14 @@ public class rpPreBolt extends BaseBasicBolt {
 
 					rpCal(i);
 
+					// .........test..........
+
+//					if (curtstamp == 2) {
+//						System.out.printf("%d  %d\n", vecst[i], veced[i]);
+//					}
+
+					// .......................
+
 					for (int j = 0; j < TopologyMain.rp_vecnum; ++j) {
 
 						collector.emit("streamData", new Values(curtstamp,
@@ -329,19 +405,18 @@ public class rpPreBolt extends BaseBasicBolt {
 
 				}
 
+				collector.emit("calCommand",
+						new Values("done" + Double.toString(curtstamp),
+								localTaskId));
+
 				iniFlag = 0;
 
 			}
 
-			collector
-					.emit("calCommand",
-							new Values("done" + Double.toString(curtstamp),
-									localTaskId));
-
 			// .....status update for the next tuple...............//
 			preCommandStr = commandStr;
 
-			for (int j = 0; j < TopologyMain.nstreBolt + 5; ++j) {
+			for (int j = 0; j < declrNum + 1; ++j) {
 
 				vecflag[j] = 0;
 			}

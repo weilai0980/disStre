@@ -401,14 +401,12 @@ public class AdjustPreBolt extends BaseBasicBolt {
 		// }
 
 		// ............test........
-
 //		if (retriTs == 2 && (id == 8 || id == 11)) {
 //
 //			System.out.printf("Prebolt %d has data %d for %d on %d\n", taskId,
 //					streidCnt, id, idx);
 //
 //		}
-
 		// ........................
 
 		if (reqTs == ts || (reqTs < ts && vecflag[idx] == 0)) {
@@ -545,15 +543,8 @@ public class AdjustPreBolt extends BaseBasicBolt {
 //					
 //				}
 				
-		
-
 				// ..................
-				
-				
-				
-				
-				
-				
+					
 				graphCons(TopologyMain.thre, collector, curtstamp);
 				pivotcnt = affineSelec(pivotset);
 

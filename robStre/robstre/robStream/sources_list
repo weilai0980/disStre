@@ -1,6 +1,7 @@
 ./src/grouping/AdjustHashGroupEnh.java
 ./src/grouping/robStripGroup.java
 ./src/main/TopologyMain.java
+./src/main/RHPbuild.java
 ./src/main/ClusterInformationExtractor.java
 ./src/main/dataGene.java
 ./src/tools/streamPair.java

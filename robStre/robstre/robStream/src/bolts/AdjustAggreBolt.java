@@ -85,30 +85,30 @@ public class AdjustAggreBolt extends BaseBasicBolt {
 		if (ts > curt + 1) {
 			// ...........test............................
 //			if (curt == 2) {
-//				System.out.printf("AggreBolt  time stamp %f:   %d \n ", curt,
-//						pairs[curset].size());
+				System.out.printf("AggreBolt  time stamp %f:   %d \n ", curt,
+						pairs[curset].size());
 //			}
 
-			try {
-
-				fstream = new FileWriter("apsRes.txt", true);
-				BufferedWriter out = new BufferedWriter(fstream);
-
-				out.write("Timestamp  " + Double.toString(curt) + ", "
-						+ "total num  "
-						+ Integer.toString(pairs[curset].size()) + ": \n ");
-
-				for (String iter : pairs[curset]) {
-					out.write(iter + "\n");
-				}
-
-				out.write("\n");
-				out.close();
-
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			try {
+//
+//				fstream = new FileWriter("apsRes.txt", true);
+//				BufferedWriter out = new BufferedWriter(fstream);
+//
+//				out.write("Timestamp  " + Double.toString(curt) + ", "
+//						+ "total num  "
+//						+ Integer.toString(pairs[curset].size()) + ": \n ");
+//
+//				for (String iter : pairs[curset]) {
+//					out.write(iter + "\n");
+//				}
+//
+//				out.write("\n");
+//				out.close();
+//
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			// .......................................
 
 			curt = curt + 1;

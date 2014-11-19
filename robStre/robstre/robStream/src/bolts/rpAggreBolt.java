@@ -12,7 +12,6 @@ import backtype.storm.tuple.Tuple;
 
 public class rpAggreBolt extends BaseBasicBolt {
 
-	
 	// .............aggregator....................//
 
 	HashSet<String> strePair = new HashSet<String>();
@@ -53,8 +52,12 @@ public class rpAggreBolt extends BaseBasicBolt {
 		String pairstr = input.getStringByField("pair");
 
 		if (ts > curtstamp) {
+
+			// .............test................			
 			
+			System.out.printf("AggreBolt has %d resutls at %f \n", strePair.size(),curtstamp);
 			
+			// .................................
 
 			// .........update for the next sliding window..........//
 
@@ -65,7 +68,7 @@ public class rpAggreBolt extends BaseBasicBolt {
 
 		} else if (ts < curtstamp) {
 			System.out
-					.printf("!!!!!!!!!!!!! direct robAggreBolt time sequence disorder\n");
+					.printf("!!!!!!!!!!!!! direct AggreBolt time sequence disorder\n");
 		} else if (Math.abs(ts - curtstamp) <= 1e-3) {
 
 			strePair.add(pairstr);
@@ -74,6 +77,5 @@ public class rpAggreBolt extends BaseBasicBolt {
 		return;
 
 	}
-	
-	
+
 }

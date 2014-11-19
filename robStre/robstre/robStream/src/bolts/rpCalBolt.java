@@ -33,7 +33,7 @@ public class rpCalBolt extends BaseBasicBolt {
 	HashSet<Long> preTaskIdx = new HashSet<Long>();
 	// .........memory management for sliding windows.................//
 
-	Double[][] streamVec = new Double[TopologyMain.nstreBolt + 10][TopologyMain.winSize + 10];
+	double[][] streamVec = new double[TopologyMain.nstreBolt + 10][TopologyMain.winSize + 10];
 
 	HashMap<Integer, Integer> streIdx = new HashMap<Integer, Integer>();
 	HashMap<String, Integer> bucketIdx = new HashMap<String, Integer>();
@@ -45,13 +45,13 @@ public class rpCalBolt extends BaseBasicBolt {
 
 	// ...........computation parameter....................//
 	int locTaskId;
-	double disThre = 2 - 2 * TopologyMain.thre;
+	final double disThre = 2 - 2 * TopologyMain.thre;
 	final double disThreRoot = Math.sqrt(disThre);
-	double cellEps = Math.sqrt(disThre);
+	final double cellEps = Math.sqrt(disThre);
 
 	// ........................................................................//
 
-	public void vecAna(Double mem[][], int idx, String vecstr) {
+	public void vecAna(double mem[][], int idx, String vecstr) {
 		int len = vecstr.length(), pre = 0, cnt = 0;
 		double tmpval = 0.0;
 
@@ -60,6 +60,7 @@ public class rpCalBolt extends BaseBasicBolt {
 
 				tmpval = Double.valueOf(vecstr.substring(pre, i));
 				mem[idx][cnt++] = tmpval;
+				pre = i + 1;
 
 			}
 		}
@@ -75,6 +76,7 @@ public class rpCalBolt extends BaseBasicBolt {
 
 				tmpval = Integer.valueOf(vecstr.substring(pre, i));
 				mem[idx][cnt++] = tmpval;
+				pre = i + 1;
 
 			}
 		}
@@ -84,12 +86,13 @@ public class rpCalBolt extends BaseBasicBolt {
 
 	public void IndexingStre(int streid, String streamStr, String bucket) {
 
-		if (streIdx.containsKey(streid) == true) {
-			return;
-		}
-
 		int streNo = streIdx.size(), bucketNo = bucketIdx.size();
-		streIdx.put(streid, streNo);
+
+		if (streIdx.containsKey(streid) == true) {
+			streNo = streIdx.get(streid);
+		} else {
+			streIdx.put(streid, streNo);
+		}
 
 		if (bucketIdx.containsKey(bucket) == true) {
 
@@ -112,6 +115,13 @@ public class rpCalBolt extends BaseBasicBolt {
 
 		int memidx1 = streIdx.get(streid1), memidx2 = streIdx.get(streid2), k = 0;
 
+		
+//		..........test............
+//		System.out.printf("CalBolt %d compute the distance between %f  %f to address %f \n", locTaskId, streamVec[memidx1][0],streamVec[memidx2][0],thre);
+		
+//		..........................
+		
+		
 		double tmpres = 0.0;
 
 		for (k = 0; k < TopologyMain.winSize; ++k) {
@@ -137,9 +147,20 @@ public class rpCalBolt extends BaseBasicBolt {
 
 					if (correCalDisReal(threshold, bucketStre.get(i).get(j),
 							bucketStre.get(i).get(k)) == 1) {
-						resPair.add(Integer.toString(bucketStre.get(i).get(j))
-								+ ","
-								+ Integer.toString(bucketStre.get(i).get(k)));
+
+						if (bucketStre.get(i).get(j) < bucketStre.get(i).get(k)) {
+							resPair.add(Integer.toString(bucketStre.get(i).get(
+									j))
+									+ ","
+									+ Integer
+											.toString(bucketStre.get(i).get(k)));
+						} else {
+							resPair.add(Integer.toString(bucketStre.get(i).get(
+									k))
+									+ ","
+									+ Integer
+											.toString(bucketStre.get(i).get(j)));
+						}
 
 					}
 				}
@@ -210,9 +231,27 @@ public class rpCalBolt extends BaseBasicBolt {
 				return;
 			}
 
-			bucketCorrCal(disThreRoot);
+			bucketCorrCal(disThre);
+
+			// .............test................
+
+//			System.out.printf("CalBolt %d emits %d resutls at %f \n",
+//					locTaskId, resPair.size(), curtstamp);
+
+			// .................................
 
 			for (String pair : resPair) {
+				
+				
+//				.............test............
+//				if(curtstamp==2)
+//				{
+//					System.out.printf(" %s\n ", pair);
+//				}
+				
+//				.............................
+				
+				
 				collector.emit(new Values(curtstamp, pair));
 			}
 			localIdxRenew();

@@ -1,0 +1,36 @@
+package main;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Random;
+
+
+
+
+public class RHPbuild {
+	
+	FileWriter fstream; // =new FileWriter("", true);
+	BufferedWriter out; // = new BufferedWriter(fstream);
+
+	
+	Random rnd = new Random();
+	
+
+	public RHPbuild()
+	{
+		
+		try {
+			fstream = new FileWriter("rhp-vectors.txt", false);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return;
+	}
+	public void
+	
+	
+
+}
