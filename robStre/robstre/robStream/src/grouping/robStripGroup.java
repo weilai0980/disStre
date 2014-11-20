@@ -44,6 +44,7 @@ public class robStripGroup implements CustomStreamGrouping {
 	public int repType;
 	public int taskcoor;
 	public int gap;
+	int streid=0;
 
 	@Override
 	public void prepare(WorkerTopologyContext context, GlobalStreamId stream,
@@ -104,6 +105,17 @@ public class robStripGroup implements CustomStreamGrouping {
 					if (taskcoor + i < 2 * hSpaceTaskNum) {
 						taskSet.add(_tasks.get(tmpcoor));
 					}
+					
+					
+//					.............test........
+//					if(ts==5 && streid==14)
+//					{
+//						System.out.printf("At time %f, shuffling send stream %d to task %d\n", ts, streid, tmpcoor );
+//					}
+					
+//					.........................
+					
+					
 				}
 
 			} else {
@@ -141,6 +153,7 @@ public class robStripGroup implements CustomStreamGrouping {
 		taskcoor = Integer.valueOf(values.get(3).toString());
 		gap = Integer.valueOf(values.get(5).toString());
 		ts = Double.valueOf(values.get(2).toString());
+		streid= Integer.valueOf(values.get(4).toString());
 
 		tasklist.clear();
 		taskSet.clear();

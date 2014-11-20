@@ -185,6 +185,7 @@ public class robCalBolt extends BaseBasicBolt {
 		for (Integer stre : streSet.get(curSet)) {
 
 			memidx = streMem.get(stre);
+			cellstr = "";
 
 			k = vecst[memidx];
 			denomi = (cursqexp[memidx] - curexp[memidx] * curexp[memidx])
@@ -220,12 +221,23 @@ public class robCalBolt extends BaseBasicBolt {
 				cellNbStre.get(cellmemidx).add(stre);
 			}
 
+			// ...............test.....................
+//			if (curtstamp == 5 && locTaskId == 8 && (stre == 14 || stre == 16)) {
+//
+//				System.out
+//						.printf(" ???????? at time %f, calBolt %d locates stream %d in cell %s with index %d \n",
+//								curtstamp, locTaskId, stre, cellstr, cellmemidx);
+//
+//			}
+			// .......................................
+
 		}
 
 		return;
 	}
 
 	int cellVecCheck(int idx1, int idx2) {
+
 		for (int j = 0; j < TopologyMain.winSize; ++j) {
 			if (Math.abs(cellVecs[idx1][j] - cellVecs[idx2][j]) > 1) {
 				return 0;
@@ -266,21 +278,35 @@ public class robCalBolt extends BaseBasicBolt {
 	void cellWithinCal(int cellidx, ArrayList<String> res) {
 
 		int stre1 = 0, stre2 = 0;
-		double tmpcor=0.0;
+		double tmpcor = 0.0;
 		for (int i = 0; i < cellHostStre.get(cellidx).size(); i++) {
 			for (int j = i + 1; j < cellHostStre.get(cellidx).size(); j++) {
 
 				stre1 = cellHostStre.get(cellidx).get(i);
 				stre2 = cellHostStre.get(cellidx).get(j);
 
-				if ((tmpcor=correCalDis( stre1, stre2)) >= TopologyMain.thre) {
+				// ...............test.....................
+//				if (curtstamp == 5
+//						&& locTaskId == 8
+//						&& ((stre1 == 14 && stre2 == 16) || (stre1 == 16 && stre2 == 14))) {
+//
+//					System.out
+//							.printf(" ???????? at time %f, calBolt %d computes streams between %d and %d with correlation %f  \n",
+//									curtstamp, locTaskId, stre1, stre2,
+//									correCalDis(stre1, stre2));
+//
+//				}
+				// .......................................
+
+				if ((tmpcor = correCalDis(stre1, stre2)) >= TopologyMain.thre) {
 
 					// if (stre1 > stre2)
 					// res.add(Integer.toString(stre2) + ","
 					// + Integer.toString(stre1));
 					// else
 					res.add(Integer.toString(stre1) + ","
-							+ Integer.toString(stre2)+","+Double.toString(tmpcor));
+							+ Integer.toString(stre2) + ","
+							+ Double.toString(tmpcor));
 				}
 
 			}
@@ -292,14 +318,28 @@ public class robCalBolt extends BaseBasicBolt {
 				stre1 = cellHostStre.get(cellidx).get(i);
 				stre2 = cellNbStre.get(cellidx).get(j);
 
-				if ((tmpcor=correCalDis( stre1, stre2)) >= TopologyMain.thre) {
+				// ...............test.....................
+//				if (curtstamp == 5
+//						&& locTaskId == 8
+//						&& ((stre1 == 14 && stre2 == 16) || (stre1 == 16 && stre2 == 14))) {
+//
+//					System.out
+//							.printf(" ???????? at time %f, calBolt %d computes streams between %d and %d with correlation %f  \n",
+//									curtstamp, locTaskId, stre1, stre2,
+//									correCalDis(stre1, stre2));
+//
+//				}
+				// .......................................
+
+				if ((tmpcor = correCalDis(stre1, stre2)) >= TopologyMain.thre) {
 
 					// if (stre1 > stre2)
 					// res.add(Integer.toString(stre2) + ","
 					// + Integer.toString(stre1));
 					// else
 					res.add(Integer.toString(stre1) + ","
-							+ Integer.toString(stre2)+","+Double.toString(tmpcor));
+							+ Integer.toString(stre2) + ","
+							+ Double.toString(tmpcor));
 				}
 
 			}
@@ -311,7 +351,23 @@ public class robCalBolt extends BaseBasicBolt {
 	void cellInterCal(int cellidx1, int cellidx2, ArrayList<String> res) {
 
 		int stre1 = 0, stre2 = 0, stre3 = 0, ini = 1;
-double tmpcor=0.0;
+		double tmpcor = 0.0;
+
+		// ...............test.....................
+		// if (curtstamp == 5
+		// && locTaskId == 8){
+		// // && ((stre1 == 14 && stre2 == 16) || (stre1 == 16 && stre2 == 14)))
+		// {
+		//
+		// System.out
+		// .printf(" ???????? at time %f, calBolt %d computes cells with size: %d %d %d %d  \n",
+		// curtstamp, locTaskId, cellHostStre.get(cellidx1).size(),
+		// cellNbStre.get(cellidx1).size(), cellHostStre.get(cellidx2).size(),
+		// cellNbStre.get(cellidx2).size());
+		//
+		// }
+		// .......................................
+
 		for (int i = 0; i < cellHostStre.get(cellidx1).size(); i++) {
 
 			stre1 = cellHostStre.get(cellidx1).get(i);
@@ -319,54 +375,81 @@ double tmpcor=0.0;
 			for (int j = 0; j < cellHostStre.get(cellidx2).size(); j++) {
 
 				stre2 = cellHostStre.get(cellidx2).get(j);
-				if ((tmpcor=correCalDis( stre1, stre2)) >= TopologyMain.thre) {
+
+				// ...............test.....................
+//				if (curtstamp == 5 && locTaskId == 8) {
+//					// && ((stre1 == 14 && stre2 == 16) || (stre1 == 16 && stre2
+//					// == 14))) {
+//
+//					System.out
+//							.printf(" ???????? at time %f, calBolt %d computes streams between %d and %d with correlation %f  \n",
+//									curtstamp, locTaskId, stre1, stre2,
+//									correCalDis(stre1, stre2));
+//
+//				}
+				// .......................................
+
+				if ((tmpcor = correCalDis(stre1, stre2)) >= TopologyMain.thre) {
 
 					// if (stre1 > stre2)
 					// res.add(Integer.toString(stre2) + ","
 					// + Integer.toString(stre1));
 					// else
 					res.add(Integer.toString(stre1) + ","
-							+ Integer.toString(stre2)+","+Double.toString(tmpcor));
-				}
-
-				if (ini == 1) {
-
-					for (int k = 0; k < cellNbStre.get(cellidx1).size(); k++) {
-					
-						stre3 = cellNbStre.get(cellidx1).get(k);
-
-						if ((tmpcor=correCalDis( stre2, stre3)) >= TopologyMain.thre) {
-
-							// if (stre1 > stre2)
-							// res.add(Integer.toString(stre2) + ","
-							// + Integer.toString(stre1));
-							// else
-							res.add(Integer.toString(stre2) + ","
-									+ Integer.toString(stre3)+","+Double.toString(tmpcor));
-						}
-					}
-
+							+ Integer.toString(stre2) + ","
+							+ Double.toString(tmpcor));
 				}
 
 			}
-			ini = 0;
-		}
 
-		for (int i = 0; i < cellHostStre.get(cellidx1).size(); i++) {
 			for (int j = 0; j < cellNbStre.get(cellidx2).size(); j++) {
 
 				stre1 = cellHostStre.get(cellidx1).get(i);
 				stre2 = cellNbStre.get(cellidx2).get(j);
 
-				if ((tmpcor=correCalDis( stre1, stre2)) >= TopologyMain.thre) {
+				// ...............test.....................
+//				if (curtstamp == 5 && locTaskId == 8) {
+//					// && ((stre1 == 14 && stre2 == 16) || (stre1 == 16 && stre2
+//					// == 14))) {
+//
+//					System.out
+//							.printf(" ???????? at time %f, calBolt %d computes streams between %d and %d with correlation %f  \n",
+//									curtstamp, locTaskId, stre1, stre2,
+//									correCalDis(stre1, stre2));
+//
+//				}
+				// .......................................
+
+				if ((tmpcor = correCalDis(stre1, stre2)) >= TopologyMain.thre) {
 
 					// if (stre1 > stre2)
 					// res.add(Integer.toString(stre2) + ","
 					// + Integer.toString(stre1));
 					// else
 					res.add(Integer.toString(stre1) + ","
-							+ Integer.toString(stre2)+","+Double.toString(tmpcor));
+							+ Integer.toString(stre2) + ","
+							+ Double.toString(tmpcor));
 				}
+			}
+
+		}
+
+		for (int i = 0; i < cellHostStre.get(cellidx2).size(); i++) {
+			for (int j = 0; j < cellNbStre.get(cellidx1).size(); j++) {
+				
+				stre1 = cellHostStre.get(cellidx2).get(i);
+				stre2 = cellNbStre.get(cellidx1).get(j);
+				
+				if ((tmpcor = correCalDis(stre1, stre2)) >= TopologyMain.thre) {
+
+					// if (stre1 > stre2)
+					// res.add(Integer.toString(stre2) + ","
+					// + Integer.toString(stre1));
+					// else
+					res.add(Integer.toString(stre1) + ","
+							+ Integer.toString(stre2) + ","
+							+ Double.toString(tmpcor));
+				}	
 			}
 		}
 
@@ -381,7 +464,21 @@ double tmpcor=0.0;
 
 			cellWithinCal(i, resPair);
 			for (int j = i + 1; j < cellIdxcnt; ++j) {
+
 				if (cellVecCheck(i, j) == 1) {
+
+					// ..............test..................
+
+//					if (curtstamp == 5 && locTaskId == 8 && (i == 2 && j == 8)) {
+//
+//						System.out
+//								.printf(" ???????? at time %f, calBolt %d computes   \n",
+//										curtstamp, locTaskId);
+//
+//					}
+
+					// ....................................
+
 					cellInterCal(i, j, resPair);
 				}
 			}
@@ -450,7 +547,8 @@ double tmpcor=0.0;
 			int taskid = input.getIntegerByField("taskCoor");
 
 			// ...........test........
-//			if (curtstamp==5) {
+//			if (curtstamp == 5 && locTaskId == 8
+//					&& (streid == 14 || streid == 16)) {
 //				System.out
 //						.printf(" !!!!!!!!! at time %f, calBolt %d gets stream %d with taskId %d and data %s  \n",
 //								curtstamp, locTaskId, streid, taskid, vecstr);
@@ -458,9 +556,9 @@ double tmpcor=0.0;
 
 			// .......................
 
-//			if (Math.abs(curtstamp - ts) <= 1e-3) {
-				IndexingStre(streid, vecstr, taskid);
-//			}
+			// if (Math.abs(curtstamp - ts) <= 1e-3) {
+			IndexingStre(streid, vecstr, taskid);
+			// }
 
 		} else if (streType.compareTo("calCommand") == 0) {
 
@@ -474,18 +572,20 @@ double tmpcor=0.0;
 
 			// ...........test...............
 
-//			if (curtstamp == 5) {
-////
-//				System.out.printf(
-//						"at time %f, calBolt %d has streams: %d\n",
-//						curtstamp, locTaskId, streSet.get(curSet).size());
-//
-////				for (int i : streSet.get(curSet)) {
-////					System.out.printf("stream %d is on position: %d  with host task %d\n", i,
-////							streMem.get(i),streTaskCoor[streMem.get(i)]);
-////
-//				}
-//			}
+			// if (curtstamp == 5) {
+			// //
+			// System.out.printf(
+			// "at time %f, calBolt %d has streams: %d\n",
+			// curtstamp, locTaskId, streSet.get(curSet).size());
+			//
+			// // for (int i : streSet.get(curSet)) {
+			// //
+			// System.out.printf("stream %d is on position: %d  with host task %d\n",
+			// i,
+			// // streMem.get(i),streTaskCoor[streMem.get(i)]);
+			// //
+			// }
+			// }
 
 			// ..............................
 

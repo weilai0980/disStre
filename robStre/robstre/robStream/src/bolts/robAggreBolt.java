@@ -33,10 +33,6 @@ public class robAggreBolt extends BaseBasicBolt {
 	FileWriter fstream; // =new FileWriter("", true);
 	BufferedWriter out; // = new BufferedWriter(fstream);
 
-	/**
-	 * At the end of the spout (when the cluster is shutdown We will show the
-	 * word counters
-	 */
 	@Override
 	public void cleanup() {
 
