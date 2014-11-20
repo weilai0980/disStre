@@ -47,7 +47,7 @@ public class robAggreBolt extends BaseBasicBolt {
 		// TODO Auto-generated method stub
 
 		try {
-			fstream = new FileWriter("naiveRes.txt", false);
+			fstream = new FileWriter("robRes.txt", false);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -74,11 +74,11 @@ public class robAggreBolt extends BaseBasicBolt {
 			// ...........test........
 			try {
 
-				fstream = new FileWriter("naiveRes.txt", true);
+				fstream = new FileWriter("robRes.txt", true);
 				BufferedWriter out = new BufferedWriter(fstream);
 
 				out.write("Timestamp  " + Double.toString(curtstamp) + ", "
-						+ "total num  " + Integer.toString(strePair.size())
+						+ "total num:  " + Integer.toString(strePair.size())
 						+ ": \n ");
 
 				int len = strePair.size();
@@ -86,9 +86,15 @@ public class robAggreBolt extends BaseBasicBolt {
 				for (String iter : strePair) {
 					out.write(iter + "\n");
 				}
-
-				System.out.printf("timestamp %f  %d\n", ts, strePair.size());
-
+//
+				System.out.printf("Aggrebolt timestamp %f:   %d \n", curtstamp, strePair.size());
+				
+//				for(String str:strePair)
+//				{
+//					System.out.printf(" %s", str);
+//				}
+//				System.out.printf(" \n");
+//
 				out.write("\n");
 				out.close();
 

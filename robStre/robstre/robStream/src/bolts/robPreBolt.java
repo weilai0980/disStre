@@ -32,14 +32,14 @@ public class robPreBolt extends BaseBasicBolt {
 	public int iniFlag = 1;
 
 	public double[] curexp = new double[TopologyMain.nstreBolt + 10],
-			cursqrsum = new double[TopologyMain.nstreBolt + 10];
+			cursqsum = new double[TopologyMain.nstreBolt + 10];
 
 	// ...........computation parameter....................//
 
 	public final double disThre = 2 - 2 * TopologyMain.thre;
 	public final double cellEps = Math.sqrt(disThre);
 	public final double taskEps = cellEps / TopologyMain.cellTask;
-	public int shufDim = TopologyMain.winSize - 1;
+	public int shuffDim = TopologyMain.winSize - 1;
 	public int hSpaceTaskNum;
 	public int hSpaceCellNum;
 
@@ -62,11 +62,11 @@ public class robPreBolt extends BaseBasicBolt {
 	String commandStr=new String(), preCommandStr=new String();
 
 	public int calTaskCoor(int idx, int hspaceTask, int hspaceCell) {
-		int k = shufDim;
+		int k = shuffDim;
 		int tmp = 0, taskc;
 
 		normvec[idx][k] = (strevec[idx][k] - curexp[idx])
-				/ Math.sqrt(cursqrsum[idx] - TopologyMain.winSize * curexp[idx]
+				/ Math.sqrt(cursqsum[idx] - TopologyMain.winSize * curexp[idx]
 						* curexp[idx]);
 
 		if (normvec[idx][k] >= 0) {
@@ -87,7 +87,7 @@ public class robPreBolt extends BaseBasicBolt {
 		} else {
 
 			if (normvec[idx][k] >= 0) {
-
+				
 				taskc = (int) Math.ceil((double) normvec[idx][k] / taskEps);
 				taskc = taskc + hspaceTask;
 
@@ -112,7 +112,7 @@ public class robPreBolt extends BaseBasicBolt {
 		}
 	}
 
-	public String vectorUpdate(int idx, int taskcoor, int preTaskcoor) {
+	public String vectorUpdate(int idx) {
 
 		String coorstr = new String();
 		int k = vecst[idx];
@@ -148,30 +148,28 @@ public class robPreBolt extends BaseBasicBolt {
 			oldval = strevec[tmpsn][vecst[tmpsn]];
 			newval = val;
 			vecst[tmpsn] = (vecst[tmpsn] + 1 * flag) % queueLen;
-			if (shufDim == (queueLen - 1)) {
-				if (vecst[tmpsn] < shufDim) {
-					shufDim = 0;
+		
+			if (shuffDim == (queueLen - 1)) {
+				if (vecst[tmpsn] < shuffDim) {
+					shuffDim = veced[tmpsn];
 				}
 			} else {
-				if (vecst[tmpsn] > shufDim) {
-					shufDim = veced[tmpsn];
+				if (vecst[tmpsn] > shuffDim) {
+					shuffDim = veced[tmpsn];
 				}
 			}
+			
 			veced[tmpsn] = (veced[tmpsn] + 1) % queueLen;
 
 			curexp[tmpsn] = curexp[tmpsn] - oldval / TopologyMain.winSize
 					* flag + newval / TopologyMain.winSize;
-			cursqrsum[tmpsn] = cursqrsum[tmpsn] - oldval * oldval * flag
+			cursqsum[tmpsn] = cursqsum[tmpsn] - oldval * oldval * flag
 					+ newval * newval;
 
 			vecflag[tmpsn] = 1;
 		}
 	}
 
-	/**
-	 * At the end of the spout (when the cluster is shutdown We will show the
-	 * word counters
-	 */
 	@Override
 	public void cleanup() {
 
@@ -192,7 +190,7 @@ public class robPreBolt extends BaseBasicBolt {
 			streid[j] = 0;
 
 			curexp[j] = 0;
-			cursqrsum[j] = 0;
+			cursqsum[j] = 0;
 
 			preTaskCoor[j] = -1;
 		}
@@ -248,10 +246,12 @@ public class robPreBolt extends BaseBasicBolt {
 
 			if (ts - ststamp >= TopologyMain.winSize-1) {
 
+				
 				ststamp++;
 
 				for (i = 0; i < streidCnt; ++i) {
 					curTask = calTaskCoor(i, hSpaceTaskNum, hSpaceCellNum);
+					
 					tmpgap = Math.abs(curTask - preTaskCoor[i]);
 
 					ptOutputStr = recentPointUpdate(i);
@@ -259,13 +259,13 @@ public class robPreBolt extends BaseBasicBolt {
 					if (curTask == preTaskCoor[i]) {
 
 						collector.emit("streamData",new Values(0, ptOutputStr, curtstamp,
-								curTask, streid[i], 0));
+								curTask, streid[i], 0)); // position 0: same as last time
 					} else {
 
-						vecOutputStr = vectorUpdate(i, curTask, preTaskCoor[i]);
+						vecOutputStr = vectorUpdate(i);
 
 						if (curTask > preTaskCoor[i]) {
-							if (tmpgap >= TopologyMain.cellTask) {
+							if (tmpgap > TopologyMain.cellTask) {
 								collector.emit("streamData",new Values(1, vecOutputStr,
 										curtstamp, curTask, streid[i], tmpgap));
 							} else {
@@ -273,12 +273,12 @@ public class robPreBolt extends BaseBasicBolt {
 										curtstamp, curTask, streid[i], tmpgap));
 
 								collector.emit("streamData",new Values(10, ptOutputStr,
-										curtstamp, curTask, streid[i], tmpgap)); // need
-																					// skip
+										curtstamp, curTask, streid[i], tmpgap)); 
+																					
 							}
 						} else {
 
-							if (tmpgap >= TopologyMain.cellTask) {
+							if (tmpgap > TopologyMain.cellTask) {
 
 								collector.emit("streamData",new Values(-1, vecOutputStr,
 										curtstamp, curTask, streid[i], tmpgap));
@@ -292,12 +292,23 @@ public class robPreBolt extends BaseBasicBolt {
 						}
 					}
 					preTaskCoor[i] = curTask;
+					
+//					...........test..........
+					
+//					if(i==0 && localTaskId==2)
+//					{
+//						System.out.printf("At time %f, PreBolt %d sends stream %d to task %d \n", curtstamp,localTaskId, streid[i], curTask);
+//					}
+//					.........................
+					
+					
 				}
+				collector.emit("calCommand",new Values("done"+Double.toString(curtstamp),localTaskId));
 				iniFlag = 0;
 
 			}
 			
-			collector.emit("calCommand",new Values("done"+Double.toString(curtstamp),localTaskId));
+		
 
 			// .....update for next tuple...............//
 			preCommandStr=commandStr;

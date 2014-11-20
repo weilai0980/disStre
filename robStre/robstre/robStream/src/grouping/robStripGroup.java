@@ -58,7 +58,7 @@ public class robStripGroup implements CustomStreamGrouping {
 		int tmpcoor = 0;
 
 		if (type == 0) {
-			for (int i = 0; i < TopologyMain.cellTask; i++) {
+			for (int i = 0; i <= TopologyMain.cellTask; i++) {
 				tmpcoor = taskcoor + i;
 
 				if (taskcoor + i < 2 * hSpaceTaskNum) {
@@ -67,8 +67,8 @@ public class robStripGroup implements CustomStreamGrouping {
 			}
 		} else if (type == -1) {
 
-			if (gap >= TopologyMain.cellTask) {
-				for (int i = 0; i < TopologyMain.cellTask; i++) {
+			if (gap > TopologyMain.cellTask) {
+				for (int i = 0; i <= TopologyMain.cellTask; i++) {
 					tmpcoor = taskcoor + i;
 
 					if (taskcoor + i < 2 * hSpaceTaskNum) {
@@ -88,7 +88,7 @@ public class robStripGroup implements CustomStreamGrouping {
 
 		} else if (type == -10) {
 
-			for (int i = gap; i < TopologyMain.cellTask; i++) {
+			for (int i = gap; i <= TopologyMain.cellTask; i++) {
 				tmpcoor = taskcoor + i;
 
 				if (taskcoor + i < 2 * hSpaceTaskNum) {
@@ -98,8 +98,8 @@ public class robStripGroup implements CustomStreamGrouping {
 
 		} else if (type == 1) {
 
-			if (gap >= TopologyMain.cellTask) {
-				for (int i = 0; i < gap; i++) {
+			if (gap > TopologyMain.cellTask) {
+				for (int i = 0; i <= TopologyMain.cellTask; i++) {
 					tmpcoor = taskcoor + i;
 					if (taskcoor + i < 2 * hSpaceTaskNum) {
 						taskSet.add(_tasks.get(tmpcoor));
@@ -107,7 +107,7 @@ public class robStripGroup implements CustomStreamGrouping {
 				}
 
 			} else {
-				for (int i = TopologyMain.cellTask - gap; i < TopologyMain.cellTask; i++) {
+				for (int i = TopologyMain.cellTask - gap+1; i <= TopologyMain.cellTask; i++) {
 					tmpcoor = taskcoor + i;
 
 					if (taskcoor + i < 2 * hSpaceTaskNum) {
@@ -119,7 +119,7 @@ public class robStripGroup implements CustomStreamGrouping {
 
 		} else if (type == 10) {
 
-			for (int i = 0; i < TopologyMain.cellTask - gap; i++) {
+			for (int i = 0; i < TopologyMain.cellTask - gap+1; i++) {
 				tmpcoor = taskcoor + i;
 
 				if (taskcoor + i < 2 * hSpaceTaskNum) {
