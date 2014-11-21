@@ -71,7 +71,10 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 	final double taskGridCap = taskRange / Math.sqrt(disThre);
 	int locTaskIdx, localTask;
 
-	
+	// ...........metric...............
+	double dirCnt = 0, reclCnt = 0;
+
+	// ................................
 
 	public int groupTaskId(int cell[][], int id, int dimN) {
 
@@ -264,7 +267,11 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 			// ....test.........
 			// System.out.printf("ApproBolt  timestamp:%f   \n", curtstamp);
 
+			dirCnt++;
+
 		} else if (low <= thre) {
+
+			reclCnt++;
 
 			int cnt = retriStre.size();
 			if (retriStre.containsKey(stre1) == false) {
@@ -796,21 +803,23 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 				// .............test............
 
-//				if (curtstamp == 15) {
-//					System.out.printf("ApproBolt %d has pivot streams %d: ",
-//							localTask, gridIdxcnt);
-//					for (int l = 0; l < gridIdxcnt; ++l) {
-//						System.out.printf("%d  ", gridPivot[l]);
-//					}
-//					System.out.printf("\n");
-//
-//					System.out.printf(
-//							"  ++++  ApproBolt %d checked stream pairs : ",
-//							localTask);
-//				}
+				// if (curtstamp == 15) {
+				// System.out.printf("ApproBolt %d has pivot streams %d: ",
+				// localTask, gridIdxcnt);
+				// for (int l = 0; l < gridIdxcnt; ++l) {
+				// System.out.printf("%d  ", gridPivot[l]);
+				// }
+				// System.out.printf("\n");
+				//
+				// System.out.printf(
+				// "  ++++  ApproBolt %d checked stream pairs : ",
+				// localTask);
+				// }
 
 				// .............................
-
+				 dirCnt=reclCnt=0;
+				
+				
 				for (i = 0; i < gridIdxcnt; ++i) {
 					for (j = i + 1; j < gridIdxcnt; ++j) {
 
@@ -845,9 +854,9 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 
 				// .............test............
 
-				if (curtstamp == 15 && (localTask == 5)) {
-					System.out.printf("\n");
-				}
+				System.out
+						.printf("At time %f ApproBolt %d: direct %f recl %f \n",
+								curtstamp, localTask,  dirCnt, reclCnt);
 				// .............................
 
 				localIdxRenew();

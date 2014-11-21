@@ -227,7 +227,7 @@ public class streamReader extends BaseRichSpout {
 			curStreRand[i] += Math.random() * 5000;
 
 			collector.emit("dataStre", new Values(i, tupTs, curStreRand[i]
-					- tupTs * curStreBias[i] + curStreConst[i]));
+					- tupTs * curStreBias[i] + curStreConst[i]), Integer.toString(i) + ',' + Double.toString(tupTs)  );
 		}
 		collector.emit("contrStre",
 				new Values("done" + Double.toString(tupTs)),

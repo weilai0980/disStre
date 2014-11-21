@@ -32,10 +32,10 @@ public class TopologyMain {
 	public static final String rp_matFile = "rhp-vectors.txt";
 
 	// ..................data set.....................
-	public static final int datasrc = 1; // 0: synthetic 1: real
+	public static final int datasrc = 0; // 0: synthetic 1: real
 
-	public static final int nstreBolt = 20;
-	public static final int nstream = 20;
+	public static final int nstreBolt = 30;
+	public static final int nstream = 30;
 	public static final int gridIdxN = 500;
 
 	public static final int nstrFile = 20;
@@ -48,9 +48,9 @@ public class TopologyMain {
 
 	// .................local parallelism record...........................//
 
-	public static final int winSize = 6;
-	public static final double thre = 0.9;
-	public static final int tinterval = 20;
+	public static final int winSize = 4;
+	public static final double thre = 0.7;
+	public static final int tinterval = 50;
 	public static final int wokernum = 2;
 
 	public static final int preBoltNum = 2;
@@ -121,7 +121,7 @@ public class TopologyMain {
 			if (runenv.compareTo("local") == 0) {
 				cluster.submitTopology("strqry", conf,
 						builderNavie.createTopology());
-				Thread.sleep(15000);
+				Thread.sleep(5000);
 			} else if (runenv.compareTo("cluster") == 0) {
 				StormSubmitter.submitTopology("conqry", conf,
 						builderNavie.createTopology());

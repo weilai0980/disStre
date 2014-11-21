@@ -61,6 +61,13 @@ public class robPreBolt extends BaseBasicBolt {
 	public double ststamp = 0.0;
 	String commandStr = new String(), preCommandStr = new String();
 
+	// .............metric.......................
+
+	double emisData = 0.0;
+	int shuffType = 0;
+
+	// ..........................................
+
 	public int calTaskCoor(int idx, int hspaceTask, int hspaceCell) {
 		int k = shuffDim;
 		int tmp = 0, taskc;
@@ -246,12 +253,12 @@ public class robPreBolt extends BaseBasicBolt {
 			if (ts - ststamp >= TopologyMain.winSize - 1) {
 
 				ststamp++;
+				emisData=0.0;
 
 				for (i = 0; i < streidCnt; ++i) {
 
-					
 					curTask = calTaskCoor(i, hSpaceTaskNum, hSpaceCellNum);
-					
+
 					if (iniFlag == 1) {
 
 						vecOutputStr = vectorUpdate(i);
@@ -262,12 +269,14 @@ public class robPreBolt extends BaseBasicBolt {
 								tmpgap));
 
 					} else {
-						
+
 						tmpgap = Math.abs(curTask - preTaskCoor[i]);
 
 						ptOutputStr = recentPointUpdate(i);
 
 						if (curTask == preTaskCoor[i]) {
+
+							shuffType = 0;
 
 							collector.emit("streamData", new Values(0,
 									ptOutputStr, curtstamp, curTask, streid[i],
@@ -280,11 +289,17 @@ public class robPreBolt extends BaseBasicBolt {
 							vecOutputStr = vectorUpdate(i);
 
 							if (curTask > preTaskCoor[i]) {
+
+								shuffType = 1;
+
 								if (tmpgap > TopologyMain.cellTask) {
 									collector.emit("streamData", new Values(1,
 											vecOutputStr, curtstamp, curTask,
 											streid[i], tmpgap));
 								} else {
+
+									shuffType = 10;
+
 									collector.emit("streamData", new Values(1,
 											vecOutputStr, curtstamp, curTask,
 											streid[i], tmpgap));
@@ -298,10 +313,15 @@ public class robPreBolt extends BaseBasicBolt {
 
 								if (tmpgap > TopologyMain.cellTask) {
 
+									shuffType = -1;
+
 									collector.emit("streamData", new Values(-1,
 											vecOutputStr, curtstamp, curTask,
 											streid[i], tmpgap));
 								} else {
+
+									shuffType = -10;
+
 									collector.emit("streamData", new Values(-1,
 											vecOutputStr, curtstamp, curTask,
 											streid[i], tmpgap));
@@ -315,17 +335,41 @@ public class robPreBolt extends BaseBasicBolt {
 					}
 					preTaskCoor[i] = curTask;
 
+					// ............metric........
+					if (shuffType == 0) {
+						emisData += (TopologyMain.cellTask + 1);
+					} else if (shuffType == 1 || shuffType == -1) {
+						emisData += (TopologyMain.winSize * (TopologyMain.cellTask + 1));
+					} else if (shuffType == 10 || shuffType == -10) {
+						emisData += ((tmpgap * TopologyMain.winSize) + (TopologyMain.cellTask - tmpgap));
+					}
+
+					
+
+					// ..........................
+
 					// ...........test..........
 
-//					if (curtstamp == 5 && (streid[i] == 14 || streid[i] == 16)) {
-//						System.out
-//								.printf("At time %f, PreBolt %d sends stream %d to task %d \n",
-//										curtstamp, localTaskId, streid[i],
-//										curTask);
-//					}
+					// if (curtstamp == 5 && (streid[i] == 14 || streid[i] ==
+					// 16)) {
+					// System.out
+					// .printf("At time %f, PreBolt %d sends stream %d to task %d \n",
+					// curtstamp, localTaskId, streid[i],
+					// curTask);
+					// }
 					// .........................
 
 				}
+				
+				// ..........test.......
+
+//				System.out
+//						.printf("At time %f, PreBolt %d sends stream with cost %f, compared to naive cost %f\n",
+//								curtstamp, localTaskId, emisData, (double)streidCnt*TopologyMain.winSize*19 );
+
+				// .....................
+				
+				
 				collector.emit("calCommand",
 						new Values("done" + Double.toString(curtstamp),
 								localTaskId));
