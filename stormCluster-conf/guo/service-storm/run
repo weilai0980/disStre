@@ -1,0 +1,5 @@
+#!/bin/sh
+
+exec 2>&1
+
+exec /root/guo/storm/bin/storm supervisor

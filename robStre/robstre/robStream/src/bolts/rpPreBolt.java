@@ -68,6 +68,7 @@ public class rpPreBolt extends BaseBasicBolt {
 
 	// ............custom metric............
 
+	double emData=0.0;
 	// transient CountMetric _contByte;
 
 	void iniMetrics(TopologyContext context) {
@@ -392,6 +393,7 @@ public class rpPreBolt extends BaseBasicBolt {
 			if (ts - ststamp >= TopologyMain.winSize - 1) {
 
 				ststamp++;
+				emData=0.0;
 
 				for (i = 0; i < streidCnt; ++i) {
 
@@ -426,9 +428,24 @@ public class rpPreBolt extends BaseBasicBolt {
 				iniFlag = 0;
 
 				// .......... custom metrics........
-				updateMetrics(streidCnt * TopologyMain.winSize
-						* TopologyMain.rp_vecnum + streidCnt
-						* TopologyMain.rp_dimnum * TopologyMain.rp_vecnum);
+				emData+=(streidCnt * TopologyMain.winSize
+				* TopologyMain.rp_vecnum + streidCnt
+				* TopologyMain.rp_dimnum * TopologyMain.rp_vecnum);
+				
+				updateMetrics(emData);
+				
+				// ..........test.............
+				System.out
+						.printf("At time %f, PreBolt %d sends stream with cost %f, compared to naive cost %f\n",
+								curtstamp, localTaskId, emData,
+								(double) TopologyMain.nstream/ TopologyMain.preBoltNum * TopologyMain.winSize * 19);
+
+				// ..............................
+				
+				
+				
+				
+				
 
 			}
 

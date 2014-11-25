@@ -1,0 +1,13 @@
+tickTime=2000
+dataDir=/var/zookeeper/
+clientPort=2181
+initLimit=5
+syncLimit=2
+server.1=lsir-cluster-01.epfl.ch:2888:3888
+server.2=lsir-cluster-02.epfl.ch:2888:3888
+server.3=lsir-cluster-03.epfl.ch:2888:3888
+server.4=lsir-cluster-04.epfl.ch:2888:3888
+server.5=lsir-cluster-05.epfl.ch:2888:3888
+#server.6=lsir-cluster-06.epfl.ch:2888:3888
+#server.7=lsir-cluster-07.epfl.ch:2888:3888
+

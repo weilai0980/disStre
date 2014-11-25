@@ -21,15 +21,15 @@
 #do CLASSPATH=/$i:"$CLASSPATH"; 
 #done 
 
-PATH1='/root/guo/storm-0.8.2/storm-0.8.2.jar'
+#PATH1='/root/guo/storm-0.8.2/storm-0.8.2.jar'
 
-PATH2='/root/guo/storm-0.8.2/conf/storm.yaml'
+PATH2='/root/guo/storm9.2/conf/storm.yaml'
 
-for i in /root/guo/storm-0.8.2/lib/*.jar; 
+for i in /root/guo/storm9.2/lib/*.jar; 
 do CLASSPATH=/$i:"$CLASSPATH"; 
 done 
 
-CLASSPATH=$PATH1:"$CLASSPATH"
+#CLASSPATH=$PATH1:"$CLASSPATH"
 
 CLASSPATH=$PATH2:"$CLASSPATH"
 
@@ -52,5 +52,5 @@ jar -cvf streamqry.jar -C bin/ .
 
 # $1 $2
 
-/home/guo/storm-0.8.2/bin/storm jar streamqry.jar main/TopologyMain $1 conqry 
-#echo @@@@@@@@@@@@@@@@@@@@@@@@@return
+/home/guo/storm-0.8.2/bin/storm jar streamqry.jar main/TopologyMain $1 $2 conqry 
+#echo @@@@@@@@@@@@@@@@@@@@@@@@@return:

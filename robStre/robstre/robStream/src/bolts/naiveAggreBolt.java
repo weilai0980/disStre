@@ -57,31 +57,31 @@ public class naiveAggreBolt extends BaseBasicBolt {
 
 			
 			// ...........test........
-			try {
-
-				fstream = new FileWriter("naiveRes.txt", true);
-				BufferedWriter out = new BufferedWriter(fstream);
-
-				out.write("Timestamp  " + Double.toString(curtstamp) + ", "
-						+ "total num  " + Integer.toString(pairHset.size())
-						+ ": \n ");
-
-				int len = pairHset.size();
-
-				for (String iter : pairHset) {
-					out.write(iter + "\n");
-				}
-
+//			try {
+//
+//				fstream = new FileWriter("naiveRes.txt", true);
+//				BufferedWriter out = new BufferedWriter(fstream);
+//
+//				out.write("Timestamp  " + Double.toString(curtstamp) + ", "
+//						+ "total num  " + Integer.toString(pairHset.size())
+//						+ ": \n ");
+//
+//				int len = pairHset.size();
+//
+//				for (String iter : pairHset) {
+//					out.write(iter + "\n");
+//			}
+//
 				System.out.printf("timestamp %f  %d\n", curtstamp, pairHset.size());
-
-				out.write("\n");
-				out.close();
-				
-
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}	
+//
+//				out.write("\n");
+//				out.close();
+//				
+//
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}	
 			// ..................
 
 			// ..........update...........//

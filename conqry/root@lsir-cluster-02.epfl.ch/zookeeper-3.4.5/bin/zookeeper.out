@@ -1,0 +1,28 @@
+2013-11-07 16:51:29,469 [myid:] - INFO  [main:QuorumPeerConfig@101] - Reading configuration from: /home/guo/zookeeper-3.4.5/bin/../conf/zoo.cfg
+2013-11-07 16:51:29,476 [myid:] - INFO  [main:DatadirCleanupManager@78] - autopurge.snapRetainCount set to 3
+2013-11-07 16:51:29,476 [myid:] - INFO  [main:DatadirCleanupManager@79] - autopurge.purgeInterval set to 0
+2013-11-07 16:51:29,476 [myid:] - INFO  [main:DatadirCleanupManager@101] - Purge task is not scheduled.
+2013-11-07 16:51:29,477 [myid:] - WARN  [main:QuorumPeerMain@113] - Either no config or no quorum defined in config, running  in standalone mode
+2013-11-07 16:51:29,498 [myid:] - INFO  [main:QuorumPeerConfig@101] - Reading configuration from: /home/guo/zookeeper-3.4.5/bin/../conf/zoo.cfg
+2013-11-07 16:51:29,498 [myid:] - INFO  [main:ZooKeeperServerMain@95] - Starting server
+2013-11-07 16:51:29,508 [myid:] - INFO  [main:Environment@100] - Server environment:zookeeper.version=3.4.5-1392090, built on 09/30/2012 17:52 GMT
+2013-11-07 16:51:29,508 [myid:] - INFO  [main:Environment@100] - Server environment:host.name=localhost
+2013-11-07 16:51:29,509 [myid:] - INFO  [main:Environment@100] - Server environment:java.version=1.7.0_09
+2013-11-07 16:51:29,509 [myid:] - INFO  [main:Environment@100] - Server environment:java.vendor=Oracle Corporation
+2013-11-07 16:51:29,509 [myid:] - INFO  [main:Environment@100] - Server environment:java.home=/usr/lib/jvm/java-7-openjdk-i386/jre
+2013-11-07 16:51:29,510 [myid:] - INFO  [main:Environment@100] - Server environment:java.class.path=/home/guo/zookeeper-3.4.5/bin/../build/classes:/home/guo/zookeeper-3.4.5/bin/../build/lib/*.jar:/home/guo/zookeeper-3.4.5/bin/../lib/slf4j-log4j12-1.6.1.jar:/home/guo/zookeeper-3.4.5/bin/../lib/slf4j-api-1.6.1.jar:/home/guo/zookeeper-3.4.5/bin/../lib/netty-3.2.2.Final.jar:/home/guo/zookeeper-3.4.5/bin/../lib/log4j-1.2.15.jar:/home/guo/zookeeper-3.4.5/bin/../lib/jline-0.9.94.jar:/home/guo/zookeeper-3.4.5/bin/../zookeeper-3.4.5.jar:/home/guo/zookeeper-3.4.5/bin/../src/java/lib/*.jar:/home/guo/zookeeper-3.4.5/bin/../conf:
+2013-11-07 16:51:29,510 [myid:] - INFO  [main:Environment@100] - Server environment:java.library.path=/usr/java/packages/lib/i386:/usr/lib/jni:/lib:/usr/lib
+2013-11-07 16:51:29,510 [myid:] - INFO  [main:Environment@100] - Server environment:java.io.tmpdir=/tmp
+2013-11-07 16:51:29,511 [myid:] - INFO  [main:Environment@100] - Server environment:java.compiler=<NA>
+2013-11-07 16:51:29,511 [myid:] - INFO  [main:Environment@100] - Server environment:os.name=Linux
+2013-11-07 16:51:29,512 [myid:] - INFO  [main:Environment@100] - Server environment:os.arch=i386
+2013-11-07 16:51:29,512 [myid:] - INFO  [main:Environment@100] - Server environment:os.version=3.2.0-23-generic-pae
+2013-11-07 16:51:29,513 [myid:] - INFO  [main:Environment@100] - Server environment:user.name=guo
+2013-11-07 16:51:29,513 [myid:] - INFO  [main:Environment@100] - Server environment:user.home=/home/guo
+2013-11-07 16:51:29,514 [myid:] - INFO  [main:Environment@100] - Server environment:user.dir=/home/guo/zookeeper-3.4.5/bin
+2013-11-07 16:51:29,521 [myid:] - INFO  [main:ZooKeeperServer@726] - tickTime set to 2000
+2013-11-07 16:51:29,521 [myid:] - INFO  [main:ZooKeeperServer@735] - minSessionTimeout set to -1
+2013-11-07 16:51:29,521 [myid:] - INFO  [main:ZooKeeperServer@744] - maxSessionTimeout set to -1
+2013-11-07 16:51:29,546 [myid:] - INFO  [main:NIOServerCnxnFactory@94] - binding to port 0.0.0.0/0.0.0.0:2181
+2013-11-07 16:51:29,582 [myid:] - INFO  [main:FileSnap@83] - Reading snapshot /home/guo/splatform/zookeeper/version-2/snapshot.0
+2013-11-07 16:51:29,588 [myid:] - INFO  [main:FileTxnSnapLog@240] - Snapshotting: 0x0 to /home/guo/splatform/zookeeper/version-2/snapshot.0

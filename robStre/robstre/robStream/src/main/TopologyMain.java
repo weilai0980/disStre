@@ -10,8 +10,16 @@ import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
+
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
+
+
+//import backtype.storm.metric.LoggingMetricsConsumer;
+//import backtype.storm.metric.api.CountMetric;
+//import backtype.storm.metric.api.MeanReducer;
+//import backtype.storm.metric.api.MultiCountMetric;
+//import backtype.storm.metric.api.ReducedMetric;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -34,9 +42,9 @@ public class TopologyMain {
 	// ..................data set.....................
 	public static final int datasrc = 0; // 0: synthetic 1: real
 
-	public static final int nstreBolt = 30;
-	public static final int nstream = 30;
-	public static final int gridIdxN = 500;
+	public static final int nstreBolt = 1000;
+	public static final int nstream = 1000;
+	public static final int gridIdxN = 50;
 
 	public static final int nstrFile = 20;
 	public static final int offsetRow = 0;
@@ -48,36 +56,33 @@ public class TopologyMain {
 
 	// .................local parallelism record...........................//
 
-	public static final int winSize = 4;
-	public static final double thre = 0.7;
-	public static final int tinterval = 50;
-	public static final int wokernum = 2;
-
-	public static final int preBoltNum = 2;
-	public static final int calBoltNum = 4;
-	public static final int aggreBoltNum = 1;
+//	public static final int winSize = 3;
+//	public static final double thre = 0.98;
+//	public static final int tinterval = 50;
+//	public static final int wokernum = 2;
+//
+//	public static final int preBoltNum = 2;
+//	public static final int calBoltNum = 4;
+//	public static final int aggreBoltNum = 1;
 
 	// ............cluster parameter ..............//
 
-	// public static int tinterval = 5000;
-	// public static int winSize = 10; // 9 12 15 18: 2500 * 10 20 40 80 160 320
-	// 640
-	// public static double thre = 0.95; // 0.95 0.9 0.85 0.8 *
+	 public static int tinterval = 1000;
+	 public static int winSize = 10; // 20 40 80 160 320 640 1280
+	
+	 public static double thre = 0.95; // 0.95 0.9 0.85 0.8 *
+	
+	 public static int wokernum = 16;
+	 public static int preBoltNum = 16;
+	 public static int calBoltNum = 16; 
+	 public static int aggreBoltNum = 2;
+	 
+	 
 	//
-	// public static int wokernum = 30;
-	// public static int preBoltNum = 32; //58 118
-	// public static int calBoltNum = 128; // 58 118
-	// public static int aggreBoltNum = 30;
-	//
+	
 	public static final int winh = (int) (Math.log(calBoltNum) / Math.log(2));
 
-	//
-	// public static int NUM=1000; // naive: 1400, gbc: 2400, aps: 80000
-	// public static int nstreBolt = NUM;
-	// public static int nstream = NUM;
-	// public static int gridIdxN = NUM;
-	//
-	// public static int datasrc = 0; // 0: synthetic 1: real
+
 
 	public static void main(String[] args) throws InterruptedException,
 			IOException, AlreadyAliveException, InvalidTopologyException {
@@ -95,7 +100,7 @@ public class TopologyMain {
 
 		// Topology run
 		conf.put(Config.TOPOLOGY_MAX_SPOUT_PENDING, 100);
-		// conf.registerMetricsConsumer(LoggingMetricsConsumer.class, 2);
+//		conf.registerMetricsConsumer(backtype.storm.metrics.LoggingMetricsConsumer.class, 2);
 		LocalCluster cluster = new LocalCluster();
 
 		if (appro.compareTo("naive") == 0) {
@@ -106,16 +111,16 @@ public class TopologyMain {
 
 			builderNavie.setSpout("sreader", new streamReader());
 
-			builderNavie.setBolt("naviepre", new naivePreBolt(), preBoltNum)
+			builderNavie.setBolt("naivepre", new naivePreBolt(), preBoltNum)
 					.fieldsGrouping("sreader", "dataStre", new Fields("sn"))
 					.allGrouping("sreader", "contrStre");
 			builderNavie
-					.setBolt("naviestatis", new naiveStatisBolt(), calBoltNum)
-					.fieldsGrouping("naviepre", "streamData",
+					.setBolt("naivestatis", new naiveStatisBolt(), calBoltNum)
+					.fieldsGrouping("naivepre", "streamData",
 							new Fields("tspair"))
-					.allGrouping("naviepre", "calCommand");
-			builderNavie.setBolt("navieaggre", new naiveAggreBolt(),
-					aggreBoltNum).fieldsGrouping("naviestatis",
+					.allGrouping("naivepre", "calCommand");
+			builderNavie.setBolt("naiveaggre", new naiveAggreBolt(),
+					aggreBoltNum).fieldsGrouping("naivestatis",
 					new Fields("pair"));
 
 			if (runenv.compareTo("local") == 0) {
@@ -182,7 +187,7 @@ public class TopologyMain {
 			if (runenv.compareTo("local") == 0) {
 				cluster.submitTopology("strqry", conf,
 						builderAdjust.createTopology());
-				Thread.sleep(5000);
+				Thread.sleep(10000);
 			} else if (runenv.compareTo("cluster") == 0) {
 				StormSubmitter.submitTopology("conqry", conf,
 						builderAdjust.createTopology());
@@ -213,7 +218,7 @@ public class TopologyMain {
 			if (runenv.compareTo("local") == 0) {
 				cluster.submitTopology("strqry", conf,
 						builderDft.createTopology());
-				Thread.sleep(5000);
+				Thread.sleep(10000);
 			} else if (runenv.compareTo("cluster") == 0) {
 				StormSubmitter.submitTopology("conqry", conf,
 						builderDft.createTopology());

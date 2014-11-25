@@ -1,0 +1,35 @@
+########### These MUST be filled in for a storm configuration
+storm.zookeeper.servers:
+     -"localhost"
+#     -"server2"
+
+storm.zookeeper.port: 2181
+# 
+nimbus.host: "localhost"
+storm.local.dir: "/var/stormtmp"
+java.library.path: "/usr/local/lib"
+supervisor.slots.ports:
+     - 6700
+     - 6701
+     - 6702
+     - 6703
+worker.childopts: "-Xmx768m"
+nimbus.childopts: "-Xmx512m"
+supervisor.childopts: "-Xmx256m"
+# 
+# 
+# ##### These may optionally be filled in:
+#    
+## List of custom serializations
+# topology.kryo.register:
+#     - org.mycompany.MyType
+#     - org.mycompany.MyType2: org.mycompany.MyType2Serializer
+#
+## List of custom kryo decorators
+# topology.kryo.decorators:
+#     - org.mycompany.MyDecorator
+#
+## Locations of the drpc servers
+# drpc.servers:
+#     - "server1"
+#     - "server2"

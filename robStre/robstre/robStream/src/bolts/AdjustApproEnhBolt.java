@@ -9,6 +9,8 @@ import java.util.Map;
 
 import main.TopologyMain;
 import tools.streamPair;
+
+
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.BasicOutputCollector;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -27,6 +29,7 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 	String commandStr = new String();
 	long preTaskId = 0;
 	long srctask = 0;
+
 	// ..........memory................//
 	int[][] gridCoors = new int[TopologyMain.gridIdxN + 5][TopologyMain.winSize + 5];
 	double[][] pivotVec = new double[TopologyMain.gridIdxN + 5][TopologyMain.winSize + 5];
@@ -53,6 +56,7 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 	static int glAppBolt = 0;
 	int locAppBolt = 0;
 
+	
 	HashMap<Integer, Integer> retriStre = new HashMap<Integer, Integer>();
 	List<List<Double>> retriStreVec = new ArrayList<List<Double>>(
 			TopologyMain.nstreBolt + 5);
@@ -72,7 +76,20 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 	int locTaskIdx, localTask;
 
 	// ...........metric...............
-	double dirCnt = 0, reclCnt = 0;
+	double dirCnt = 0, reclCnt = 0, reclQualCnt = 0;
+
+//	transient CountMetric _reclData;
+
+	void iniMetrics(TopologyContext context) {
+//		_reclData = new CountMetric();
+//		context.registerMetric("emByte_count", _reclData, 2);
+	}
+
+	void updateMetrics(double val, boolean isWin) {
+//		_reclData.incrBy((long) val);
+
+		return;
+	}
 
 	// ................................
 
@@ -694,6 +711,8 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 					// }
 					// ..............................
 
+					reclQualCnt++;
+
 					collector.emit("interQualStre", new Values(tstamp, pair));
 
 					// declarer.declareStream("interQualStre", new Fields("ts",
@@ -728,6 +747,7 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 		locTaskIdx = context.getThisTaskIndex();
 
 		localTask = context.getThisTaskId();
+		iniMetrics(context);
 
 		return;
 	}
@@ -816,10 +836,18 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 				// localTask);
 				// }
 
+				// .............test............
+
+//				System.out
+//						.printf("At time %f ApproBolt %d: direct %f ; recl %f ; %f of them are correct \n",
+//								curtstamp, localTask, dirCnt, reclCnt,
+//								reclQualCnt);
 				// .............................
-				 dirCnt=reclCnt=0;
-				
-				
+
+				// .........window metrics...................
+//				dirCnt = reclCnt = 0;
+				reclQualCnt = 0;
+
 				for (i = 0; i < gridIdxcnt; ++i) {
 					for (j = i + 1; j < gridIdxcnt; ++j) {
 
@@ -851,12 +879,14 @@ public class AdjustApproEnhBolt extends BaseBasicBolt {
 						}
 					}
 				}
+				
+				updateMetrics(reclCnt, true); 
 
 				// .............test............
 
-				System.out
-						.printf("At time %f ApproBolt %d: direct %f recl %f \n",
-								curtstamp, localTask,  dirCnt, reclCnt);
+				// System.out
+				// .printf("At time %f ApproBolt %d: direct %f recl %f \n",
+				// curtstamp, localTask, dirCnt, reclCnt);
 				// .............................
 
 				localIdxRenew();

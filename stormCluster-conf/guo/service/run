@@ -1,0 +1,5 @@
+#!/bin/sh
+
+exec 2>&1
+
+exec /root/guo/stormCluster/zookeeper-3.4.5/bin/zkServer.sh start

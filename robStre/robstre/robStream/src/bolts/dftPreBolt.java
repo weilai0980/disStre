@@ -71,7 +71,7 @@ public class dftPreBolt extends BaseBasicBolt {
 	
 	// ............custom metric............
 
-	double emByte=0.0;
+	double emisData=0.0;
 	// transient CountMetric _contByte;
 
 	void iniMetrics(TopologyContext context) {
@@ -416,6 +416,7 @@ public class dftPreBolt extends BaseBasicBolt {
 			if (ts - ststamp >= TopologyMain.winSize - 1) {
 
 				ststamp++;
+				emisData=0.0; //for window metric
 
 				// if (iniFlag == 1) {
 				for (i = 0; i < streidCnt; ++i) {
@@ -478,7 +479,17 @@ public class dftPreBolt extends BaseBasicBolt {
 				
 //				...........comm byte metric............
 				
-				updateMetrics(streidCnt * TopologyMain.winSize+ streidCnt*TopologyMain.dftN);
+				emisData=(streidCnt * TopologyMain.winSize+ streidCnt*TopologyMain.dftN*2)* Math.pow(3, TopologyMain.dftN*2);
+				updateMetrics(emisData);
+				
+				// ..........test.............
+				System.out
+						.printf("At time %f, PreBolt %d sends stream with cost %f, compared to naive cost %f\n",
+								curtstamp, localTaskId, emisData,
+								(double) TopologyMain.nstream/ TopologyMain.preBoltNum * TopologyMain.winSize * 19);
+
+				// ..............................
+				
 				
 //				.......................................
 				

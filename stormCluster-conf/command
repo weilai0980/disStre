@@ -1,0 +1,7 @@
+For supervise: 
+
+apt-get install daemontools
+
+For zeromq:
+
+apt-get install uuid-dev

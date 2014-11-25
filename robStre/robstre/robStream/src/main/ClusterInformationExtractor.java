@@ -81,10 +81,10 @@ public class ClusterInformationExtractor {
 		// e.printStackTrace();
 		// }
 
-//		TSocket socket = new TSocket("lsir-cluster-01.epfl.ch", 6627);
-		
+		// TSocket socket = new TSocket("lsir-cluster-01.epfl.ch", 6627);
+
 		TSocket socket = new TSocket("localhost", 6627);
-		
+
 		TFramedTransport transport = new TFramedTransport(socket);
 		TBinaryProtocol protocol = new TBinaryProtocol(transport);
 		Client client = new Client(protocol);
@@ -201,7 +201,7 @@ public class ClusterInformationExtractor {
 
 				// Spouts (All time)
 
-				double emTupSpout = 0, tupPer = TopologyMain.nstream;
+				double emTupSpout = 0, tupsPerSec = TopologyMain.nstream;
 
 				System.out.println("**** Spouts (All time) ****");
 				TopologyInfo topology_info = client.getTopologyInfo(topology
@@ -229,8 +229,8 @@ public class ClusterInformationExtractor {
 
 						//
 
-						emTupSpout += getStatValueFromMap(
-								execStats.get_emitted(), ":all-time");
+						// emTupSpout += getStatValueFromMap(
+						// execStats.get_emitted(), ":all-time");
 
 						// System.out.println("Acked: "
 						// + getStatValueFromMap(spoutStats.get_acked(),
@@ -243,7 +243,7 @@ public class ClusterInformationExtractor {
 
 				System.out.printf(
 						"-------------  Spout  tuple num: %f  uptime: %f\n",
-						emTupSpout, emTupSpout / tupPer);
+						emTupSpout, emTupSpout / tupsPerSec);
 
 				// Bolts (All time)
 
@@ -254,7 +254,7 @@ public class ClusterInformationExtractor {
 				proTSum[1] = 0;
 				exeTSum[1] = 0;
 
-				String boltstr[] = { "naviepre", "naviestatis", "navieaggre",
+				String boltstr[] = { "naivepre", "naivestatis", "naiveaggre",
 						"gridpre", "gridstatis", "gridaggre", "adjPre",
 						"adjAppro", "adjAggre", "dftPre", "dftCal", "dftAggre",
 						"rpPre", "rpCal", "rpAggre" };
@@ -262,13 +262,17 @@ public class ClusterInformationExtractor {
 
 				int boltStrPnt = -1;
 				for (int i = 0; i < 15; ++i) {
-					if (app.compareTo(boltstr[i]) == 0) {
+					// if (app.compareTo(boltstr[i]) == 0)
+					if (boltstr[i].contains(app) == true)
+					{
+
 						boltStrPnt = i;
 						break;
 					}
 				}
 
-				System.out.println("****Bolts (All time)****");
+				System.out.println("****Bolts (All time)****,   in "
+						+ Integer.toString(boltStrPnt));
 				executorStatusItr = topology_info.get_executors_iterator();
 				while (executorStatusItr.hasNext()) {
 					// get the executor
@@ -421,13 +425,11 @@ public class ClusterInformationExtractor {
 					}
 				}
 
-				System.out
-						.printf("------------  Bolt number  \n  pre: %f %f %f %f %f  \n statis: %f %f %f %f %f  \n aggre: %f %f %f %f %f \n",
-								exeCnt[0], emTupBolt[0], transTupBolt[0],
-								proTSum[0], exeTSum[0], exeCnt[1],
-								emTupBolt[1], transTupBolt[1], proTSum[1],
-								exeTSum[1], exeCnt[2], emTupBolt[2],
-								transTupBolt[2], proTSum[2], exeTSum[2]);
+				 System.out
+				 .printf("------------  Bolt number  \n  pre: %f %f %f %f %f  \n statis: %f %f %f %f %f  \n aggre: %f %f %f %f %f \n",
+				 exeCnt[0], emTupBolt[0], transTupBolt[0],proTSum[0], exeTSum[0], 
+				 exeCnt[1], emTupBolt[1], transTupBolt[1], proTSum[1],exeTSum[1], 
+				 exeCnt[2], emTupBolt[2],  transTupBolt[2], proTSum[2], exeTSum[2]);
 
 				// ........for matlab data........................//
 
@@ -442,7 +444,7 @@ public class ClusterInformationExtractor {
 						+ Double.toString(TopologyMain.winSize) + ","
 						+ Double.toString(TopologyMain.thre) + ","
 						+ Double.toString(emTupSpout) + ","
-						+ Double.toString(emTupSpout / tupPer));
+						+ Double.toString(emTupSpout / tupsPerSec));
 				out.write("\n");
 
 				out.write(Double.toString(exeCnt[0]) + ","
@@ -467,11 +469,10 @@ public class ClusterInformationExtractor {
 
 				// ---------------------------------------------------------------------
 
-				// .......................for cluster-side
-				// check................//
+				// .......................for cluster-side check................//
 
-				double lat1 = 0.0, lat2 = 0.0, times = (double) emTupSpout
-						/ tupPer;
+				double lat1 = 0.0, lat2 = 0.0, times = (double) exeCnt[0]
+						/ tupsPerSec;
 				double protime = Math.min(proTSum[1], exeTSum[1]);
 
 				lat1 = proTSum[0] / TopologyMain.preBoltNum * exeCnt[0]

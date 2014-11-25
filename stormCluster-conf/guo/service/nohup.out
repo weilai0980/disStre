@@ -1,0 +1,3 @@
+supervise: fatal: unable to chdir to /service/: file does not exist
+supervise: fatal: unable to chdir to /service: file does not exist
+supervise: fatal: unable to chdir to /service/: file does not exist

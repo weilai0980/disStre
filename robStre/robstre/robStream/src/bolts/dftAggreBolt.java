@@ -73,26 +73,26 @@ public class dftAggreBolt extends BaseBasicBolt {
 
 			System.out.printf("AggreBolt at timestamp %f has %d\n", curtstamp,
 					strePair.size());
-			try {
-
-				fstream = new FileWriter("dftRes.txt", true);
-				BufferedWriter out = new BufferedWriter(fstream);
-
-				out.write("Timestamp  " + Double.toString(curtstamp) + ", "
-						+ "total num  " + Integer.toString(strePair.size())
-						+ ": \n ");
-
-				for (String iter : strePair) {
-					out.write(iter + "\n");
-				}
-
-				out.write("\n");
-				out.close();
-
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			try {
+//
+//				fstream = new FileWriter("dftRes.txt", true);
+//				BufferedWriter out = new BufferedWriter(fstream);
+//
+//				out.write("Timestamp  " + Double.toString(curtstamp) + ", "
+//						+ "total num  " + Integer.toString(strePair.size())
+//						+ ": \n ");
+//
+//				for (String iter : strePair) {
+//					out.write(iter + "\n");
+//				}
+//
+//				out.write("\n");
+//				out.close();
+//
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			// ..................
 
 			// .........update for the next sliding window..........//

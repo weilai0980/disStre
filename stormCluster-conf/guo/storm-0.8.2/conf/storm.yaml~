@@ -1,0 +1,53 @@
+########### These MUST be filled in for a storm configuration
+storm.zookeeper.servers: 
+- "lsir-cluster-01.epfl.ch" 
+- "lsir-cluster-02.epfl.ch" 
+- "lsir-cluster-03.epfl.ch"
+- "lsir-cluster-04.epfl.ch"
+- "lsir-cluster-05.epfl.ch"
+- "lsir-cluster-06.epfl.ch"
+- "lsir-cluster-07.epfl.ch"
+
+
+storm.zookeeper.port: 2181
+nimbus.host: "lsir-cluster-01.epfl.ch" 
+storm.local.dir: "/root/guo/storm-0.8.2"
+java.library.path: "/usr/lib/jvm:/usr/local/lib:/opt/local/lib:/usr/lib"
+
+ui.port: 8772
+nimbus.childopts: "-Xmx1024m -Djava.net.preferIPv4Stack=true"
+ui.childopts: "-Xmx768m -Djava.net.preferIPv4Stack=true"
+supervisor.childopts: "-Djava.net.preferIPv4Stack=true"
+worker.childopts: "-Xmx768m -Djava.net.preferIPv4Stack=true"
+
+supervisor.slots.ports:
+     - 6700
+     - 6701
+     - 6702
+     - 6703
+     - 6704
+     - 6705
+     - 6706
+     - 6707
+     - 6708
+     - 6709
+worker.childopts: "-Xmx768m"
+nimbus.childopts: "-Xmx512m"
+supervisor.childopts: "-Xmx256m"
+# 
+# 
+# ##### These may optionally be filled in:
+#    
+## List of custom serializations
+# topology.kryo.register:
+#     - org.mycompany.MyType
+#     - org.mycompany.MyType2: org.mycompany.MyType2Serializer
+#
+## List of custom kryo decorators
+# topology.kryo.decorators:
+#     - org.mycompany.MyDecorator
+#
+## Locations of the drpc servers
+# drpc.servers:
+#     - "server1"
+#     - "server2"
