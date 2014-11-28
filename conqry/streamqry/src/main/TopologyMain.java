@@ -19,7 +19,7 @@ import java.util.ArrayList;
 public class TopologyMain {
 
 	// .................local parallelism record...........................//
-	public static int datasrc = 1; // 0: synthetic 1: real
+	public static int datasrc = 0; // 0: synthetic 1: real
 	
 	
 	 public static int nstreBolt = 20;
@@ -27,7 +27,7 @@ public class TopologyMain {
 	 public static int nstream = 20;
 	 public static int winSize = 3;
 	 public static int gridIdxN = 500;
-	
+//	
 	 public static int tinterval = 1000;
 	 public static int wokernum = 2;
 	
@@ -44,11 +44,11 @@ public class TopologyMain {
 	
 	// real data
 
-	// public static int nstreBolt = 30;
-	// public static double thre = 0.98;
-	// public static int nstream = 20;
-	// public static int winSize = 3;
-	// public static int gridIdxN=1000;
+//	 public static int nstreBolt = 30;
+//	 public static double thre = 0.98;
+//	 public static int nstream = 20;
+//	 public static int winSize = 3;
+//	 public static int gridIdxN=1000;
 	
 	
 //	 public static int nstrFile = 5;
@@ -66,10 +66,10 @@ public class TopologyMain {
 //	public static int winSize = 10; // 9 12 15 18: 2500 * 10 20  40 80 160 320 640
 //	public static double thre = 0.95; // 0.95 0.9 0.85 0.8 *
 //
-//	public static int wokernum = 30;
-//	public static int preBoltNum = 32; //58 118
-//	public static int calBoltNum = 128; // 58 118 
-//	public static int aggreBoltNum = 30;
+//	public static int wokernum = 16;
+//	public static int preBoltNum = 16; //58 118
+//	public static int calBoltNum = 16; // 58 118 
+//	public static int aggreBoltNum = 2;
 //	
 	public static int winh= (int) (Math.log(calBoltNum) / Math.log(2));
 //	

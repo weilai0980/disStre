@@ -333,6 +333,7 @@ public class streamReader extends BaseRichSpout {
 	public void fail(Object msgId) {
 		System.out.println("--------------------------FAIL:" + msgId);
 	}
+	
 
 	// ........................................................//
 	@Override

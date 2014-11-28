@@ -23,7 +23,7 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 	// ..........time order...........//
 	double curtstamp = TopologyMain.winSize - 1;
-	double ts = 0.0;
+	double ts = 0.0, retriTs = 0.0;
 	String streType = new String();
 	HashSet<Long> preTaskIdx = new HashSet<Long>();
 	String commandStr = new String();
@@ -53,8 +53,8 @@ public class AdjustCalBolt extends BaseBasicBolt {
 	int sentinel = -100000;
 	int taskIdx = 0;
 
-	static int glAppBolt = 0;
-	int locAppBolt = 0;
+	// static int glAppBolt = 0;
+	// int locAppBolt = 0;
 
 	// HashMap<Integer, Integer> retriStre = new HashMap<Integer, Integer>();
 	// List<List<Double>> retriStreVec = new ArrayList<List<Double>>(
@@ -64,21 +64,28 @@ public class AdjustCalBolt extends BaseBasicBolt {
 	// TopologyMain.nstreBolt + 5);
 	// HashSet<Integer> receStre = new HashSet<Integer>();
 
-	int retriChecked = 0;
+	int retriChecked[] = new int[3];
 
 	HashMap<Integer, Integer> taskIdMap = new HashMap<Integer, Integer>();
-	String taskRecStre[][] = new String[2][TopologyMain.calBoltNum + 1];
+	int[] taskIdMapSize = new int[3];
+	// ArrayList<HashMap<Integer, Integer>> taskIdMap = new
+	// ArrayList<HashMap<Integer, Integer>>();
+	// HashMap<Integer, Integer> map1 = new HashMap<Integer, Integer>();
+	// HashMap<Integer, Integer> map2 = new HashMap<Integer, Integer>();
+	String taskRecStre[] = new String[TopologyMain.calBoltNum + 1];
 
 	ArrayList<Set<String>> checkPair = new ArrayList<Set<String>>();
 	Set<String> set1 = new HashSet<String>();
 	Set<String> set2 = new HashSet<String>();
 	int curRecSet = 0;
 
+	// .........receiving-end.....
+
 	HashMap<Integer, Integer> recStreMap = new HashMap<Integer, Integer>();
 	List<List<Double>> recStreVec = new ArrayList<List<Double>>(
-			TopologyMain.nstream / 100);
+			TopologyMain.nstream);
 
-	HashSet<Long> recTaskIdx = new HashSet<Long>();
+	HashSet<Integer> recTaskIdx = new HashSet<Integer>();
 
 	// .........computation parameters...............//
 
@@ -272,19 +279,6 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 		int stre1 = stream1, stre2 = stream2;
 
-		// ..........test............
-
-		// if (tStamp == 15
-		// && ((stre1 == 0 && stre2 == 1) || (stre1 == 1 && stre2 == 0))) {
-		//
-		// System.out
-		// .printf("--------------------------  ApproBolt %d at %f:  %f   %f \n",
-		// localTask, thre, up, low);
-		//
-		// }
-
-		// ........................
-
 		if (up <= thre) {
 
 			if (stre1 > stre2)
@@ -305,7 +299,7 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 			reclCnt++;
 
-			int curSetIdx = (recSet == 0 ? (1 - curRecSet) : curRecSet);
+			int curSetIdx = (recSet == -1 ? (1 - curRecSet) : curRecSet), taskIdx = 0;
 
 			// .............
 			if (taskIdMap.containsKey(taskId1) == true) {
@@ -316,8 +310,10 @@ public class AdjustCalBolt extends BaseBasicBolt {
 				taskIdMap.put(taskId1, tmp);
 
 			}
-			taskRecStre[curSetIdx][taskIdMap.get(taskId1)] = taskRecStre[curSetIdx][taskIdMap
-					.get(taskId1)] + Integer.toString(stre1) + ",";
+
+			taskIdx = taskIdMap.get(taskId1);
+			taskRecStre[taskIdx] = taskRecStre[taskIdx]
+					+ Integer.toString(stre1) + ",";
 
 			if (taskIdMap.containsKey(taskId2) == true) {
 
@@ -327,14 +323,29 @@ public class AdjustCalBolt extends BaseBasicBolt {
 				taskIdMap.put(taskId2, tmp);
 
 			}
-			taskRecStre[curSetIdx][taskIdMap.get(taskId2)] = taskRecStre[curSetIdx][taskIdMap
-					.get(taskId2)] + Integer.toString(stre2) + ",";
+
+			taskIdx = taskIdMap.get(taskId2);
+			taskRecStre[taskIdx] = taskRecStre[taskIdx]
+					+ Integer.toString(stre2) + ",";
 
 			// ...........
 			checkPair.get(curSetIdx).add(
 					Integer.toString(stre1) + "," + Integer.toString(stre2));
 
 		}
+
+		// ..........test............
+
+		 if (tStamp == 2
+		 && ((stre1 == 4 && stre2 == 9) || (stre1 == 9 && stre2 == 4))) {
+		
+//		 System.out
+//		 .printf("--------------------------  ApproBolt %d at %f:  %f   %f \n",
+//		 localTask, thre, up, low);
+		
+		 }
+
+		// ........................
 
 		return;
 	}
@@ -624,109 +635,216 @@ public class AdjustCalBolt extends BaseBasicBolt {
 	void recStreSendback(BasicOutputCollector collector, int recSet,
 			double tStamp) {
 
-		int curSetIdx = (recSet == 0 ? (1 - curRecSet) : curRecSet);
+		int curSetIdx = (recSet == -1 ? (1 - curRecSet) : curRecSet);
 
 		for (Map.Entry<Integer, Integer> entry : taskIdMap.entrySet()) {
 			int taskId = entry.getKey();
 			int memIdx = entry.getValue();
 
+			// ...............test...............
+
+			
+//			if(tStamp==2)
+			{
+			
+//			System.out.printf("  ???????????????  At time %f CalBolt %d requests %s \n ", tStamp,
+//					localTask, taskRecStre[memIdx]);
+			}
+
+			// ..................................
+
 			collector.emitDirect(taskId, "retriStre", new Values(tStamp,
-					taskRecStre[curSetIdx][memIdx], localTask));
+					taskRecStre[memIdx], localTask));
 
 		}
+
+		for (int i = 0; i < TopologyMain.calBoltNum; ++i) {
+			taskRecStre[i] = "";
+		}
+
 		return;
 	}
 
-	void indexRetriStre(int idx, String strevec) {
-		int len = strevec.length();
-		int pre = 0;
-		double tmpexp = 0.0, tmpsqsum = 0.0, tmpval = 0.0, tmpdev;
-		for (int i = 0; i < len; ++i) {
-			if (strevec.charAt(i) == ',') {
+	int normRetriStre(int memidx, String vecstr, int stPos) {
 
-				tmpval = Double.valueOf(strevec.substring(pre, i));
-				retriStreVec.get(idx).add(tmpval);
+		int len = vecstr.length(), cnt = 0, pre = stPos, retVal = 0;
+		double tmpval = 0.0, tmpexp = 0, tmpdev = 0.0, tmpsqsum = 0.0;
 
-				tmpexp += tmpval;
-				tmpsqsum += tmpval * tmpval;
+		for (int i = stPos; i < len; ++i) {
+			if (vecstr.charAt(i) == ',') {
+				tmpval = Double.parseDouble(vecstr.substring(pre, i));
+				recStreVec.get(memidx).add(tmpval);
+
+				tmpexp = tmpexp + tmpval / TopologyMain.winSize;
+				tmpsqsum = tmpsqsum + tmpval * tmpval;
+
+				cnt++;
+				if (cnt >= TopologyMain.winSize) {
+					retVal = i + 1;
+					break;
+				}
 
 				pre = i + 1;
 			}
+
 		}
-		tmpexp = tmpexp / TopologyMain.winSize;
-		tmpdev = Math.sqrt(tmpsqsum - TopologyMain.winSize * tmpexp * tmpexp);
+
+		tmpdev = Math.sqrt(tmpsqsum - tmpexp * tmpexp * TopologyMain.winSize);
 
 		for (int i = 0; i < TopologyMain.winSize; ++i) {
-			tmpval = retriStreVec.get(idx).get(i);
-			retriStreVec.get(idx).set(i, (tmpval - tmpexp) / tmpdev);
+			tmpval = recStreVec.get(memidx).get(i);
+			recStreVec.get(memidx).set(i, (tmpval - tmpexp) / tmpdev);
 		}
 
+		return retVal;
+	}
+
+	void indexRetriStre(String ids, String vectors) {
+		int len = ids.length();
+		int idPre = 0, id = 0, tmp = 0, vecPre = 0;
+		double tmpexp = 0.0, tmpsqsum = 0.0, tmpval = 0.0, tmpdev;
+
+		for (int i = 0; i < len; ++i) {
+			if (ids.charAt(i) == ',') {
+
+				id = Integer.valueOf(ids.substring(idPre, i));
+
+				if (recStreMap.containsKey(id) == false) {
+					tmp = recStreMap.size();
+					recStreMap.put(id, tmp);
+					recStreVec.add(new ArrayList<Double>());
+
+					vecPre = normRetriStre(tmp, vectors, vecPre);
+
+				}
+				idPre = i + 1;
+			}
+		}
 		return;
 	}
 
-	void checkRetriStre(int idx, int sid, BasicOutputCollector collector,
-			double thre, double tstamp) {
-		String pair = new String();
-		for (Integer sid2 : adjPair.get(idx)) {
+	void checkPairs(BasicOutputCollector collector, double thre, double tstamp) {
 
-			if (sid < sid2) {
-				pair = Integer.toString(sid) + "," + Integer.toString(sid2);
+		int str1 = 0, str2 = 0, len = 0, memidx1 = 0, memidx2 = 0;
+		double dist = 0.0, tmp = 0.0;
+
+		for (String pairStr : checkPair.get(curRecSet)) {
+
+			len = pairStr.length();
+			for (int i = 0; i < len; ++i) {
+				if (pairStr.charAt(i) == ',') {
+					str1 = Integer.parseInt(pairStr.substring(0, i));
+					str2 = Integer.parseInt(pairStr.substring(i + 1, len));
+
+				}
+			}
+
+			if (recStreMap.containsKey(str1) == true
+					&& recStreMap.containsKey(str2) == true) {
+				memidx1 = recStreMap.get(str1);
+				memidx2 = recStreMap.get(str2);
 			} else {
-				pair = Integer.toString(sid2) + "," + Integer.toString(sid);
+				continue;
+			}
+			
+			dist = 0.0;
+
+			for (int i = 0; i < TopologyMain.winSize; ++i) {
+				tmp = (recStreVec.get(memidx1).get(i) - recStreVec.get(memidx2)
+						.get(i));
+				dist += (tmp * tmp);
 			}
 
-			if (checkedPair.contains(pair) == false
-					&& receStre.contains(sid2) == true) {
-
-				int idx2 = retriStre.get(sid2);
-
-				double dis = 0.0, tmp = 0.0;
-				for (int i = 0; i < TopologyMain.winSize; ++i) {
-					tmp = (retriStreVec.get(idx).get(i) - retriStreVec
-							.get(idx2).get(i));
-					dis += (tmp * tmp);
-
-					// ...........test...............
-
-					// if (tstamp == 2 && pair.compareTo("8,11") == 0) {
-					// System.out.printf(" (%f  %f) ", retriStreVec.get(idx)
-					// .get(i), retriStreVec.get(idx2).get(i));
-					// }
-					// ..............................
-
-				}
-				dis = Math.sqrt(dis);
-
-				// ...........test...............
-
-				// if (tstamp == 2 && pair.compareTo("8,11") == 0) {
-				// System.out
-				// .printf("\n +++++++++++++++++++++++  ApproBolt %d compute the precise correlation on %s: %f \n",
-				// localTask, pair, dis);
-				// }
-				// ..............................
-
-				if (dis <= thre) {
-
-					// ...........test...............
-					//
-					// if (tstamp == 2 && pair.compareTo("8,11") == 0) {
-					// System.out
-					// .printf("\n +++++++++++++++++++++++  ApproBolt %d compute the precise correlation and send out \n",
-					// localTask);
-					// }
-					// ..............................
-
-					reclQualCnt++;
-
-					collector.emit("interQualStre", new Values(tstamp, pair));
-
-					// declarer.declareStream("interQualStre", new Fields("ts",
-					// "pair"));
-				}
-				checkedPair.add(pair);
+			if (dist <= thre) {
+				collector.emit("interQualStre", new Values(tstamp, pairStr));
 			}
+
+			// .........test.................
+
+			// if (tstamp == 3)
+			//
+			// System.out
+			// .printf("  !!!!!!!!!!!!!!    at time %f Calbolt %d check correlation betwee %d and %d : %f %f\n",
+			// tstamp, localTask, str1, str2, dist, thre);
+
+			// ..............................
+
+			// .........test.................
+
+			// if (tstamp == 3
+			// && ((str1 == 5 && str2 == 6) || (str1 == 6 && str2 == 5)))
+			//
+			// System.out
+			// .printf("  !!!!!!!!!!!!!!    at time %f Calbolt %d check correlation betwee %d and %d : %f %f\n",
+			// tstamp, localTask, str1, str2, dist, thre);
+
+			// ..............................
+
 		}
+
+		// String pair = new String();
+		// for (Integer sid2 : adjPair.get(idx)) {
+		//
+		// if (sid < sid2) {
+		// pair = Integer.toString(sid) + "," + Integer.toString(sid2);
+		// } else {
+		// pair = Integer.toString(sid2) + "," + Integer.toString(sid);
+		// }
+		//
+		// if (checkedPair.contains(pair) == false
+		// && receStre.contains(sid2) == true) {
+		//
+		// int idx2 = retriStre.get(sid2);
+		//
+		// double dis = 0.0, tmp = 0.0;
+		// for (int i = 0; i < TopologyMain.winSize; ++i) {
+		// tmp = (retriStreVec.get(idx).get(i) - retriStreVec
+		// .get(idx2).get(i));
+		// dis += (tmp * tmp);
+		//
+		// // ...........test...............
+		//
+		// // if (tstamp == 2 && pair.compareTo("8,11") == 0) {
+		// // System.out.printf(" (%f  %f) ", retriStreVec.get(idx)
+		// // .get(i), retriStreVec.get(idx2).get(i));
+		// // }
+		// // ..............................
+		//
+		// }
+		// dis = Math.sqrt(dis);
+		//
+		// // ...........test...............
+		//
+		// // if (tstamp == 2 && pair.compareTo("8,11") == 0) {
+		// // System.out
+		// //
+		// .printf("\n +++++++++++++++++++++++  ApproBolt %d compute the precise correlation on %s: %f \n",
+		// // localTask, pair, dis);
+		// // }
+		// // ..............................
+		//
+		// if (dis <= thre) {
+		//
+		// // ...........test...............
+		// //
+		// // if (tstamp == 2 && pair.compareTo("8,11") == 0) {
+		// // System.out
+		// //
+		// .printf("\n +++++++++++++++++++++++  ApproBolt %d compute the precise correlation and send out \n",
+		// // localTask);
+		// // }
+		// // ..............................
+		//
+		// reclQualCnt++;
+		//
+		// collector.emit("interQualStre", new Values(tstamp, pair));
+		//
+		// // declarer.declareStream("interQualStre", new Fields("ts",
+		// // "pair"));
+		// }
+		// checkedPair.add(pair);
+		// }
+		// }
 		return;
 	}
 
@@ -749,7 +867,7 @@ public class AdjustCalBolt extends BaseBasicBolt {
 	@Override
 	public void prepare(Map stormConf, TopologyContext context) {
 
-		locAppBolt = glAppBolt++;
+		// locAppBolt = glAppBolt++;
 		locTaskIdx = context.getThisTaskIndex();
 
 		localTask = context.getThisTaskId();
@@ -757,6 +875,15 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 		checkPair.add(set1);
 		checkPair.add(set2);
+
+		// taskIdMap.add(map1);
+		// taskIdMap.add(map2);
+
+		retriChecked[0] = retriChecked[1] = 0;
+
+		for (int i = 0; i < TopologyMain.calBoltNum; ++i) {
+			taskRecStre[i] = "";
+		}
 
 		return;
 	}
@@ -823,11 +950,11 @@ public class AdjustCalBolt extends BaseBasicBolt {
 			if (ts >= curtstamp) {
 
 				// ...update the post-filtering
-				adjPair.clear();
-				receStre.clear();
-				checkedPair.clear();
-				retriStre.clear();
-				retriStreVec.clear();
+				// adjPair.clear();
+				// receStre.clear();
+				// checkedPair.clear();
+				// retriStre.clear();
+				// retriStreVec.clear();
 				// ..........................
 
 				// .............test............
@@ -863,7 +990,7 @@ public class AdjustCalBolt extends BaseBasicBolt {
 						if (checkGrids(i, j) == 1) {
 							resnum += corBtwAffInGrids(i, j,
 									2 - 2 * TopologyMain.thre, collector,
-									curtstamp, retriChecked);
+									curtstamp, retriChecked[curRecSet]);
 							resnum += corBtwPivots(i, j,
 									2 - 2 * TopologyMain.thre, collector,
 									curtstamp);
@@ -872,9 +999,21 @@ public class AdjustCalBolt extends BaseBasicBolt {
 					}
 				}
 
-				recStreSendback(collector, retriChecked, curtstamp);
+				recStreSendback(collector, retriChecked[curRecSet], curtstamp);
 
-				retriChecked = 0;
+				if (taskIdMap.size() > 0) {
+					if (retriChecked[curRecSet] == -1) {
+
+						retriChecked[1 - curRecSet] = -1;
+						taskIdMapSize[1 - curRecSet] = taskIdMap.size();
+
+					} else {
+						retriChecked[curRecSet] = -1;
+						taskIdMapSize[curRecSet] = taskIdMap.size();
+					}
+				}
+
+				taskIdMap.clear();
 
 				updateMetrics(reclCnt, true);
 
@@ -895,27 +1034,65 @@ public class AdjustCalBolt extends BaseBasicBolt {
 			// declarer.declareStream("winStre", new
 			// Fields("ts","sId","stream"));
 
-			ts = input.getDoubleByField("ts");
-			int sid = input.getIntegerByField("sId");
-			String streStr = input.getStringByField("stream");
+			retriTs = input.getDoubleByField("ts");
+			String ids = input.getStringByField("Ids");
+			String vectors = input.getStringByField("streams");
+			int srcTaskId = input.getIntegerByField("taskId");
 
 			// ...........test.......
 
 			// if (ts == 2 && (sid == 8 || sid == 11)) {
-			// System.out
-			// .printf("+++++++++++++++++++++++  ApproBolt %d got feedback on %d \n",
-			// localTask, sid);
+//			System.out
+//					.printf("+++++++++++++++++++++++ At %f CalBolt %d got feedback streams %s \n",
+//							retriTs, localTask, ids);
 			// }
 
 			// ......................
 
-			if (receStre.contains(sid) == false) {
-				int idx = retriStre.get(sid);
+			if (recTaskIdx.contains(srcTaskId) == false) {
 
-				indexRetriStre(idx, streStr);
-				receStre.add(sid);
+				// .........test..........
+				//
+				// if (retriTs == 3) {
+				// System.out
+				// .printf("  ?????????????  CalBolt %d receive stream ids: %s and vectors %s, need task %d with %d and %d with %d \n",
+				// localTask, ids, vectors, curRecSet,
+				// taskIdMapSize[curRecSet], 1 - curRecSet,
+				// taskIdMapSize[1 - curRecSet]);
+				//
+				// }
+				// .......................
 
-				checkRetriStre(idx, sid, collector, disThreRoot, ts);
+				recTaskIdx.add(srcTaskId);
+				indexRetriStre(ids, vectors);
+			}
+
+			if (recTaskIdx.size() == taskIdMapSize[curRecSet]) {
+
+				// .........test.................
+
+				// if (retriTs == 2 && localTask == 4)
+				//
+				// System.out
+				// .printf("  !!!!!!!!!!!!!!    at time %f Calbolt %d check pairs %d  with %d\n",
+				// retriTs, localTask, checkPair
+				// .get(curRecSet).size(), curRecSet);
+
+				// ..............................
+
+				checkPairs(collector, disThre, retriTs);
+
+				recStreVec.clear();
+				recStreMap.clear();
+
+				recTaskIdx.clear();
+
+				taskIdMap.clear();
+				checkPair.get(curRecSet).clear();
+
+				retriChecked[curRecSet] = 1;
+				curRecSet = 1 - curRecSet;
+
 			}
 
 		}

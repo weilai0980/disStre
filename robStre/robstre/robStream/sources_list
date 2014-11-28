@@ -21,6 +21,7 @@
 ./src/bolts/robAggreBolt.java
 ./src/bolts/dftAggreBolt.java
 ./src/bolts/rpPreBolt.java
+./src/bolts/AdjustCalBolt.java
 ./src/bolts/naiveStatisBolt.java
 ./src/bolts/robCalBolt.java
 ./src/bolts/rpAggreBolt.java

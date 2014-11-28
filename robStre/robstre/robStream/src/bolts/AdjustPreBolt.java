@@ -7,15 +7,11 @@ import java.util.Map;
 
 import main.TopologyMain;
 
-
 //import backtype.storm.metric.LoggingMetricsConsumer;
 //import backtype.storm.metric.api.CountMetric;
 //import backtype.storm.metric.api.MeanReducer;
 //import backtype.storm.metric.api.MultiCountMetric;
 //import backtype.storm.metric.api.ReducedMetric;
-
-
-
 
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.BasicOutputCollector;
@@ -39,18 +35,18 @@ public class AdjustPreBolt extends BaseBasicBolt {
 	double ts = 0.0, retriTs = 0.0;
 	// .........memory......................//
 
-	int declrNum = (int) (TopologyMain.nstreBolt / TopologyMain.preBoltNum + 1);
+	int declrNum = (int) (TopologyMain.nstream / TopologyMain.preBoltNum + 1);
 	double[][] strevec = new double[declrNum][TopologyMain.winSize + 2];
 	double[][] normvec = new double[declrNum][TopologyMain.winSize + 2];
 
-	int[] streid = new int[TopologyMain.nstreBolt + 1];
+	int[] streid = new int[declrNum + 1];
 	int streidCnt = 0;
 
-	int[] vecst = new int[TopologyMain.nstreBolt + 1];
-	int[] veced = new int[TopologyMain.nstreBolt + 1];
+	int[] vecst = new int[declrNum + 1];
+	int[] veced = new int[declrNum + 1];
 	int queueLen = TopologyMain.winSize + 1;
 
-	int[] vecflag = new int[TopologyMain.nstreBolt + 1];
+	int[] vecflag = new int[declrNum + 1];
 
 	int iniFlag = 1;
 	HashSet<Integer> oncePro = new HashSet<Integer>();
@@ -58,11 +54,11 @@ public class AdjustPreBolt extends BaseBasicBolt {
 	// .........affine relation graph......................//
 
 	List<List<Integer>> graphmat = new ArrayList<List<Integer>>(
-			TopologyMain.nstreBolt + 5);
+			declrNum + 5);
 
 	List<List<Integer>> adjList = new ArrayList<List<Integer>>(
-			TopologyMain.nstreBolt + 5);
-	public int[] degree = new int[TopologyMain.nstreBolt + 10];
+			declrNum + 5);
+	public int[] degree = new int[declrNum + 10];
 
 	// ...........Computation parameter....................//
 
@@ -73,25 +69,25 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 	double emByte = 0.0, dirCnt = 0;
 
-//	 transient CountMetric _contData;
+	// transient CountMetric _contData;
 
 	void iniMetrics(TopologyContext context) {
-//		_contData= new CountMetric();
-//		 context.registerMetric("emByte_count", _contData, 5);
+		// _contData= new CountMetric();
+		// context.registerMetric("emByte_count", _contData, 5);
 	}
 
 	void updateMetrics(double val, boolean isWin) {
-//		_contData.incrBy((long)val);
+		// _contData.incrBy((long)val);
 
 		return;
 	}
 
 	// .....................................
 
-	public double[] curexp = new double[TopologyMain.nstreBolt + 10],
-			curdev = new double[TopologyMain.nstreBolt + 10],
-			cursqr = new double[TopologyMain.nstreBolt + 10],
-			cursum = new double[TopologyMain.nstreBolt + 10];
+	public double[] curexp = new double[declrNum + 10],
+			curdev = new double[declrNum + 10],
+			cursqr = new double[declrNum + 10],
+			cursum = new double[declrNum + 10];
 
 	int correCalDis(int vecid1, int vecid2, double thre) {
 		double dis = 0.0, tmp = 0.0;
@@ -413,7 +409,7 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 	}
 
-	String prepStream2Str(int id, double reqTs, int idx) {
+	String prepStream2Str(double reqTs, int idx) {
 
 		String str = new String();
 		// ............test........
@@ -494,7 +490,7 @@ public class AdjustPreBolt extends BaseBasicBolt {
 		taskId = context.getThisTaskId();
 		localTaskIdx = context.getThisTaskIndex();
 
-		for (int j = 0; j < TopologyMain.nstreBolt + 1; j++) {
+		for (int j = 0; j < declrNum + 1; j++) {
 			vecst[j] = 0;
 			veced[j] = 0;
 			// veced[j] = TopologyMain.winSize - 1;
@@ -519,7 +515,8 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 		declarer.declareStream("qualStre", new Fields("pair", "ts"));
 
-		declarer.declareStream("winStre", new Fields("ts", "sId", "stream"));
+		declarer.declareStream("winStre", new Fields("ts", "Ids", "streams",
+				"taskId"));
 
 		declarer.declareStream("calCommand", new Fields("command", "taskid"));
 
@@ -563,7 +560,7 @@ public class AdjustPreBolt extends BaseBasicBolt {
 			if (ts - ststamp >= TopologyMain.winSize - 1) {
 
 				ststamp++;
-//				emByte = 0.0; // for window metric
+				// emByte = 0.0; // for window metric
 				dirCnt = 0.0;
 
 				// .............test............
@@ -615,10 +612,10 @@ public class AdjustPreBolt extends BaseBasicBolt {
 				updateMetrics(emByte, true);
 
 				// ..........test.............
-				
-//				System.out
-//						.printf("At time %f, PreBolt %d sends direct qualified stream %f\n",
-//								curtstamp, taskId, dirCnt);
+
+				// System.out
+				// .printf("At time %f, PreBolt %d sends direct qualified stream %f\n",
+				// curtstamp, taskId, dirCnt);
 
 				// ..............................
 
@@ -640,7 +637,7 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 			graphmat.clear();
 			adjList.clear();
-			for (int j = 0; j < TopologyMain.nstreBolt + 1; ++j) {
+			for (int j = 0; j < declrNum + 1; ++j) {
 				degree[j] = 0;
 				vecflag[j] = 0;
 			}
@@ -651,61 +648,78 @@ public class AdjustPreBolt extends BaseBasicBolt {
 			// add one hashing mechanism
 
 			retriTs = input.getDoubleByField("ts");
-			int id = input.getIntegerByField("streid");
+			String ids = input.getStringByField("streams");
 			int task = input.getIntegerByField("targetTask");
 
-			// declarer.declareStream("winStre", new
-			// Fields("ts","sId","stream"));
+			int len = ids.length(), pre = 0, tmp = 0, streamCnt = 0, j = 0;
+			int[] streams = new int[declrNum];
+			String outStr = new String(), outVectors = new String(), tmpStr = new String();
 
-			// System.out.printf("+++++++++++++++++++++++  PreBolt got request on %d \n",
-			// id);
+			// // .........test..........
+//			System.out
+//					.printf("  ????????????? at time %f Prebolt %d receive stream ids:%s \n",
+//							retriTs, taskId, ids);
 
-			// ....test.....
-			// if (retriTs == 2 && (id == 8 || id == 11)) {
-			// System.out
-			// .printf("??????????  PreBolt %d enumerates: ", taskId);
-			// }
-			// .............
-			for (int k = 0; k < streidCnt; ++k) {
+			// // .......................
 
-				// .........test......
-				// if (retriTs == 2 && (id == 8 || id == 11)) {
-				// System.out.printf(" %d ", k);
-				// }
+			for (i = 0; i < len; ++i) {
+				if (ids.charAt(i) == ',') {
 
-				// ..................
+					tmpStr = ids.substring(pre, i);
 
-				if (streid[k] == id) {
-					streIdx = k;
-					break;
+					tmp = Integer.parseInt(tmpStr);
+
+					// .........test..........
+//					System.out.printf(
+//							" !!!!!!!  Prebolt %d parse id %d from %s  \n",
+//							taskId, tmp, tmpStr);
+
+					// .......................
+
+					pre = i + 1;
+
+					j = 0;
+					for (j = 0; j < streamCnt; ++j) {
+						if (streams[j] == tmp) {
+							break;
+						}
+					}
+
+					if (j == streamCnt) {
+						streams[streamCnt++] = tmp;
+
+						for (int k = 0; k < streidCnt; ++k) {
+
+							if (streid[k] == tmp) {
+								streIdx = k;
+								break;
+							}
+						}
+
+						// .........test..........
+//						System.out
+//								.printf("  ????????????? at time %f Prebolt %d get id %d from %s\n",
+//										retriTs, taskId, tmp, tmpStr);
+
+						// .......................
+
+						outStr = outStr + tmpStr + ",";
+						outVectors = outVectors
+								+ prepStream2Str(retriTs, streIdx);
+
+					}
 				}
 			}
 
-			// ........test.......
-			// if (retriTs == 2 && (id == 8 || id == 11)) {
-			// System.out.printf("\n");
-			// }
+			// .........test..........
+//			System.out
+//					.printf("  ????????????? at time %f Prebolt %d output ids %s  and vectors %s\n",
+//							retriTs, taskId, outStr, outVectors);
 
-			// ...................
-			// .....test........
+			// .......................
 
-			// if (retriTs == 2 && (id == 8 || id == 11)) {
-			// System.out
-			// .printf("+++++++++++++++++++++++  PreBolt %d got request on %d at %f\n",
-			// taskId, id, ts);
-			//
-			// System.out.printf("!!!!!!  PreBolt %d has streams:", taskId);
-			// for (int k = 0; k < streidCnt; ++k) {
-			// System.out.printf("  %d  ", streid[k]);
-			// }
-			// System.out.printf("\n");
-			//
-			// }
-
-			// .................
-
-			collector.emitDirect(task, "winStre", new Values(retriTs, id,
-					prepStream2Str(id, retriTs, streIdx)));
+			collector.emitDirect(task, "winStre", new Values(retriTs, outStr,
+					outVectors, taskId));
 
 		}
 	}

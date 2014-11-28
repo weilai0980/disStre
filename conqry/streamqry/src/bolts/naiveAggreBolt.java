@@ -176,7 +176,7 @@ public class naiveAggreBolt extends BaseBasicBolt {
 			
 			
 			
-			System.out.printf("time stamp %f:   %d\n ",curtstamp,rescnt);
+//			System.out.printf("time stamp %f:   %d\n ",curtstamp,rescnt);
 		
 //			for (String s : pairHset) {
 //			    System.out.println(s+",  ");

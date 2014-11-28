@@ -203,6 +203,7 @@ public class streamReader extends BaseRichSpout {
 
 			}
 
+			Utils.sleep(10);
 			collector.emit("contrStre",
 					new Values("done" + Double.toString(tupTs)));
 
@@ -229,9 +230,17 @@ public class streamReader extends BaseRichSpout {
 			collector.emit("dataStre", new Values(i, tupTs, curStreRand[i]
 					- tupTs * curStreBias[i] + curStreConst[i]), Integer.toString(i) + ',' + Double.toString(tupTs)  );
 		}
+	
+		
+		Utils.sleep(10);
+		
 		collector.emit("contrStre",
-				new Values("done" + Double.toString(tupTs)),
-				Integer.toString(i) + ',' + Double.toString(tupTs));
+				new Values("done" + Double.toString(tupTs)));
+		
+		
+//		collector.emit("contrStre",
+//				new Values("done" + Double.toString(tupTs)),
+//				"done" + ',' + Double.toString(tupTs));
 
 		return;
 	}
@@ -275,7 +284,15 @@ public class streamReader extends BaseRichSpout {
 		 * we will wait and then return
 		 */
 
-		Utils.sleep(TopologyMain.tinterval);
+		try {
+			Thread.sleep(TopologyMain.tinterval);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		
+//		Utils.sleep(TopologyMain.tinterval);
 
 		if (TopologyMain.datasrc == 0) {
 
