@@ -53,11 +53,9 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 	// .........affine relation graph......................//
 
-	List<List<Integer>> graphmat = new ArrayList<List<Integer>>(
-			declrNum + 5);
+	List<List<Integer>> graphmat = new ArrayList<List<Integer>>(declrNum + 5);
 
-	List<List<Integer>> adjList = new ArrayList<List<Integer>>(
-			declrNum + 5);
+	List<List<Integer>> adjList = new ArrayList<List<Integer>>(declrNum + 5);
 	public int[] degree = new int[declrNum + 10];
 
 	// ...........Computation parameter....................//
@@ -656,9 +654,9 @@ public class AdjustPreBolt extends BaseBasicBolt {
 			String outStr = new String(), outVectors = new String(), tmpStr = new String();
 
 			// // .........test..........
-//			System.out
-//					.printf("  ????????????? at time %f Prebolt %d receive stream ids:%s \n",
-//							retriTs, taskId, ids);
+			// System.out
+			// .printf("  ????????????? at time %f Prebolt %d receive stream ids:%s \n",
+			// retriTs, taskId, ids);
 
 			// // .......................
 
@@ -670,51 +668,50 @@ public class AdjustPreBolt extends BaseBasicBolt {
 					tmp = Integer.parseInt(tmpStr);
 
 					// .........test..........
-//					System.out.printf(
-//							" !!!!!!!  Prebolt %d parse id %d from %s  \n",
-//							taskId, tmp, tmpStr);
+					// System.out.printf(
+					// " !!!!!!!  Prebolt %d parse id %d from %s  \n",
+					// taskId, tmp, tmpStr);
 
 					// .......................
 
 					pre = i + 1;
 
-					j = 0;
-					for (j = 0; j < streamCnt; ++j) {
-						if (streams[j] == tmp) {
+					// j = 0;
+					// for (j = 0; j < streamCnt; ++j) {
+					// if (streams[j] == tmp) {
+					// break;
+					// }
+					// }
+					//
+					// if (j == streamCnt) {
+					// streams[streamCnt++] = tmp;
+
+					for (int k = 0; k < streidCnt; ++k) {
+
+						if (streid[k] == tmp) {
+							streIdx = k;
 							break;
 						}
 					}
 
-					if (j == streamCnt) {
-						streams[streamCnt++] = tmp;
+					// .........test..........
+					// System.out
+					// .printf("  ????????????? at time %f Prebolt %d get id %d from %s\n",
+					// retriTs, taskId, tmp, tmpStr);
 
-						for (int k = 0; k < streidCnt; ++k) {
+					// .......................
 
-							if (streid[k] == tmp) {
-								streIdx = k;
-								break;
-							}
-						}
-
-						// .........test..........
-//						System.out
-//								.printf("  ????????????? at time %f Prebolt %d get id %d from %s\n",
-//										retriTs, taskId, tmp, tmpStr);
-
-						// .......................
-
-						outStr = outStr + tmpStr + ",";
-						outVectors = outVectors
-								+ prepStream2Str(retriTs, streIdx);
-
-					}
+					outStr = outStr + tmpStr + ",";
+					outVectors = outVectors + prepStream2Str(retriTs, streIdx);
+					//
+					// }
 				}
 			}
 
 			// .........test..........
-//			System.out
-//					.printf("  ????????????? at time %f Prebolt %d output ids %s  and vectors %s\n",
-//							retriTs, taskId, outStr, outVectors);
+			// System.out
+			// .printf("  ????????????? at time %f Prebolt %d output ids %s  and vectors %s\n",
+			// retriTs, taskId, outStr, outVectors);
 
 			// .......................
 

@@ -72,7 +72,9 @@ public class AdjustCalBolt extends BaseBasicBolt {
 	// ArrayList<HashMap<Integer, Integer>>();
 	// HashMap<Integer, Integer> map1 = new HashMap<Integer, Integer>();
 	// HashMap<Integer, Integer> map2 = new HashMap<Integer, Integer>();
-	String taskRecStre[] = new String[TopologyMain.calBoltNum + 1];
+	
+	ArrayList<HashSet<String>> taskRecStre= new ArrayList<HashSet<String>>();
+//	String taskRecStre[] = new String[TopologyMain.calBoltNum + 1];
 
 	ArrayList<Set<String>> checkPair = new ArrayList<Set<String>>();
 	Set<String> set1 = new HashSet<String>();
@@ -308,12 +310,16 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 				int tmp = taskIdMap.size();
 				taskIdMap.put(taskId1, tmp);
+				
+				taskRecStre.add(new HashSet<String>());
 
 			}
 
 			taskIdx = taskIdMap.get(taskId1);
-			taskRecStre[taskIdx] = taskRecStre[taskIdx]
-					+ Integer.toString(stre1) + ",";
+			taskRecStre.get(taskIdx).add(Integer.toString(stre1) + ",");
+			
+//			[taskIdx] = taskRecStre[taskIdx]
+//					+ Integer.toString(stre1) + ",";
 
 			if (taskIdMap.containsKey(taskId2) == true) {
 
@@ -321,12 +327,17 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 				int tmp = taskIdMap.size();
 				taskIdMap.put(taskId2, tmp);
+				
+				taskRecStre.add(new HashSet<String>());
 
 			}
 
+//			taskIdx = taskIdMap.get(taskId2);
+//			taskRecStre[taskIdx] = taskRecStre[taskIdx]
+//					+ Integer.toString(stre2) + ",";
+			
 			taskIdx = taskIdMap.get(taskId2);
-			taskRecStre[taskIdx] = taskRecStre[taskIdx]
-					+ Integer.toString(stre2) + ",";
+			taskRecStre.get(taskIdx).add(Integer.toString(stre2) + ",");
 
 			// ...........
 			checkPair.get(curSetIdx).add(
@@ -336,14 +347,14 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 		// ..........test............
 
-		 if (tStamp == 2
-		 && ((stre1 == 4 && stre2 == 9) || (stre1 == 9 && stre2 == 4))) {
-		
+//		 if (tStamp == 2
+//		 && ((stre1 == 4 && stre2 == 9) || (stre1 == 9 && stre2 == 4))) {
+//		
 //		 System.out
 //		 .printf("--------------------------  ApproBolt %d at %f:  %f   %f \n",
 //		 localTask, thre, up, low);
-		
-		 }
+//		
+//		 }
 
 		// ........................
 
@@ -645,22 +656,31 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 			
 //			if(tStamp==2)
-			{
+//			{
 			
 //			System.out.printf("  ???????????????  At time %f CalBolt %d requests %s \n ", tStamp,
 //					localTask, taskRecStre[memIdx]);
-			}
+//			}
 
 			// ..................................
+			
+			String tmpStreams="";
+			for(String stre:taskRecStre.get(memIdx))
+			{
+				tmpStreams+=stre;
+			}
 
 			collector.emitDirect(taskId, "retriStre", new Values(tStamp,
-					taskRecStre[memIdx], localTask));
+					tmpStreams, localTask));
+//					taskRecStre[memIdx], localTask));
 
 		}
+		
+		taskRecStre.clear();
 
-		for (int i = 0; i < TopologyMain.calBoltNum; ++i) {
-			taskRecStre[i] = "";
-		}
+//		for (int i = 0; i < TopologyMain.calBoltNum; ++i) {
+//			taskRecStre[i] = "";
+//		}
 
 		return;
 	}
@@ -881,9 +901,10 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 		retriChecked[0] = retriChecked[1] = 0;
 
-		for (int i = 0; i < TopologyMain.calBoltNum; ++i) {
-			taskRecStre[i] = "";
-		}
+		taskRecStre.clear();
+//		for (int i = 0; i < TopologyMain.calBoltNum; ++i) {
+//			taskRecStre[i] = "";
+//		}
 
 		return;
 	}
@@ -999,21 +1020,21 @@ public class AdjustCalBolt extends BaseBasicBolt {
 					}
 				}
 
-				recStreSendback(collector, retriChecked[curRecSet], curtstamp);
+//				recStreSendback(collector, retriChecked[curRecSet], curtstamp);
 
-				if (taskIdMap.size() > 0) {
-					if (retriChecked[curRecSet] == -1) {
-
-						retriChecked[1 - curRecSet] = -1;
-						taskIdMapSize[1 - curRecSet] = taskIdMap.size();
-
-					} else {
-						retriChecked[curRecSet] = -1;
-						taskIdMapSize[curRecSet] = taskIdMap.size();
-					}
-				}
-
-				taskIdMap.clear();
+//				if (taskIdMap.size() > 0) {
+//					if (retriChecked[curRecSet] == -1) {
+//
+//						retriChecked[1 - curRecSet] = -1;
+//						taskIdMapSize[1 - curRecSet] = taskIdMap.size();
+//
+//					} else {
+//						retriChecked[curRecSet] = -1;
+//						taskIdMapSize[curRecSet] = taskIdMap.size();
+//					}
+//				}
+//
+//				taskIdMap.clear();
 
 				updateMetrics(reclCnt, true);
 

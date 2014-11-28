@@ -41,6 +41,9 @@ public class TopologyMain {
 	// ..................data set.....................
 	public static int datasrc = 0; // 0: synthetic 1: real
 
+	
+//	naive 700
+	
 	public static int nstreBolt = 1000;
 	public static int nstream = 1000;
 	public static int gridIdxN = 1000;
@@ -114,7 +117,7 @@ public class TopologyMain {
 		conf.setNumWorkers(wokernum);
 
 		// Topology run
-		conf.put(Config.TOPOLOGY_MAX_SPOUT_PENDING, 100);
+		conf.put(Config.TOPOLOGY_MAX_SPOUT_PENDING, nstream*2);
 		// conf.registerMetricsConsumer(backtype.storm.metrics.LoggingMetricsConsumer.class,
 		// 2);
 		LocalCluster cluster = new LocalCluster();

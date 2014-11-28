@@ -263,8 +263,7 @@ public class ClusterInformationExtractor {
 				int boltStrPnt = -1;
 				for (int i = 0; i < 15; ++i) {
 					// if (app.compareTo(boltstr[i]) == 0)
-					if (boltstr[i].contains(app) == true)
-					{
+					if (boltstr[i].contains(app) == true) {
 
 						boltStrPnt = i;
 						break;
@@ -329,9 +328,13 @@ public class ClusterInformationExtractor {
 							if (getBoltStatDoubleValueFromMap(
 									boltStats.get_process_ms_avg(), ":all-time") != null) {
 
-								proTSum[1] += getBoltStatDoubleValueFromMap(
-										boltStats.get_process_ms_avg(),
-										":all-time");
+								
+								proTSum[1] += boltStats.get_execute_ms_avg_size();
+								
+//								proTSum[1] += getBoltStatDoubleValueFromMap(
+//										boltStats.get_execute_ms_avg_size(),
+////										boltStats.get_process_ms_avg(),
+//										":all-time");
 
 								// proTSum[1] = Math.max(
 								// getBoltStatDoubleValueFromMap(
@@ -425,13 +428,23 @@ public class ClusterInformationExtractor {
 					}
 				}
 
-				 System.out
-				 .printf("------------  Bolt number  \n  pre: %f %f %f %f %f  \n statis: %f %f %f %f %f  \n aggre: %f %f %f %f %f \n",
-				 exeCnt[0], emTupBolt[0], transTupBolt[0],proTSum[0], exeTSum[0], 
-				 exeCnt[1], emTupBolt[1], transTupBolt[1], proTSum[1],exeTSum[1], 
-				 exeCnt[2], emTupBolt[2],  transTupBolt[2], proTSum[2], exeTSum[2]);
+				System.out
+						.printf("------------  Bolt number  \n  pre: %f %f %f %f %f  \n statis: %f %f %f %f %f  \n aggre: %f %f %f %f %f \n",
+								exeCnt[0], emTupBolt[0], transTupBolt[0],
+								proTSum[0], exeTSum[0], exeCnt[1],
+								emTupBolt[1], transTupBolt[1], proTSum[1],
+								exeTSum[1], exeCnt[2], emTupBolt[2],
+								transTupBolt[2], proTSum[2], exeTSum[2]);
 
 				// ........for matlab data........................//
+
+				proTSum[0] *= 800;
+				exeTSum[0] *= 800;
+				proTSum[1] *= TopologyMain.calBoltNum;
+				
+				exeTSum[1] *= TopologyMain.calBoltNum;
+				proTSum[2] *= 800;
+				exeTSum[2] *= 800;
 
 				if (ini == 1) {
 					out.write("\n");
@@ -469,15 +482,20 @@ public class ClusterInformationExtractor {
 
 				// ---------------------------------------------------------------------
 
-				// .......................for cluster-side check................//
+				// .......................for cluster-side
+				// check................//
 
 				double lat1 = 0.0, lat2 = 0.0, times = (double) exeCnt[0]
 						/ tupsPerSec;
-				double protime = Math.min(proTSum[1], exeTSum[1]);
+				double protime = Math.max(proTSum[1], exeTSum[1]);
 
-				lat1 = proTSum[0] / TopologyMain.preBoltNum * exeCnt[0]
+				protime = Math.max(proTSum[0], exeTSum[0]);
+
+				lat1 = protime / TopologyMain.preBoltNum * exeCnt[0]
 						/ TopologyMain.preBoltNum / times;
 				// lat2=proTSum[1]/TopologyMain.calBoltNum*exeCnt[1]/TopologyMain.calBoltNum/times;
+
+				protime = Math.max(proTSum[1], exeTSum[1]);
 				lat2 = protime / TopologyMain.calBoltNum * exeCnt[1]
 						/ TopologyMain.calBoltNum / times;
 

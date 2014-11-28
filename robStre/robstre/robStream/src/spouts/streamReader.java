@@ -228,19 +228,23 @@ public class streamReader extends BaseRichSpout {
 			curStreRand[i] += Math.random() * 5000;
 
 			collector.emit("dataStre", new Values(i, tupTs, curStreRand[i]
-					- tupTs * curStreBias[i] + curStreConst[i]), Integer.toString(i) + ',' + Double.toString(tupTs)  );
+					- tupTs * curStreBias[i] + curStreConst[i]),
+					Integer.toString(i) + ',' + Double.toString(tupTs));
 		}
-	
-		
+
+		// ...........test........
+//		System.out.printf("???????????????????? emit out data at time %f",
+//				thputCnt);
+		// ......................
+
 		Utils.sleep(10);
-		
-		collector.emit("contrStre",
-				new Values("done" + Double.toString(tupTs)));
-		
-		
-//		collector.emit("contrStre",
-//				new Values("done" + Double.toString(tupTs)),
-//				"done" + ',' + Double.toString(tupTs));
+
+		collector
+				.emit("contrStre", new Values("done" + Double.toString(tupTs)));
+
+		// collector.emit("contrStre",
+		// new Values("done" + Double.toString(tupTs)),
+		// "done" + ',' + Double.toString(tupTs));
 
 		return;
 	}
@@ -273,7 +277,7 @@ public class streamReader extends BaseRichSpout {
 	}
 
 	public void fail(Object msgId) {
-//		System.out.println("--------------------------FAIL:" + msgId);
+		// System.out.println("--------------------------FAIL:" + msgId);
 	}
 
 	// ........................................................//
@@ -291,8 +295,7 @@ public class streamReader extends BaseRichSpout {
 			e.printStackTrace();
 		}
 
-		
-//		Utils.sleep(TopologyMain.tinterval);
+		// Utils.sleep(TopologyMain.tinterval);
 
 		if (TopologyMain.datasrc == 0) {
 
