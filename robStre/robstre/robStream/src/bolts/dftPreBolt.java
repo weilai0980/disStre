@@ -20,7 +20,7 @@ public class dftPreBolt extends BaseBasicBolt {
 	 */
 	private static final long serialVersionUID = 1L;
 	// .........memory management for sliding windows.................//
-	int declrNum = (int) (TopologyMain.nstreBolt / TopologyMain.preBoltNum + 1);
+	int declrNum = (int) (TopologyMain.nstream / TopologyMain.preBoltNum + 1);
 	double[][] strevec = new double[declrNum][TopologyMain.winSize + 1];
 	double[][] normvec = new double[declrNum][TopologyMain.winSize + 1];
 
@@ -71,6 +71,7 @@ public class dftPreBolt extends BaseBasicBolt {
 	
 	// ............custom metric............
 
+	int test_cnt=0;
 	double emisData=0.0;
 	// transient CountMetric _contByte;
 
@@ -98,6 +99,20 @@ public class dftPreBolt extends BaseBasicBolt {
 				cellCoor = cellCoor + Integer.toString(cell[i]) + ",";
 			}
 
+			
+			
+//			...............test.....................
+			
+//			if(ts==4 && memidx==1)
+//			{
+//				test_cnt++;	
+////				System.out.printf("prebolt %d send stream %d to cell %s \n",localTaskId,streid[memidx],cellCoor);
+//			}
+			
+			
+//			........................................
+			
+			
 			if (cellCoor.compareTo(hostCoor) == 0) {
 
 				collector.emit("streamData", new Values(ts, streid[memidx],
@@ -348,9 +363,6 @@ public class dftPreBolt extends BaseBasicBolt {
 
 		for (int j = 0; j < TopologyMain.nstreBolt + 1; j++) {
 
-			// for long sliding window
-			// veced[j] = TopologyMain.winSize - 1;
-
 			vecflag[j] = 0;
 			streid[j] = 0;
 
@@ -362,6 +374,11 @@ public class dftPreBolt extends BaseBasicBolt {
 		for (int j = 0; j < TopologyMain.winSize + 1; ++j) {
 			vecst[j] = 0;
 			veced[j] = 0;
+			
+			if(TopologyMain.iniWindow==0)
+			{
+				veced[j] = TopologyMain.winSize - 1;
+			}
 
 		}
 
@@ -468,8 +485,33 @@ public class dftPreBolt extends BaseBasicBolt {
 					calCellCoor(i, TopologyMain.dftN * 2, 0, cellCal,
 							collector, streamVecPrep(i), dftCellVecPrep(i), ts,
 							normDFTVecPrep(i));
+					
+					
+					
+					
+//					...............test.....................
+					
+//					if(ts==4 && i==1)
+//					{
+//						System.out.printf("prebolt %d send stream %d to cell %d \n",localTaskId,streid[i],test_cnt);
+//					}
+					
+					
+//					........................................
+					
+					
+					
+					
+					
+					
+					
 				}
 
+				
+				
+				
+				
+				
 				iniFlag = 0;
 
 				collector.emit("calCommand",

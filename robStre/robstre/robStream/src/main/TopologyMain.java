@@ -25,40 +25,9 @@ import java.util.ArrayList;
 
 public class TopologyMain {
 
-	// .................DFT approach...........................//
-
-	public static final int dftN = 2;
-
-	// ..................RobStream approach....................//
-	public static final int cellTask = 2;
-
-	// .................Random projection......................//
-
-	public static final int rp_vecnum = 10;
-	public static final int rp_dimnum = 4;
-	public static final String rp_matFile = "rhp-vectors.txt";
-
-	// ..................data set.....................
-	public static int datasrc = 0; // 0: synthetic 1: real
-
-	
-//	naive 700
-	
-	public static int nstreBolt = 1000;
-	public static int nstream = 1000;
-	public static int gridIdxN = 1000;
-
-	public static int nstrFile = 20;
-	public static int offsetRow = 0;
-
-	// ...............sampling..................
-
-	final static int sampRate = 1000;
-	final static int sampleTimes = 10;
-
 	// .................local parallelism record...........................//
 
-//	 public static final int winSize = 3;
+//	 public static final int winSize = 5;
 //	 public static final double thre = 0.98;
 //	 public static final int tinterval = 30;
 //	 public static final int wokernum = 2;
@@ -71,31 +40,70 @@ public class TopologyMain {
 
 	public static int tinterval = 1000;
 	public static int winSize = 10; // 20 40 80 160 320 640 1280
-	public static double thre = 0.95; // 0.95 0.9 0.85 0.8 *
+	public static double thre = 0.95; 
 
 	public static int wokernum = 16;
 	public static int preBoltNum = 16;
-	public static int calBoltNum = 16;
-	public static int aggreBoltNum = 1;
+	public static int calBoltNum = 128;
+	public static int aggreBoltNum = 8;
+	
+	// ..................data set.....................
+	public static int datasrc = 0; // 0: synthetic 1: real
+
+	public static int nstreBolt = 1000;
+	public static int nstream = 1000;
+	public static int gridIdxN = 6960;
+
+	public static int nstrFile = 20;
+	public static int offsetRow = 0;
+	public static int iniWindow = 0;
+
+	// .................DFT approach...........................//
+
+//	threshold
+	
+	public static final int dftN = 2;
+
+	// ..................RobStream approach....................//
+	
+	
+	public static final int cellTask = 2;
+
+	// .................Random projection......................//
+
+	public static final int rp_vecnum = 10;
+	public static final int rp_dimnum = 4;
+	public static final String rp_matFile = "rhp-vectors.txt";
+
+	// .............APS............
 
 	public static final int winh = (int) (Math.log(calBoltNum) / Math.log(2));
 
+	
+
+	// ...............sampling..................
+
+	final static int sampRate = 1000;
+	final static int sampleTimes = 10;
+
+	// .........................................
+	
 	public static void paraSetup(String env) {
-//		if (env.compareTo("local") == 0) {
-//	
-//			TopologyMain.winSize = 3;
-//			TopologyMain.thre = 0.98;
-//			TopologyMain.tinterval = 40;
-//		
-//			TopologyMain.wokernum = 2;
-//			TopologyMain.preBoltNum = 2;
-//			TopologyMain.calBoltNum = 4;
-//			TopologyMain.aggreBoltNum = 1;
-//
-//			TopologyMain.nstreBolt = 20;
-//			TopologyMain.nstream = 20;
-//			TopologyMain.gridIdxN = 20;
-//		}
+		// if (env.compareTo("local") == 0) {
+		//
+		// TopologyMain.winSize = 3;
+		// TopologyMain.thre = 0.98;
+		// TopologyMain.tinterval = 40;
+		//
+		// TopologyMain.wokernum = 2;
+		// TopologyMain.preBoltNum = 2;
+		// TopologyMain.calBoltNum = 4;
+		// TopologyMain.aggreBoltNum = 1;
+		//
+		// TopologyMain.nstreBolt = 20;
+		// TopologyMain.nstream = 20;
+		// TopologyMain.gridIdxN = 20;
+		// }
 
 	}
 
@@ -104,8 +112,8 @@ public class TopologyMain {
 
 		System.out.printf("i am ok\n");
 		String appro = args[0];
-		
-//		String runenv = args[1];
+
+		// String runenv = args[1];
 		paraSetup(args[1]);
 
 		// Configuration
@@ -117,7 +125,7 @@ public class TopologyMain {
 		conf.setNumWorkers(wokernum);
 
 		// Topology run
-		conf.put(Config.TOPOLOGY_MAX_SPOUT_PENDING, nstream*2);
+		conf.put(Config.TOPOLOGY_MAX_SPOUT_PENDING, nstream * 1.5);
 		// conf.registerMetricsConsumer(backtype.storm.metrics.LoggingMetricsConsumer.class,
 		// 2);
 		LocalCluster cluster = new LocalCluster();
@@ -336,13 +344,14 @@ public class TopologyMain {
 
 			int sampcnt = 0, recFlag = 1;
 			String curApp = args[1];
+			String expType= args[2];
 
 			while (sampcnt < sampleTimes) {
 
 				Thread.sleep(sampRate);
 
 				ClusterInformationExtractor metrics = new ClusterInformationExtractor();
-				metrics.infoExtractor(curApp, recFlag);
+				metrics.infoExtractor(curApp, recFlag, expType);
 				sampcnt++;
 
 				recFlag = 0;

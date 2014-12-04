@@ -334,6 +334,14 @@ public class streamReader extends BaseRichSpout {
 
 			synDataIni(TopologyMain.nstream);
 		}
+		
+		
+		
+		if(TopologyMain.iniWindow==0)
+		{
+			tupTs=TopologyMain.winSize-1;
+		}
+		
 		collector = coll;
 	}
 

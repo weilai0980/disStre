@@ -191,9 +191,6 @@ public class AdjustPreBolt extends BaseBasicBolt {
 		degree[st] = -1;
 		int maxdeg = -1, maxstre = -1, cnt = 0;
 
-		//
-		// for (Integer j : strpair.get(i)) {
-
 		if (graphmat.get(st).size() > 0) {
 
 			for (Integer i : graphmat.get(st)) {
@@ -491,7 +488,11 @@ public class AdjustPreBolt extends BaseBasicBolt {
 		for (int j = 0; j < declrNum + 1; j++) {
 			vecst[j] = 0;
 			veced[j] = 0;
-			// veced[j] = TopologyMain.winSize - 1;
+			
+			if(TopologyMain.iniWindow==0)
+			{
+				veced[j] = TopologyMain.winSize - 1;
+			}	
 
 			vecflag[j] = 0;
 			streid[j] = 0;

@@ -59,13 +59,14 @@ public class ClusterInformationExtractor {
 	// e.printStackTrace();
 	// }
 
-	public void infoExtractor(String app, int ini) throws IOException {
+	public void infoExtractor(String app, int ini, String exp)
+			throws IOException {
 
 		// try {
-		fstream = new FileWriter("res-" + (app) + "-ft.txt", true);
+		fstream = new FileWriter("res-" + (app) +"-"+ exp + ".txt", true);
 		BufferedWriter out = new BufferedWriter(fstream);
 
-		fstream2 = new FileWriter("check-" + (app) + "-ft.txt", true);
+		fstream2 = new FileWriter("check-" + (app) + "-"+exp + ".txt", true);
 		BufferedWriter out2 = new BufferedWriter(fstream2);
 
 		// out.write("Timestamp  " + Double.toString(curtstamp) + ", "
@@ -328,18 +329,13 @@ public class ClusterInformationExtractor {
 							if (getBoltStatDoubleValueFromMap(
 									boltStats.get_process_ms_avg(), ":all-time") != null) {
 
-								
-								proTSum[1] += boltStats.get_execute_ms_avg_size();
-								
-//								proTSum[1] += getBoltStatDoubleValueFromMap(
-//										boltStats.get_execute_ms_avg_size(),
-////										boltStats.get_process_ms_avg(),
-//										":all-time");
+//								proTSum[1] += boltStats
+//										.get_execute_ms_avg_size();
 
-								// proTSum[1] = Math.max(
-								// getBoltStatDoubleValueFromMap(
-								// boltStats.get_process_ms_avg(),
-								// ":all-time"), proTSum[1]);
+								 proTSum[1] += getBoltStatDoubleValueFromMap(
+								  boltStats.get_process_ms_avg(),
+								 ":all-time");
+
 							}
 							if (getBoltStatDoubleValueFromMap(
 									boltStats.get_execute_ms_avg(), ":all-time") != null) {
@@ -438,13 +434,13 @@ public class ClusterInformationExtractor {
 
 				// ........for matlab data........................//
 
-				proTSum[0] *= 800;
-				exeTSum[0] *= 800;
-				proTSum[1] *= TopologyMain.calBoltNum;
-				
-				exeTSum[1] *= TopologyMain.calBoltNum;
-				proTSum[2] *= 800;
-				exeTSum[2] *= 800;
+//				proTSum[0] *= 800;
+//				exeTSum[0] *= 800;
+				proTSum[1] = proTSum[1]/2*TopologyMain.calBoltNum;
+//
+				exeTSum[1] = exeTSum[1]/2*TopologyMain.calBoltNum;
+//				proTSum[2] *= 800;
+//				exeTSum[2] *= 800;
 
 				if (ini == 1) {
 					out.write("\n");

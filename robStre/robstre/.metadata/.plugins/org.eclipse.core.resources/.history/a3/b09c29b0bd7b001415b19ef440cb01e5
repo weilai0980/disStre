@@ -1,0 +1,553 @@
+package bolts;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import main.TopologyMain;
+import backtype.storm.task.TopologyContext;
+import backtype.storm.topology.BasicOutputCollector;
+import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.topology.base.BaseBasicBolt;
+import backtype.storm.tuple.Fields;
+import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
+
+public class dftPreBolt extends BaseBasicBolt {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	// .........memory management for sliding windows.................//
+	int declrNum = (int) (TopologyMain.nstream / TopologyMain.preBoltNum + 1);
+	double[][] strevec = new double[declrNum][TopologyMain.winSize + 1];
+	double[][] normvec = new double[declrNum][TopologyMain.winSize + 1];
+
+	double[][] dft = new double[declrNum][TopologyMain.dftN * 2 + 1];
+	double[][] dftang = new double[declrNum][TopologyMain.dftN * 2 + 1];
+	int[][] dftCell = new int[declrNum][TopologyMain.dftN * 2 + 1];
+
+	int[] streid = new int[TopologyMain.nstreBolt + 1];
+	int streidCnt = 0;
+
+	int[] vecst = new int[declrNum + 1];
+	int[] veced = new int[declrNum + 1];
+	final int queueLen = TopologyMain.winSize + 1;
+
+	int[] vecflag = new int[TopologyMain.nstreBolt + 1];
+
+	int iniFlag = 1;
+
+	double[] curexp = new double[TopologyMain.nstreBolt + 1],
+			cursqsum = new double[TopologyMain.nstreBolt + 1];
+
+	// ...........computation parameter....................//
+
+	public final double disThre = 2 - 2 * TopologyMain.thre;
+	public final double cellEps = Math.sqrt(disThre);
+	public final double taskEps = cellEps / TopologyMain.cellTask;
+
+	// ...........emitting streams....................//
+
+	public String ptOutputStr;
+	public String vecOutputStr;
+	public double taskCoor;
+	public long localTaskId = 0;
+	int[] direcVec = { -1, 0, 1 };
+	int[] cellCal = new int[TopologyMain.dftN * 2 + 1];
+
+	// ............input time order..............//
+
+	String streType = new String();
+	double ts = 0.0;
+	// for long sliding window
+	// public double curtstamp = TopologyMain.winSize - 1;
+	public double curtstamp = 0.0;
+	public double ststamp = 0.0;
+	String commandStr = new String(), preCommandStr = new String();
+
+	// ..........................................//
+	
+	// ............custom metric............
+
+	int test_cnt=0;
+	double emisData=0.0;
+	// transient CountMetric _contByte;
+
+	void iniMetrics(TopologyContext context) {
+		// _contByte= new CountMetric();
+		//
+		// context.registerMetric("emByte_count", _contByte, 5);
+
+	}
+
+	void updateMetrics(double val) {
+		// _contByte.incrBy(val);
+		return;
+	}
+
+	// .....................................
+
+	public void calCellCoor(int memidx, int dftNum, int curCnt, int cell[],
+			BasicOutputCollector collector, String strevec, String hostCoor,
+			double ts, String dftvec) {
+
+		if (curCnt >= dftNum) {
+			String cellCoor = new String();
+			for (int i = 0; i < dftNum; ++i) {
+				cellCoor = cellCoor + Integer.toString(cell[i]) + ",";
+			}
+
+			
+			
+//			...............test.....................
+			
+			if(ts==4 && memidx==1)
+			{
+				test_cnt++;	
+//				System.out.printf("prebolt %d send stream %d to cell %s \n",localTaskId,streid[memidx],cellCoor);
+			}
+			
+			
+//			........................................
+			
+			
+			if (cellCoor.compareTo(hostCoor) == 0) {
+
+				collector.emit("streamData", new Values(ts, streid[memidx],
+						cellCoor, strevec, dftvec, 1)); // hostflag=1
+			} else {
+
+				collector.emit("streamData", new Values(ts, streid[memidx],
+						cellCoor, strevec, dftvec, 0));
+			}
+
+			return;
+
+		}
+		for (int i = 0; i < 3; ++i) {
+
+			cell[curCnt] = dftCell[memidx][curCnt] + direcVec[i];
+
+			calCellCoor(memidx, dftNum, curCnt + 1, cell, collector, strevec,
+					hostCoor, ts, dftvec);
+
+		}
+
+		return;
+	}
+
+	public String streamVecPrep(int idx) {
+
+		String coorstr = new String();
+		int k = vecst[idx];
+		while (k != veced[idx]) {
+
+			coorstr = coorstr + Double.toString(normvec[idx][k]) + ",";
+
+			k = (k + 1) % queueLen;
+		}
+
+		return coorstr;
+	}
+
+	public String dftCellVecPrep(int idx) {
+
+		String coorstr = new String();
+
+		for (int i = 0; i < TopologyMain.dftN * 2; ++i) {
+			coorstr = coorstr + Integer.toString(dftCell[idx][i]) + ",";
+		}
+		return coorstr;
+	}
+
+	public String normDFTVecPrep(int idx) {
+
+		String dftstr = new String();
+
+		double theta = Math.sqrt(cursqsum[idx] - TopologyMain.winSize
+				* curexp[idx] * curexp[idx]);
+
+		if (Math.abs(theta - 0.0) <= 1e-3) {
+			dftstr = "0,0,";
+			for (int i = 2; i < TopologyMain.dftN * 2; ++i) {
+				dftstr = dftstr + Double.toString((double) dft[idx][i]) + ",";
+			}
+			return dftstr;
+
+		}
+
+		dftstr = "0,0,";
+		for (int i = 2; i < TopologyMain.dftN * 2; ++i) {
+			dftstr = dftstr + Double.toString((double) dft[idx][i] / theta)
+					+ ",";
+		}
+		return dftstr;
+	}
+
+	public double complexAng(double real, double img) {
+		return Math.atan2(img, real);
+	}
+
+	public void dftUpdate(int memidx, double oldval, double newval) {
+
+		int cnt = 0;
+		double delAng = 0.0, oldAng = 0.0, ang = 0.0, r = 0.0;
+
+		for (int i = 0; i < TopologyMain.dftN; ++i) {
+
+			// oldAng = complexAng(dft[memidx][cnt], dft[memidx][cnt + 1]);
+
+			oldAng = dftang[memidx][cnt];
+			delAng = 2 * Math.PI * (i + 1) / TopologyMain.winSize;
+
+			// ang = complexAng(dft[memidx][cnt], dft[memidx][cnt + 1]) +
+			// delAng;
+
+			ang = oldAng + delAng;
+			r = Math.sqrt(dft[memidx][cnt] * dft[memidx][cnt]
+					+ dft[memidx][cnt + 1] * dft[memidx][cnt + 1]);
+
+			// dft[memidx][cnt] = dft[memidx][cnt] * Math.cos(ang)
+			// / Math.cos(oldAng);
+			// dft[memidx][cnt + 1] = dft[memidx][cnt + 1] * Math.sin(ang)
+			// / Math.sin(oldAng);
+
+			dft[memidx][cnt] = r * Math.cos(ang);
+			dft[memidx][cnt + 1] = r * Math.sin(ang); // avoid using division
+														// operation
+
+			r = (newval - oldval) / Math.sqrt(TopologyMain.winSize);
+
+			dft[memidx][cnt] += (r * Math.cos(delAng));
+			dft[memidx][cnt + 1] += (r * Math.sin(delAng));
+			dftang[memidx][cnt] = complexAng(dft[memidx][cnt],
+					dft[memidx][cnt + 1]);
+
+			cnt += 2;
+		}
+
+		dftCell[memidx][0] = 0;
+		dftCell[memidx][1] = 0;
+
+		for (int i = 2; i < TopologyMain.dftN * 2; ++i) {
+			dftCell[memidx][i] = normDftCellCal(dft[memidx][i], memidx);
+		}
+
+		return;
+	}
+
+	public int normDftCellCal(double val, int memidx) {
+
+		if (Math.abs(Math.sqrt(cursqsum[memidx] - TopologyMain.winSize
+				* curexp[memidx] * curexp[memidx])) <= 1e-3) {
+
+		} else {
+
+			val = val
+					/ Math.sqrt(cursqsum[memidx] - TopologyMain.winSize
+							* curexp[memidx] * curexp[memidx]);
+		}
+		return val >= 0 ? (int) Math.floor((double) val / cellEps) : -1
+				* (int) Math.ceil(-1.0 * val / cellEps);
+	}
+
+	public void dftIni(int memidx) {
+
+		int k = vecst[memidx], st = vecst[memidx], cnt = 0;
+		double ang = 0.0, r = 0.0;
+
+		for (int i = 0; i < TopologyMain.dftN; ++i) {
+
+			dft[memidx][cnt] = 0.0;
+			dft[memidx][cnt + 1] = 0.0;
+
+			k = vecst[memidx];
+			while (k != veced[memidx]) {
+
+				r = strevec[memidx][k];
+				ang = (double) (-2 * Math.PI * i * (k - st) / TopologyMain.winSize);
+
+				dftang[memidx][cnt] = ang;
+
+				dft[memidx][cnt] += (r * Math.cos(ang)); // real
+				dft[memidx][cnt + 1] += (r * Math.sin(ang)); // imaginary
+
+				k = (k + 1) % queueLen;
+			}
+
+			dft[memidx][cnt] /= Math.sqrt(TopologyMain.winSize);
+			dft[memidx][cnt + 1] /= Math.sqrt(TopologyMain.winSize);
+
+			cnt += 2;
+		}
+
+		dftCell[memidx][0] = 0;
+		dftCell[memidx][1] = 0;
+
+		for (int i = 2; i < TopologyMain.dftN * 2; ++i) {
+			dftCell[memidx][i] = normDftCellCal(dft[memidx][i], memidx);
+		}
+
+		return;
+	}
+
+	public void streNorm(int memidx) {
+		int k = vecst[memidx];
+		while (k != veced[memidx]) {
+
+			normvec[memidx][k] = (strevec[memidx][k] - curexp[memidx])
+					/ Math.sqrt(cursqsum[memidx] - TopologyMain.winSize
+							* curexp[memidx] * curexp[memidx]);
+
+			k = (k + 1) % queueLen;
+		}
+
+	}
+
+	public void idxNewTuple(int strid, double val, int flag) {
+		int i = 0, tmpsn = 0;
+		double oldval = 0.0, newval = 0.0;
+
+		for (i = 0; i < streidCnt; ++i) {
+			if (streid[i] == strid) {
+				tmpsn = i;
+				break;
+			}
+		}
+		if (i == streidCnt) {
+			streid[i] = strid;
+			tmpsn = streidCnt;
+			streidCnt++;
+		}
+
+		if (vecflag[tmpsn] == 0) {
+
+			strevec[tmpsn][veced[tmpsn]] = val;
+			oldval = strevec[tmpsn][vecst[tmpsn]];
+			newval = val;
+
+			vecst[tmpsn] = (vecst[tmpsn] + 1 * flag) % queueLen;
+
+			veced[tmpsn] = (veced[tmpsn] + 1) % queueLen;
+
+			curexp[tmpsn] = curexp[tmpsn] - oldval / TopologyMain.winSize
+					* flag + newval / TopologyMain.winSize;
+			cursqsum[tmpsn] = cursqsum[tmpsn] - oldval * oldval * flag + newval
+					* newval;
+
+			vecflag[tmpsn] = 1;
+
+			streNorm(tmpsn);
+
+			// if (flag == 1) {
+			// dftUpdate(tmpsn, oldval, newval);
+			// }
+
+		}
+	}
+
+	/**
+	 * At the end of the spout (when the cluster is shutdown We will show the
+	 * word counters
+	 */
+	@Override
+	public void cleanup() {
+
+	}
+
+	@Override
+	public void prepare(Map stormConf, TopologyContext context) {
+		// TODO Auto-generated method stub
+
+		for (int j = 0; j < TopologyMain.nstreBolt + 1; j++) {
+
+			vecflag[j] = 0;
+			streid[j] = 0;
+
+			curexp[j] = 0;
+			cursqsum[j] = 0;
+
+		}
+
+		for (int j = 0; j < TopologyMain.winSize + 1; ++j) {
+			vecst[j] = 0;
+			veced[j] = 0;
+			
+			if(TopologyMain.iniWindow==0)
+			{
+				veced[j] = TopologyMain.winSize - 1;
+			}
+
+		}
+
+		taskCoor = 0.0;
+
+		ptOutputStr = new String();
+		vecOutputStr = new String();
+
+		localTaskId = context.getThisTaskId();
+		
+		iniMetrics(context); 
+
+		return;
+	}
+
+	@Override
+	public void declareOutputFields(OutputFieldsDeclarer declarer) {
+
+		declarer.declareStream("streamData", new Fields("ts", "streId",
+				"cellCoor", "strevec", "dftvec", "hostFlag"));
+
+		declarer.declareStream("calCommand", new Fields("command", "taskid"));
+		return;
+	}
+
+	@Override
+	public void execute(Tuple input, BasicOutputCollector collector) {
+		// TODO Auto-generated method stub
+
+		int i = 0;
+		streType = input.getSourceStreamId();
+
+		if (streType.compareTo("dataStre") == 0) {
+
+			ts = input.getDoubleByField("ts");
+			double tmpval = input.getDoubleByField("value");
+			int sn = input.getIntegerByField("sn");
+
+			// if (Math.abs(ts - curtstamp) <= 1e-3) {
+
+			idxNewTuple(sn, tmpval, 1 - iniFlag);
+			// }
+
+		} else if (streType.compareTo("contrStre") == 0) {
+
+			commandStr = input.getStringByField("command");
+
+			if (commandStr.compareTo(preCommandStr) == 0) {
+				return;
+			}
+
+			if (ts - ststamp >= TopologyMain.winSize - 1) {
+
+				ststamp++;
+				emisData=0.0; //for window metric
+
+				// if (iniFlag == 1) {
+				for (i = 0; i < streidCnt; ++i) {
+
+					dftIni(i);
+				}
+				// }
+
+				// // .....test...
+				//
+				// if (curtstamp == 2) {
+				//
+				//
+				//
+				// System.out
+				// .printf("PreBolt %d at timestampe %f has DFT for stream %d with %f: \n",
+				// localTaskId,
+				// curtstamp,
+				// streid[0],
+				// Math.sqrt(cursqsum[0]
+				// - TopologyMain.winSize * curexp[0]
+				// * curexp[0]));
+				//
+				// for (int j = 0; j < TopologyMain.dftN * 2; ++j) {
+				// System.out.printf(
+				// "  %f  ",
+				// dft[0][j]
+				// / Math.sqrt(cursqsum[0]
+				// - TopologyMain.winSize
+				// * curexp[0] * curexp[0]));
+				// }
+				//
+				// System.out.printf("\n");
+				//
+				// System.out
+				// .printf("PreBolt %d at timestampe %f has DFT CELL for stream %d: \n",
+				// localTaskId, curtstamp, streid[0]);
+				//
+				// for (int j = 0; j < TopologyMain.dftN * 2; ++j) {
+				// System.out.printf("  %d  ", dftCell[0][j]);
+				// }
+				// System.out.printf("\n");
+				//
+				// }
+				//
+				// // ............
+
+				for (i = 0; i < streidCnt; ++i) {
+					calCellCoor(i, TopologyMain.dftN * 2, 0, cellCal,
+							collector, streamVecPrep(i), dftCellVecPrep(i), ts,
+							normDFTVecPrep(i));
+					
+					
+					
+					
+					...............test.....................
+					
+					if(ts==4 && memidx==1)
+					{
+						test_cnt++;	
+//						System.out.printf("prebolt %d send stream %d to cell %s \n",localTaskId,streid[memidx],cellCoor);
+					}
+					
+					
+//					........................................
+					
+					
+					
+					
+					
+					
+					
+				}
+
+				
+				
+				
+				
+				
+				iniFlag = 0;
+
+				collector.emit("calCommand",
+						new Values("done" + Double.toString(curtstamp),
+								localTaskId));
+				
+				
+//				...........comm byte metric............
+				
+				emisData=(streidCnt * TopologyMain.winSize+ streidCnt*TopologyMain.dftN*2)* Math.pow(3, TopologyMain.dftN*2);
+				updateMetrics(emisData);
+				
+				// ..........test.............
+				System.out
+						.printf("At time %f, PreBolt %d sends stream with cost %f, compared to naive cost %f\n",
+								curtstamp, localTaskId, emisData,
+								(double) TopologyMain.nstream/ TopologyMain.preBoltNum * TopologyMain.winSize * 19);
+
+				// ..............................
+				
+				
+//				.......................................
+				
+
+			}
+
+			// .....status update for the next tuple...............//
+			preCommandStr = commandStr;
+
+			for (int j = 0; j < TopologyMain.nstreBolt; ++j) {
+
+				vecflag[j] = 0;
+			}
+			curtstamp = ts + 1;
+
+		}
+	}
+}

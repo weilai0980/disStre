@@ -31,6 +31,8 @@ public class AdjustCalBolt extends BaseBasicBolt {
 	long srctask = 0;
 
 	// ..........memory................//
+	int declrNum = (int) (TopologyMain.nstream / TopologyMain.preBoltNum + 1);
+	
 	int[][] gridCoors = new int[TopologyMain.gridIdxN + 5][TopologyMain.winSize + 5];
 	double[][] pivotVec = new double[TopologyMain.gridIdxN + 5][TopologyMain.winSize + 5];
 
@@ -43,10 +45,10 @@ public class AdjustCalBolt extends BaseBasicBolt {
 	int gridIdxcnt = 0;
 
 	List<List<Double>> gridAffs = new ArrayList<List<Double>>(
-			TopologyMain.nstreBolt + 5);
+			TopologyMain.gridIdxN + 5);
 
 	List<List<Integer>> gridAdjIdx = new ArrayList<List<Integer>>(
-			TopologyMain.nstreBolt + 5);
+			TopologyMain.gridIdxN + 5);
 
 	HashMap<Integer, Integer> pStreMap = new HashMap<Integer, Integer>();
 
@@ -72,9 +74,9 @@ public class AdjustCalBolt extends BaseBasicBolt {
 	// ArrayList<HashMap<Integer, Integer>>();
 	// HashMap<Integer, Integer> map1 = new HashMap<Integer, Integer>();
 	// HashMap<Integer, Integer> map2 = new HashMap<Integer, Integer>();
-	
-	ArrayList<HashSet<String>> taskRecStre= new ArrayList<HashSet<String>>();
-//	String taskRecStre[] = new String[TopologyMain.calBoltNum + 1];
+
+	ArrayList<HashSet<String>> taskRecStre = new ArrayList<HashSet<String>>();
+	// String taskRecStre[] = new String[TopologyMain.calBoltNum + 1];
 
 	ArrayList<Set<String>> checkPair = new ArrayList<Set<String>>();
 	Set<String> set1 = new HashSet<String>();
@@ -310,16 +312,13 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 				int tmp = taskIdMap.size();
 				taskIdMap.put(taskId1, tmp);
-				
+
 				taskRecStre.add(new HashSet<String>());
 
 			}
 
 			taskIdx = taskIdMap.get(taskId1);
 			taskRecStre.get(taskIdx).add(Integer.toString(stre1) + ",");
-			
-//			[taskIdx] = taskRecStre[taskIdx]
-//					+ Integer.toString(stre1) + ",";
 
 			if (taskIdMap.containsKey(taskId2) == true) {
 
@@ -327,34 +326,41 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 				int tmp = taskIdMap.size();
 				taskIdMap.put(taskId2, tmp);
-				
+
 				taskRecStre.add(new HashSet<String>());
 
 			}
 
-//			taskIdx = taskIdMap.get(taskId2);
-//			taskRecStre[taskIdx] = taskRecStre[taskIdx]
-//					+ Integer.toString(stre2) + ",";
-			
 			taskIdx = taskIdMap.get(taskId2);
 			taskRecStre.get(taskIdx).add(Integer.toString(stre2) + ",");
 
-			// ...........
 			checkPair.get(curSetIdx).add(
 					Integer.toString(stre1) + "," + Integer.toString(stre2));
+
+			// ..........test............
+
+//			if (tStamp == 2
+//					&& ((stre1 == 8 && stre2 == 11) || (stre1 == 11 && stre2 == 8))) {
+//
+//				System.out.printf(" !!!!!!!!  ApproBolt %d at %f:  %f   %f \n",
+//						localTask, thre, up, low);
+//
+//			}
+
+			// ........................
 
 		}
 
 		// ..........test............
 
-//		 if (tStamp == 2
-//		 && ((stre1 == 4 && stre2 == 9) || (stre1 == 9 && stre2 == 4))) {
-//		
-//		 System.out
-//		 .printf("--------------------------  ApproBolt %d at %f:  %f   %f \n",
-//		 localTask, thre, up, low);
-//		
-//		 }
+//		if (tStamp == 2
+//				&& ((stre1 == 8 && stre2 == 11) || (stre1 == 11 && stre2 == 8))) {
+//
+//			System.out
+//					.printf(" --------------------------  ApproBolt %d at %f:  %f   %f \n",
+//							localTask, thre, up, low);
+//
+//		}
 
 		// ........................
 
@@ -654,33 +660,27 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 			// ...............test...............
 
-			
-//			if(tStamp==2)
-//			{
-			
-//			System.out.printf("  ???????????????  At time %f CalBolt %d requests %s \n ", tStamp,
-//					localTask, taskRecStre[memIdx]);
-//			}
+			// if(tStamp==2)
+			// {
+
+			// System.out.printf("  ???????????????  At time %f CalBolt %d requests %s \n ",
+			// tStamp,
+			// localTask, taskRecStre[memIdx]);
+			// }
 
 			// ..................................
-			
-			String tmpStreams="";
-			for(String stre:taskRecStre.get(memIdx))
-			{
-				tmpStreams+=stre;
+
+			String tmpStreams = "";
+			for (String stre : taskRecStre.get(memIdx)) {
+				tmpStreams += stre;
 			}
 
 			collector.emitDirect(taskId, "retriStre", new Values(tStamp,
 					tmpStreams, localTask));
-//					taskRecStre[memIdx], localTask));
 
 		}
-		
-		taskRecStre.clear();
 
-//		for (int i = 0; i < TopologyMain.calBoltNum; ++i) {
-//			taskRecStre[i] = "";
-//		}
+		taskRecStre.clear();
 
 		return;
 	}
@@ -759,6 +759,18 @@ public class AdjustCalBolt extends BaseBasicBolt {
 				}
 			}
 
+			// .........test.................
+
+//			if (tstamp == 2)
+//			// && ((str1 == 8 && str2 == 11) || (str1 ==11 && str2 == 8)))
+//			{
+//				System.out
+//						.printf("  !!!!!!!!!!!!!!    at time %f Calbolt %d check correlation betwee %d and %d : %f %f\n",
+//								tstamp, localTask, str1, str2, dist, thre);
+//			}
+
+			// ..............................
+
 			if (recStreMap.containsKey(str1) == true
 					&& recStreMap.containsKey(str2) == true) {
 				memidx1 = recStreMap.get(str1);
@@ -766,7 +778,7 @@ public class AdjustCalBolt extends BaseBasicBolt {
 			} else {
 				continue;
 			}
-			
+
 			dist = 0.0;
 
 			for (int i = 0; i < TopologyMain.winSize; ++i) {
@@ -790,13 +802,13 @@ public class AdjustCalBolt extends BaseBasicBolt {
 			// ..............................
 
 			// .........test.................
-
-			// if (tstamp == 3
-			// && ((str1 == 5 && str2 == 6) || (str1 == 6 && str2 == 5)))
-			//
-			// System.out
-			// .printf("  !!!!!!!!!!!!!!    at time %f Calbolt %d check correlation betwee %d and %d : %f %f\n",
-			// tstamp, localTask, str1, str2, dist, thre);
+//
+//			if (tstamp == 2
+//					&& ((str1 == 8 && str2 == 11) || (str1 == 11 && str2 == 8)))
+//
+//				System.out
+//						.printf("  !!!!!!!!!!!!!!    at time %f Calbolt %d check correlation betwee %d and %d : %f %f\n",
+//								tstamp, localTask, str1, str2, dist, thre);
 
 			// ..............................
 
@@ -887,7 +899,7 @@ public class AdjustCalBolt extends BaseBasicBolt {
 	@Override
 	public void prepare(Map stormConf, TopologyContext context) {
 
-		// locAppBolt = glAppBolt++;
+
 		locTaskIdx = context.getThisTaskIndex();
 
 		localTask = context.getThisTaskId();
@@ -902,9 +914,6 @@ public class AdjustCalBolt extends BaseBasicBolt {
 		retriChecked[0] = retriChecked[1] = 0;
 
 		taskRecStre.clear();
-//		for (int i = 0; i < TopologyMain.calBoltNum; ++i) {
-//			taskRecStre[i] = "";
-//		}
 
 		return;
 	}
@@ -1020,21 +1029,22 @@ public class AdjustCalBolt extends BaseBasicBolt {
 					}
 				}
 
-//				recStreSendback(collector, retriChecked[curRecSet], curtstamp);
+				 recStreSendback(collector, retriChecked[curRecSet],
+				 curtstamp);
 
-//				if (taskIdMap.size() > 0) {
-//					if (retriChecked[curRecSet] == -1) {
-//
-//						retriChecked[1 - curRecSet] = -1;
-//						taskIdMapSize[1 - curRecSet] = taskIdMap.size();
-//
-//					} else {
-//						retriChecked[curRecSet] = -1;
-//						taskIdMapSize[curRecSet] = taskIdMap.size();
-//					}
-//				}
-//
-//				taskIdMap.clear();
+				 if (taskIdMap.size() > 0) {
+				 if (retriChecked[curRecSet] == -1) {
+				
+				 retriChecked[1 - curRecSet] = -1;
+				 taskIdMapSize[1 - curRecSet] = taskIdMap.size();
+				
+				 } else {
+				 retriChecked[curRecSet] = -1;
+				 taskIdMapSize[curRecSet] = taskIdMap.size();
+				 }
+				 }
+				
+				 taskIdMap.clear();
 
 				updateMetrics(reclCnt, true);
 
@@ -1063,9 +1073,9 @@ public class AdjustCalBolt extends BaseBasicBolt {
 			// ...........test.......
 
 			// if (ts == 2 && (sid == 8 || sid == 11)) {
-//			System.out
-//					.printf("+++++++++++++++++++++++ At %f CalBolt %d got feedback streams %s \n",
-//							retriTs, localTask, ids);
+			// System.out
+			// .printf("+++++++++++++++++++++++ At %f CalBolt %d got feedback streams %s \n",
+			// retriTs, localTask, ids);
 			// }
 
 			// ......................
@@ -1092,12 +1102,12 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 				// .........test.................
 
-				// if (retriTs == 2 && localTask == 4)
-				//
-				// System.out
-				// .printf("  !!!!!!!!!!!!!!    at time %f Calbolt %d check pairs %d  with %d\n",
-				// retriTs, localTask, checkPair
-				// .get(curRecSet).size(), curRecSet);
+//				 if (retriTs == 2)
+				
+//				 System.out
+//				 .printf("  !!!!!!!!!!!!!!    at time %f Calbolt %d check pairs %d  with %d\n",
+//				 retriTs, localTask, checkPair
+//				 .get(curRecSet).size(), curRecSet);
 
 				// ..............................
 

@@ -325,8 +325,10 @@ public class rpPreBolt extends BaseBasicBolt {
 			vecst[j] = 0;
 			veced[j] = 0;
 
-			// for long sliding window
-			// veced[j] = TopologyMain.winSize - 1;
+			if(TopologyMain.iniWindow==0)
+			{
+				veced[j] = TopologyMain.winSize - 1;
+			}	
 
 			vecflag[j] = 0;
 			streid[j] = 0;
