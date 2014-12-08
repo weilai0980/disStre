@@ -29,7 +29,7 @@ public class RHPbuild {
 	public void produce(int l, int k, int d) throws IOException // l: # of hash tables; k: dimension of each bitmap; d: dimension of original vector
 	{
 		
-		fstream = new FileWriter("rhp-vectors.txt", true);
+		fstream = new FileWriter(TopologyMain.rp_matFile, true);
 		BufferedWriter out = new BufferedWriter(fstream);
 		
 		for(int i=0;i<l;++i)

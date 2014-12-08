@@ -32,7 +32,7 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 	// ..........memory................//
 	int declrNum = (int) (TopologyMain.nstream / TopologyMain.preBoltNum + 1);
-	
+
 	int[][] gridCoors = new int[TopologyMain.gridIdxN + 5][TopologyMain.winSize + 5];
 	double[][] pivotVec = new double[TopologyMain.gridIdxN + 5][TopologyMain.winSize + 5];
 
@@ -44,11 +44,9 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 	int gridIdxcnt = 0;
 
-	List<List<Double>> gridAffs = new ArrayList<List<Double>>(
-			TopologyMain.gridIdxN + 5);
+	List<List<Double>> gridAffs = new ArrayList<List<Double>>();
 
-	List<List<Integer>> gridAdjIdx = new ArrayList<List<Integer>>(
-			TopologyMain.gridIdxN + 5);
+	List<List<Integer>> gridAdjIdx = new ArrayList<List<Integer>>();
 
 	HashMap<Integer, Integer> pStreMap = new HashMap<Integer, Integer>();
 
@@ -86,8 +84,7 @@ public class AdjustCalBolt extends BaseBasicBolt {
 	// .........receiving-end.....
 
 	HashMap<Integer, Integer> recStreMap = new HashMap<Integer, Integer>();
-	List<List<Double>> recStreVec = new ArrayList<List<Double>>(
-			TopologyMain.nstream);
+	List<List<Double>> recStreVec = new ArrayList<List<Double>>();
 
 	HashSet<Integer> recTaskIdx = new HashSet<Integer>();
 
@@ -339,13 +336,14 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 			// ..........test............
 
-//			if (tStamp == 2
-//					&& ((stre1 == 8 && stre2 == 11) || (stre1 == 11 && stre2 == 8))) {
-//
-//				System.out.printf(" !!!!!!!!  ApproBolt %d at %f:  %f   %f \n",
-//						localTask, thre, up, low);
-//
-//			}
+			// if (tStamp == 2
+			// && ((stre1 == 8 && stre2 == 11) || (stre1 == 11 && stre2 == 8)))
+			// {
+			//
+			// System.out.printf(" !!!!!!!!  ApproBolt %d at %f:  %f   %f \n",
+			// localTask, thre, up, low);
+			//
+			// }
 
 			// ........................
 
@@ -353,14 +351,14 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 		// ..........test............
 
-//		if (tStamp == 2
-//				&& ((stre1 == 8 && stre2 == 11) || (stre1 == 11 && stre2 == 8))) {
-//
-//			System.out
-//					.printf(" --------------------------  ApproBolt %d at %f:  %f   %f \n",
-//							localTask, thre, up, low);
-//
-//		}
+		// if (tStamp == 2
+		// && ((stre1 == 8 && stre2 == 11) || (stre1 == 11 && stre2 == 8))) {
+		//
+		// System.out
+		// .printf(" --------------------------  ApproBolt %d at %f:  %f   %f \n",
+		// localTask, thre, up, low);
+		//
+		// }
 
 		// ........................
 
@@ -761,13 +759,13 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 			// .........test.................
 
-//			if (tstamp == 2)
-//			// && ((str1 == 8 && str2 == 11) || (str1 ==11 && str2 == 8)))
-//			{
-//				System.out
-//						.printf("  !!!!!!!!!!!!!!    at time %f Calbolt %d check correlation betwee %d and %d : %f %f\n",
-//								tstamp, localTask, str1, str2, dist, thre);
-//			}
+			// if (tstamp == 2)
+			// // && ((str1 == 8 && str2 == 11) || (str1 ==11 && str2 == 8)))
+			// {
+			// System.out
+			// .printf("  !!!!!!!!!!!!!!    at time %f Calbolt %d check correlation betwee %d and %d : %f %f\n",
+			// tstamp, localTask, str1, str2, dist, thre);
+			// }
 
 			// ..............................
 
@@ -802,13 +800,13 @@ public class AdjustCalBolt extends BaseBasicBolt {
 			// ..............................
 
 			// .........test.................
-//
-//			if (tstamp == 2
-//					&& ((str1 == 8 && str2 == 11) || (str1 == 11 && str2 == 8)))
-//
-//				System.out
-//						.printf("  !!!!!!!!!!!!!!    at time %f Calbolt %d check correlation betwee %d and %d : %f %f\n",
-//								tstamp, localTask, str1, str2, dist, thre);
+			//
+			// if (tstamp == 2
+			// && ((str1 == 8 && str2 == 11) || (str1 == 11 && str2 == 8)))
+			//
+			// System.out
+			// .printf("  !!!!!!!!!!!!!!    at time %f Calbolt %d check correlation betwee %d and %d : %f %f\n",
+			// tstamp, localTask, str1, str2, dist, thre);
 
 			// ..............................
 
@@ -898,7 +896,6 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 	@Override
 	public void prepare(Map stormConf, TopologyContext context) {
-
 
 		locTaskIdx = context.getThisTaskIndex();
 
@@ -1029,22 +1026,21 @@ public class AdjustCalBolt extends BaseBasicBolt {
 					}
 				}
 
-				 recStreSendback(collector, retriChecked[curRecSet],
-				 curtstamp);
+				recStreSendback(collector, retriChecked[curRecSet], curtstamp);
 
-				 if (taskIdMap.size() > 0) {
-				 if (retriChecked[curRecSet] == -1) {
-				
-				 retriChecked[1 - curRecSet] = -1;
-				 taskIdMapSize[1 - curRecSet] = taskIdMap.size();
-				
-				 } else {
-				 retriChecked[curRecSet] = -1;
-				 taskIdMapSize[curRecSet] = taskIdMap.size();
-				 }
-				 }
-				
-				 taskIdMap.clear();
+				if (taskIdMap.size() > 0) {
+					if (retriChecked[curRecSet] == -1) {
+
+						retriChecked[1 - curRecSet] = -1;
+						taskIdMapSize[1 - curRecSet] = taskIdMap.size();
+
+					} else {
+						retriChecked[curRecSet] = -1;
+						taskIdMapSize[curRecSet] = taskIdMap.size();
+					}
+				}
+
+				taskIdMap.clear();
 
 				updateMetrics(reclCnt, true);
 
@@ -1102,12 +1098,12 @@ public class AdjustCalBolt extends BaseBasicBolt {
 
 				// .........test.................
 
-//				 if (retriTs == 2)
-				
-//				 System.out
-//				 .printf("  !!!!!!!!!!!!!!    at time %f Calbolt %d check pairs %d  with %d\n",
-//				 retriTs, localTask, checkPair
-//				 .get(curRecSet).size(), curRecSet);
+				// if (retriTs == 2)
+
+				// System.out
+				// .printf("  !!!!!!!!!!!!!!    at time %f Calbolt %d check pairs %d  with %d\n",
+				// retriTs, localTask, checkPair
+				// .get(curRecSet).size(), curRecSet);
 
 				// ..............................
 

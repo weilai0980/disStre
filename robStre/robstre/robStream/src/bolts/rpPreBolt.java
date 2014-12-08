@@ -48,7 +48,7 @@ public class rpPreBolt extends BaseBasicBolt {
 	int hSpaceTaskNum;
 	int hSpaceCellNum;
 
-	double[][][] rpMat = new double[TopologyMain.rp_vecnum | +1][TopologyMain.rp_dimnum + 1][TopologyMain.winSize + 1];
+	double[][][] rpMat = new double[TopologyMain.rp_vecnum +1][TopologyMain.rp_dimnum + 1][TopologyMain.winSize + 1];
 
 	// ...........emitting streams....................//
 
@@ -437,10 +437,10 @@ public class rpPreBolt extends BaseBasicBolt {
 				updateMetrics(emData);
 				
 				// ..........test.............
-				System.out
-						.printf("At time %f, PreBolt %d sends stream with cost %f, compared to naive cost %f\n",
-								curtstamp, localTaskId, emData,
-								(double) TopologyMain.nstream/ TopologyMain.preBoltNum * TopologyMain.winSize * 19);
+//				System.out
+//						.printf("At time %f, PreBolt %d sends stream with cost %f, compared to naive cost %f\n",
+//								curtstamp, localTaskId, emData,
+//								(double) TopologyMain.nstream/ TopologyMain.preBoltNum * TopologyMain.winSize * 19);
 
 				// ..............................
 				

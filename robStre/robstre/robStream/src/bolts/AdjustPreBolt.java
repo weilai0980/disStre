@@ -53,9 +53,9 @@ public class AdjustPreBolt extends BaseBasicBolt {
 
 	// .........affine relation graph......................//
 
-	List<List<Integer>> graphmat = new ArrayList<List<Integer>>(declrNum + 5);
+	List<List<Integer>> graphmat = new ArrayList<List<Integer>>();
 
-	List<List<Integer>> adjList = new ArrayList<List<Integer>>(declrNum + 5);
+	List<List<Integer>> adjList = new ArrayList<List<Integer>>();
 	public int[] degree = new int[declrNum + 10];
 
 	// ...........Computation parameter....................//

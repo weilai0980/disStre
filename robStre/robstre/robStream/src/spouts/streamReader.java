@@ -227,17 +227,25 @@ public class streamReader extends BaseRichSpout {
 		for (i = 0; i < stren; ++i) {
 			curStreRand[i] += Math.random() * 5000;
 
-			collector.emit("dataStre", new Values(i, tupTs, curStreRand[i]
-					- tupTs * curStreBias[i] + curStreConst[i]),
+			collector.emit("dataStre", new Values(i, tupTs, Math.random() * 5000),
 					Integer.toString(i) + ',' + Double.toString(tupTs));
+
+			// collector.emit("dataStre", new Values(i, tupTs, curStreRand[i]
+			// - tupTs * curStreBias[i] + curStreConst[i]),
+			// Integer.toString(i) + ',' + Double.toString(tupTs));
 		}
 
 		// ...........test........
-//		System.out.printf("???????????????????? emit out data at time %f",
-//				thputCnt);
+		// System.out.printf("???????????????????? emit out data at time %f",
+		// thputCnt);
 		// ......................
 
-		Utils.sleep(10);
+		try {
+			Thread.sleep(5);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		collector
 				.emit("contrStre", new Values("done" + Double.toString(tupTs)));
@@ -251,10 +259,10 @@ public class streamReader extends BaseRichSpout {
 
 	public void synDataIni(int stren) {
 		for (int i = 0; i < stren; ++i) {
-			curStreRand[i] = Math.random() * 5000;
+			curStreRand[i] = Math.random() * 6000;
 
-			curStreConst[i] = Math.random() * 3000; // 2000
-			curStreBias[i] = Math.random() * 5000;// 4000
+			curStreConst[i] = Math.random() * 4000; // 2000
+			curStreBias[i] = Math.random() * 6000;// 4000
 
 		}
 		return;
@@ -334,14 +342,11 @@ public class streamReader extends BaseRichSpout {
 
 			synDataIni(TopologyMain.nstream);
 		}
-		
-		
-		
-		if(TopologyMain.iniWindow==0)
-		{
-			tupTs=TopologyMain.winSize-1;
+
+		if (TopologyMain.iniWindow == 0) {
+			tupTs = TopologyMain.winSize - 1;
 		}
-		
+
 		collector = coll;
 	}
 

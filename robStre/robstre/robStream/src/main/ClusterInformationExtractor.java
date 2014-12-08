@@ -426,19 +426,17 @@ public class ClusterInformationExtractor {
 
 				System.out
 						.printf("------------  Bolt number  \n  pre: %f %f %f %f %f  \n statis: %f %f %f %f %f  \n aggre: %f %f %f %f %f \n",
-								exeCnt[0], emTupBolt[0], transTupBolt[0],
-								proTSum[0], exeTSum[0], exeCnt[1],
-								emTupBolt[1], transTupBolt[1], proTSum[1],
-								exeTSum[1], exeCnt[2], emTupBolt[2],
-								transTupBolt[2], proTSum[2], exeTSum[2]);
+								exeCnt[0], emTupBolt[0], transTupBolt[0],proTSum[0], exeTSum[0], 
+								exeCnt[1],emTupBolt[1], transTupBolt[1], proTSum[1],exeTSum[1], 
+								exeCnt[2], emTupBolt[2], transTupBolt[2], proTSum[2], exeTSum[2]);
 
 				// ........for matlab data........................//
 
 //				proTSum[0] *= 800;
 //				exeTSum[0] *= 800;
-				proTSum[1] = proTSum[1]/2*TopologyMain.calBoltNum;
+//				proTSum[1] = proTSum[1]/2*TopologyMain.calBoltNum;
 //
-				exeTSum[1] = exeTSum[1]/2*TopologyMain.calBoltNum;
+//				exeTSum[1] = exeTSum[1]/2*TopologyMain.calBoltNum;
 //				proTSum[2] *= 800;
 //				exeTSum[2] *= 800;
 

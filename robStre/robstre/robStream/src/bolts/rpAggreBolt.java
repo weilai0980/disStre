@@ -55,7 +55,7 @@ public class rpAggreBolt extends BaseBasicBolt {
 
 			// .............test................			
 			
-			System.out.printf("AggreBolt has %d resutls at %f \n", strePair.size(),curtstamp);
+//			System.out.printf("AggreBolt has %d resutls at %f \n", strePair.size(),curtstamp);
 			
 			// .................................
 
