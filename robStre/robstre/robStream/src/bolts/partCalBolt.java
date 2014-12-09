@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.BasicOutputCollector;
@@ -19,197 +21,241 @@ import backtype.storm.tuple.Values;
 
 public class partCalBolt extends BaseBasicBolt {
 
+	// ............input time order..............//
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	double curtstamp = TopologyMain.winSize - 1;
+	String streType = new String();
+	double ts = 0.0;
 
-	String[] vecIdx = new String[TopologyMain.nstream + 10];
-	Double[][] vecData = new Double[TopologyMain.nstream + 10][TopologyMain.winSize + 10];
+	String commandStr = new String();
+	long preTaskId = 0;
 
-	int[] strid = new int[TopologyMain.nstream + 10];
-	int[] strlocal = new int[TopologyMain.nstream + 10];
-	HashMap<Integer, Integer> stridMap = new HashMap<Integer, Integer>();
-	int stridcnt = 0;
+	HashSet<Long> preTaskIdx = new HashSet<Long>();
+	// .........memory management for sliding windows.................//
 
-	HashMap<String, Integer> gridIdx = new HashMap<String, Integer>();
-	int gridIdxcnt = 0;
+	double[][] streamVec = new double[TopologyMain.nstreBolt + 1][TopologyMain.winSize + 1];
 
-	List<List<Integer>> gridStre = new ArrayList<List<Integer>>(
-			TopologyMain.gridIdxN + 5);
+	int[][] cellVec = new int[TopologyMain.gridIdxN + 1][TopologyMain.winSize + 1];
+	int[] cellType = new int[TopologyMain.gridIdxN + 1];
+	HashMap<Integer, Integer> streIdx = new HashMap<Integer, Integer>();
+	HashMap<String, Integer> cellIdx = new HashMap<String, Integer>();
 
-	ArrayList<String> qualPair = new ArrayList<String>();
+	List<List<Integer>> cellStre = new ArrayList<List<Integer>>(
+			TopologyMain.gridIdxN + 1);
 
-	public void vecBatchAna() {
+	// ...........computation parameter....................//
+	int locTaskId, locTaskIdx;
+	double disThre = 2 - 2 * TopologyMain.thre;
+	double cellEps = Math.sqrt(disThre);
 
-		int len = 0, cnt = 0, pre = 0;
-		String tmp = new String();
-		for (int j = 0; j < stridcnt; ++j) {
-			len = vecIdx[j].length();
-			tmp = vecIdx[j];
-			cnt = 0;
-			pre = 0;
-			for (int i = 0; i < len; ++i) {
-				if (tmp.charAt(i) == ',') {
-					vecData[j][cnt++] = Double.valueOf(tmp.substring(pre, i));
-					pre = i + 1;
-				}
-			}
-		}
+	int recStreCnt = 0;
 
-		return;
-	}
+	public int vecAna(double streamVec[][], int idx, String vecstr) {
 
-	public int vecAna(String orgstr, double vecval[]) {
-
-		int len = orgstr.length();
-		int cnt = 0, pre = 0;
+		int len = vecstr.length(), cnt = 0, pre = 0;
 		for (int i = 0; i < len; ++i) {
-			if (orgstr.charAt(i) == ',') {
-				vecval[cnt++] = Double.valueOf(orgstr.substring(pre, i));
+			if (vecstr.charAt(i) == ',') {
+				streamVec[idx][cnt++] = Double
+						.valueOf(vecstr.substring(pre, i));
 				pre = i + 1;
 			}
 		}
 		return cnt;
 	}
 
-	public double deviCal(double vec[], double exp, int l) {
-		double sum = 0.0;
-		for (int i = 0; i < l; ++i) {
-			sum += ((vec[i] - exp) * (vec[i] - exp));
-		}
+	public void vecAnaInt(int mem[][], int idx, String vecstr) {
 
-		return sum / l;
-	}
-
-	public double expCal(double vec[], int l) {
-		double sum = 0.0;
-		for (int i = 0; i < l; ++i) {
-			sum += vec[i];
-		}
-
-		return (double) sum / l;
-	}
-
-	int correCalDis(double thre, int streid1, int streid2, int len) {
-		double dis = 0.0, tmp = 0.0;
+		int len = vecstr.length(), pre = 0, cnt = 0;
 
 		for (int i = 0; i < len; ++i) {
-			tmp += ((vecData[streid1][i] - vecData[streid2][i]) * (vecData[streid1][i] - vecData[streid2][i]));
-		}
-		dis = tmp;
+			if (vecstr.charAt(i) == ',') {
 
-		return (dis <= 2 - 2 * thre) ? 1 : 0;
-	}
-
-	public int localStreIdx(int hostid, String vecdata) {
-		int i = 0;
-
-		if (stridMap.containsKey(hostid) == true) {
-			i = stridMap.get(hostid);
-		} else {
-			stridMap.put(hostid, stridcnt);
-			strid[stridcnt] = hostid;
-			i = stridcnt++;
-		}
-
-		vecIdx[i] = vecdata;
-		return i;
-	}
-
-	public int localGridIdx(String grid) {
-
-		if (gridIdx.containsKey(grid) == true) {
-			return gridIdx.get(grid);
-		} else {
-			gridIdx.put(grid, gridIdxcnt);
-			gridIdxcnt++;
-
-			gridStre.add(new ArrayList<Integer>());
-			return gridIdxcnt - 1;
-		}
-	}
-
-	public void localGridStreIdx(String grid, int hostid, String vecdata,
-			int locFlag) {
-		int streNo = localStreIdx(hostid, vecdata);
-		int gridNo = localGridIdx(grid);
-
-		strlocal[streNo] = locFlag;
-		gridStre.get(gridNo).add(streNo);
-
-		return;
-	}
-
-	public void localIdxRenew() {
-
-		stridcnt = 0;
-		stridMap.clear();
-
-		gridIdx.clear();
-		gridIdxcnt = 0;
-
-		gridStre.clear();
-		qualPair.clear();
-
-		return;
-	}
-
-	public int correGrid(int gridNo, double thre,
-			BasicOutputCollector collector, ArrayList<String> resPair) {
-
-		int rescnt = 0, i = 0, j = 0, tmpcnt = gridStre.get(gridNo).size();
-		int stre1 = 0, stre2 = 0;
-
-		String Pair = new String();
-
-		for (i = 0; i < tmpcnt; ++i) {
-
-			stre1 = gridStre.get(gridNo).get(i);
-
-			for (j = i + 1; j < tmpcnt; ++j) {
-
-				stre2 = gridStre.get(gridNo).get(j);
-
-				// if (strlocal[stre1] == 0 && strlocal[stre2] == 0) {
-				// } else {
-
-				if ((strlocal[stre1] == 1 && strlocal[stre2] == 0)
-						|| (strlocal[stre1] == 0 && strlocal[stre2] == 1)) {
-
-					if (correCalDis(thre, stre1, stre2, TopologyMain.winSize) == 1) {
-
-						if (strid[stre1] > strid[stre2]) {
-
-							Pair = (Integer.toString(strid[stre2]) + "," + Integer
-									.toString(strid[stre1]));
-
-							rescnt++;
-							resPair.add(Pair);
-
-						} else {
-
-							Pair = (Integer.toString(strid[stre1]) + "," + Integer
-									.toString(strid[stre2]));
-
-							rescnt++;
-							resPair.add(Pair);
-
-						}
-					}
-				}
+				mem[idx][cnt++] = Integer.valueOf(vecstr.substring(pre, i));
+				pre = i + 1;
 
 			}
 		}
 
+		return;
+	}
+
+	public int cellTypeCal(int memidx) {
+
+		int taskid = 0, taskCoor = 0, tmp = 0;
+		taskid = (cellVec[memidx][0] > 0 ? 2 : 1);
+
+		for (int j = 1; j < TopologyMain.winSize; ++j) {
+
+			tmp = (cellVec[memidx][j] > 0 ? 2 : 1);
+
+			taskid = (int) (taskid + (tmp - 1) * Math.pow(2, j));
+		}
+		
+		return (taskid == locTaskIdx? 1:0);
+	}
+
+	public void IndexingStre(int streid, String streamStr, String cellStr) {
+
+		int streNo = 0;
+		if (streIdx.containsKey(streid) == true) {
+
+			return;
+
+		} else {
+			streNo = streIdx.size();
+			streIdx.put(streid, streNo);
+		}
+
+		int cellNo = cellIdx.size();
+
+		if (cellIdx.containsKey(cellStr) == true) {
+
+			cellStre.get(cellIdx.get(cellStr)).add(streid);
+
+		} else {
+
+			cellIdx.put(cellStr, cellNo);
+			cellStre.add(new ArrayList<Integer>());
+
+			cellStre.get(cellIdx.get(cellStr)).add(streid);
+
+		}
+		
+		vecAna(streamVec, streNo, streamStr);
+		vecAnaInt(cellVec, cellNo, cellStr);
+		cellType[cellNo] = cellTypeCal(cellNo);
+		
+
+		return;
+	}
+
+	int correCalDisReal(double thre, int streid1, int streid2) {
+
+		int memidx1 = streIdx.get(streid1), memidx2 = streIdx.get(streid2), k = 0;
+
+		double tmpres = 0.0;
+
+		for (k = 0; k < TopologyMain.winSize; ++k) {
+			tmpres = tmpres + (streamVec[memidx1][k] - streamVec[memidx2][k])
+					* (streamVec[memidx1][k] - streamVec[memidx2][k]);
+		}
+
+		return tmpres <= thre ? 1 : 0;
+
+	}
+
+	// int correCalDisDFT(double thre, int streid1, int streid2) {
+	//
+	// int memidx1 = streIdx.get(streid1), memidx2 = streIdx.get(streid2), k =
+	// 0;
+	//
+	// double tmpres = 0.0;
+	//
+	// for (k = 0; k < TopologyMain.dftN * 2; ++k) {
+	// tmpres = tmpres + (dftVec[memidx1][k] - dftVec[memidx2][k])
+	// * (dftVec[memidx1][k] - dftVec[memidx2][k]);
+	// }
+	//
+	// return tmpres <= thre ? 1 : 0;
+	//
+	// }
+
+	// int cellWithinCal(int cellidx, BasicOutputCollector collector) {
+	//
+	// int stre1 = 0, stre2 = 0, resCnt = 0;
+	//
+	// for (int i = 0; i < cellHostStre.get(cellidx).size(); i++) {
+	// for (int j = i + 1; j < cellHostStre.get(cellidx).size(); j++) {
+	//
+	// stre1 = cellHostStre.get(cellidx).get(i);
+	// stre2 = cellHostStre.get(cellidx).get(j);
+	//
+	// if (correCalDisDFT(2 - 2 * TopologyMain.thre, stre1, stre2) == 1) {
+	//
+	// if (correCalDisReal(2 - 2 * TopologyMain.thre, stre1, stre2) == 1) {
+	//
+	// String tmpstr = new String();
+	//
+	// if (stre1 > stre2) {
+	// tmpstr = Integer.toString(stre2) + ","
+	// + Integer.toString(stre1);
+	// // resPair.add(tmpstr);
+	// } else {
+	// tmpstr = Integer.toString(stre1) + ","
+	// + Integer.toString(stre2);
+	// // resPair.add(tmpstr);
+	// }
+	//
+	// resCnt++;
+	// collector.emit(new Values(curtstamp, tmpstr));
+	// }
+	// }
+	//
+	// }
+	// }
+	//
+	// for (int i = 0; i < cellHostStre.get(cellidx).size(); i++) {
+	// for (int j = 0; j < cellNbStre.get(cellidx).size(); j++) {
+	//
+	// stre1 = cellHostStre.get(cellidx).get(i);
+	// stre2 = cellNbStre.get(cellidx).get(j);
+	//
+	// if (correCalDisDFT(2 - 2 * TopologyMain.thre, stre1, stre2) == 1) {
+	//
+	// if (correCalDisReal(2 - 2 * TopologyMain.thre, stre1, stre2) == 1) {
+	//
+	// String tmpstr = new String();
+	//
+	// if (stre1 > stre2) {
+	// tmpstr = Integer.toString(stre2) + ","
+	// + Integer.toString(stre1);
+	// // resPair.add(tmpstr);
+	// } else {
+	// tmpstr = Integer.toString(stre1) + ","
+	// + Integer.toString(stre2);
+	// // resPair.add(tmpstr);
+	// }
+	//
+	// resCnt++;
+	// collector.emit(new Values(curtstamp, tmpstr));
+	// }
+	// }
+	//
+	// }
+	// }
+	//
+	// return resCnt;
+	// }
+
+	int cellCorrCal(BasicOutputCollector collector) {
+
+		// resPair.clear();
+		int rescnt = 0;
+		int cellcnt = cellIdx.size();
+
+		for (int i = 0; i < cellcnt; ++i) {
+
+			// rescnt += cellWithinCal(i, collector);
+		}
 		return rescnt;
+	}
+
+	public void localIdxRenew() {
+
+		cellIdx.clear();
+		streIdx.clear();
+
+		cellStre.clear();
+
+		return;
 	}
 
 	@Override
 	public void cleanup() {
-		// System.out.println("-- Word Counter [" + name + "-" + id + "] --");
-		// for (Map.Entry<String, Integer> entry : counters.entrySet()) {
-		// System.out.println(entry.getKey() + ": " + entry.getValue());
-		// }
-
-		// ....output stream........
 
 	}
 
@@ -218,11 +264,13 @@ public class partCalBolt extends BaseBasicBolt {
 		// TODO Auto-generated method stub
 
 		declarer.declare(new Fields("ts", "pair"));
-
 	}
 
 	@Override
 	public void prepare(Map stormConf, TopologyContext context) {
+
+		locTaskId = context.getThisTaskId();
+		locTaskIdx= context.getThisTaskIndex();
 
 		return;
 	}
@@ -231,39 +279,45 @@ public class partCalBolt extends BaseBasicBolt {
 	public void execute(Tuple input, BasicOutputCollector collector) {
 		// TODO Auto-generated method stub
 
-		double ts = input.getDoubleByField("ts");
-		String coordstr = input.getStringByField("coord");
-		String vecstr = input.getStringByField("vec");
-		int hostid = input.getIntegerByField("hostid");
-		int lflag = input.getIntegerByField("lflag");
+		// declarer.declareStream("interStre", new Fields("id", "strevec",
+		// "cellvec", "ts"));
 
-		if (ts > curtstamp) {
+		// declarer.declareStream("calCommand", new Fields("command",
+		// "taskid"));
 
-			vecBatchAna();
+		streType = input.getSourceStreamId();
 
-			for (int i = 0; i < gridIdxcnt; ++i) {
-				qualPair.clear();
-				correGrid(i, TopologyMain.thre, collector, qualPair);
+		if (streType.compareTo("interStre") == 0) {
 
-				Iterator<String> it = qualPair.iterator();
-				String tmp = new String();
-				while (it.hasNext()) {
-					tmp = it.next();
-					collector.emit(new Values(curtstamp, tmp));
-				}
+			recStreCnt++;
+
+			ts = input.getDoubleByField("ts");
+			String strestr = input.getStringByField("strevec");
+			String cellstr = input.getStringByField("cellvec");
+			int streid = input.getIntegerByField("id");
+
+			// if (Math.abs(curtstamp - ts) <= 1e-3) {
+			IndexingStre(streid, strestr, cellstr);
+			// }
+
+		} else if (streType.compareTo("calCommand") == 0) {
+
+			commandStr = input.getStringByField("command");
+			preTaskId = input.getLongByField("taskid");
+
+			preTaskIdx.add(preTaskId);
+			if (preTaskIdx.size() < TopologyMain.preBoltNum) {
+				return;
 			}
 
+			recStreCnt = cellCorrCal(collector);
+
 			localIdxRenew();
-			localGridStreIdx(coordstr, hostid, vecstr, lflag);
-			curtstamp = ts;
 
-		} else if (ts < curtstamp) {
-			System.out.printf("!!!!!!!!!!!!! time sequence disorder\n");
-		} else if (Math.abs(ts - curtstamp) <= 1e-3) {
-
-			localGridStreIdx(coordstr, hostid, vecstr, lflag);
-
+			curtstamp = ts + 1;
+			preTaskIdx.clear();
 		}
+
 		return;
 	}
 }

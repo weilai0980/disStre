@@ -463,6 +463,15 @@ public class AdjustPreBolt extends BaseBasicBolt {
 		return str;
 	}
 
+	void streamPreFill()
+	{
+		
+		return;
+	}
+	
+	
+	
+	
 	/**
 	 * At the end of the spout (when the cluster is shutdown We will show the
 	 * word counters

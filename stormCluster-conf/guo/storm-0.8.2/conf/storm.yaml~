@@ -5,13 +5,11 @@ storm.zookeeper.servers:
 - "lsir-cluster-03.epfl.ch"
 - "lsir-cluster-04.epfl.ch"
 - "lsir-cluster-05.epfl.ch"
-- "lsir-cluster-06.epfl.ch"
-- "lsir-cluster-07.epfl.ch"
 
 
 storm.zookeeper.port: 2181
 nimbus.host: "lsir-cluster-01.epfl.ch" 
-storm.local.dir: "/root/guo/storm-0.8.2"
+storm.local.dir: "/root/guo/storm-local"
 java.library.path: "/usr/lib/jvm:/usr/local/lib:/opt/local/lib:/usr/lib"
 
 ui.port: 8772
@@ -31,9 +29,18 @@ supervisor.slots.ports:
      - 6707
      - 6708
      - 6709
+     - 6710
+     - 6711
+  
 worker.childopts: "-Xmx768m"
 nimbus.childopts: "-Xmx512m"
 supervisor.childopts: "-Xmx256m"
+
+nimbus.thrift.max_buffer_size: 31457280 
+
+#10485760
+
+
 # 
 # 
 # ##### These may optionally be filled in:

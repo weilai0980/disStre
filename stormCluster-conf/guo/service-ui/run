@@ -2,4 +2,4 @@
 
 exec 2>&1
 
-exec /root/guo/storm-0.8.2/bin/storm ui
+exec /root/guo/storm/bin/storm ui

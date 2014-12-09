@@ -48,17 +48,15 @@ public class AdjustHashGroupEnh implements CustomStreamGrouping {
 
 	public double diviNum = Math.exp(Math.log(TopologyMain.calBoltNum)
 			/ TopologyMain.winSize); // division on each dimension
-	
-	
-	public double subDivNum = 2;
-	
-//	Math.exp(Math.log(TopologyMain.calBoltNum)
-//			/ TopologyMain.winh); // division on each dimension
-	
 
-//	public double taskRange = 2.0 / diviNum;
+	public double subDivNum = 2;
+
+	// Math.exp(Math.log(TopologyMain.calBoltNum)
+	// / TopologyMain.winh); // division on each dimension
+
+	// public double taskRange = 2.0 / diviNum;
 	public double taskRange = 2.0 / subDivNum;
-	
+
 	public double disThre = 2 - 2 * TopologyMain.thre;
 
 	public int gridRange = (int) Math.ceil(1.0 / Math.sqrt(disThre));
@@ -66,20 +64,14 @@ public class AdjustHashGroupEnh implements CustomStreamGrouping {
 
 	public double taskGridCap = taskRange / Math.sqrt(disThre);
 
-	// public int taskGridCap = (int) Math.ceil(taskRange / Math.sqrt(disThre));
-	// // each
-	// task
-	// space
-	// includes
-	// how
-	// many
-	// grid
-
 	public int gridcnt = 0;
 	public int taskCnt = 0;
 	public int broadcnt = 0;
 
 	public int emittask = 0;
+
+	public ArrayList<Integer> emitStack = new ArrayList<Integer>();
+	public Set<Integer> taskSet = new HashSet<Integer>();
 
 	// ................test..................//
 	// String adjList=new String();
@@ -101,19 +93,15 @@ public class AdjustHashGroupEnh implements CustomStreamGrouping {
 		localgid = groupid;
 		groupid++;
 
-		// Math.e
-		// System.out.printf("-------- %f  %f  %d  \n",
-		// diviNum,taskRange,gridRange);
 	}
 
-	public void coorAna(String str, int coor[]) {
+	public void coorAnaWithShift(String str, int coor[]) {
 		int l = str.length();
 		int pre = 0, tmpcoor = 0, cnt = 0;
 
 		for (int i = 0; i < l; ++i) {
 			if (str.charAt(i) == ',') {
 				tmpcoor = Integer.valueOf(str.substring(pre, i));
-				// coor[cnt++] = tmpcoor;
 
 				coor[cnt++] = tmpcoor + gridRange + 1; // coordinate
 														// transposition to
@@ -125,33 +113,139 @@ public class AdjustHashGroupEnh implements CustomStreamGrouping {
 		return;
 	}
 
-	// public int adjIdx(String orgstr) {
-	//
-	// int len = orgstr.length();
-	// int pre = 0;
-	// int tmpid;
-	// for (int i = 0; i < len; ++i) {
-	// if (orgstr.charAt(i) == ',') {
-	// tmpid = Integer.valueOf(orgstr.substring(pre, i));
-	//
-	// if(tmpid==ta || tmpid==tb)
-	// {
-	// return tmpid;
-	// }
-	//
-	// pre = i + 1;
-	// }
-	// }
-	// return -1;
-	// }
+	public void coorAnaWithoutShift(String str, int coor[]) {
+		int l = str.length();
+		int pre = 0, tmpcoor = 0, cnt = 0;
 
-	public void locateTask() {
+		for (int i = 0; i < l; ++i) {
+			if (str.charAt(i) == ',') {
+				tmpcoor = Integer.valueOf(str.substring(pre, i));
+
+				coor[cnt++] = tmpcoor;
+				pre = i + 1;
+			}
+		}
+		return;
+	}
+
+	public void broadcastEmitNoRecur(int orgiCoord[]) {
+
+		int curlay = 0;
+		int[] tmpCoor = new int[TopologyMain.winSize + 5];
+
+		int stkSize = 0, curdir = -1, tmpdir = 0;
+		double tmptaskId = 0.0;
+
+		// .....ini....................//
+		if (dimSignBound[curlay] == 0) {
+			tmpCoor[curlay] = orgiCoord[curlay];
+
+			emitStack.add(0);
+			stkSize++;
+		} else if (dimSignBound[curlay] == 1) {
+
+			tmpdir = curdir + 1;
+			tmpCoor[curlay] = orgiCoord[curlay] + tmpdir * dimSign[curlay];
+			// tmpCoor[curlay] = orgiCoord[curlay] + dimSign[curlay];
+
+			emitStack.add(0);
+			stkSize++;
+		} else if (dimSignBound[curlay] == 2) {
+
+			tmpdir = curdir + 1;
+			tmpCoor[curlay] = orgiCoord[curlay] + direcVec[tmpdir];
+
+			emitStack.add(0);
+			stkSize++;
+		}
+
+		curlay++;
+		curdir = -1;
+		// ...........................//
+
+		int popflag = 0;
+
+		while (emitStack.size() != 0) {
+
+			if (popflag == 1) {
+				curdir = emitStack.get(stkSize - 1);
+				emitStack.remove(stkSize - 1);
+				stkSize--;
+				curlay--;
+
+				popflag = 0;
+			}
+
+			if (curlay >= TopologyMain.winSize) {
+
+				tmptaskId = tmpCoor[0];
+				for (int j = 1; j < TopologyMain.winSize; ++j) {
+					tmptaskId = tmptaskId + (tmpCoor[j] - 1)
+							* Math.pow(diviNum, j);
+				}
+
+				if (Math.ceil(tmptaskId) > taskCnt) {
+					tmptaskId = taskCnt;
+				}
+
+				emittask = (int) Math.ceil(tmptaskId) - 1;
+
+				if (emittask < 0)
+					emittask = 0;
+
+				taskSet.add(_tasks.get(emittask));
+
+				popflag = 1;
+
+			} else {
+
+				if (curdir + 1 > dimSignBound[curlay]) {
+
+					popflag = 1;
+
+					continue;
+				} else {
+
+					if (dimSignBound[curlay] == 0) {
+						tmpCoor[curlay] = orgiCoord[curlay];
+
+						emitStack.add(0);
+						stkSize++;
+
+					} else if (dimSignBound[curlay] == 1) {
+
+						tmpdir = curdir + 1;
+						tmpCoor[curlay] = orgiCoord[curlay] + tmpdir
+								* dimSign[curlay];
+
+						emitStack.add(tmpdir);
+						stkSize++;
+
+					} else if (dimSignBound[curlay] == 2) {
+
+						tmpdir = curdir + 1;
+						tmpCoor[curlay] = orgiCoord[curlay] + direcVec[tmpdir];
+
+						emitStack.add(tmpdir);
+						stkSize++;
+					}
+
+					curlay++;
+					curdir = -1;
+				}
+			}
+		}
+
+		return;
+	}
+
+	public void locateTaskGeneral() {
 		int tmpTaskCoor = 0;
 
 		int tmpUpBound2 = 0, tmpLowBound2 = 0;
-		
-		//.......still needed................// 
-		
+
+		// .......still needed................//
+
 		// tmpUpBound1 = (int) Math.ceil((double) (tmpGridCoor[j] + 1)
 		// / taskGridCap);
 		// tmpLowBound1 = (int) Math.ceil((double) (tmpGridCoor[j] - 1)
@@ -176,77 +270,75 @@ public class AdjustHashGroupEnh implements CustomStreamGrouping {
 
 			tmpUpBound2 = (int) Math.ceil((double) (tmpGridCoor[j] + 2) // modification
 					/ taskGridCap);
-			
+
 			// tmpLowBound2 = (int) Math.ceil((double) (tmpGridCoor[j] - 2)
 			// / taskGridCap);
 
 			tmpLowBound2 = (int) Math.ceil((double) (tmpGridCoor[j] - 2) // modification
 					/ taskGridCap);
-			
-				
-			
-//			 if (tmpUpBound2 > intDivinum) {
-//				 dimSign[j] = 0;
-//				 dimSignBound[j] = 0;
-//				
-//				 } 
-//				 
-//				 if (tmpLowBound2 < 1) {
-//					dimSign[j] = 0;
-//					dimSignBound[j] = 0;
-//				} 
-				 
-//				 else {
-			
-//			if (tmpUpBound2 > tmpTaskCoor && tmpUpBound2 <= intDivinum) {
-//					if (tmpUpBound2 > tmpTaskCoor && tmpUpBound2 <= diviNum) { // ++ modified 
-						
-						if (tmpUpBound2 > tmpTaskCoor && tmpUpBound2 <= subDivNum) {
 
-						dimSign[j] = 1;
-						dimSignBound[j] = 1;
-					}
-					if (tmpLowBound2 < tmpTaskCoor && tmpLowBound2 >= 1) {
+			// if (tmpUpBound2 > intDivinum) {
+			// dimSign[j] = 0;
+			// dimSignBound[j] = 0;
+			//
+			// }
+			//
+			// if (tmpLowBound2 < 1) {
+			// dimSign[j] = 0;
+			// dimSignBound[j] = 0;
+			// }
 
-						if (dimSign[j] == 1) {
-							dimSign[j] = 2;
-							dimSignBound[j] = 2;
-						} else {
-							dimSign[j] = -1;
-							dimSignBound[j] = 1;
-						}
-					}
-//				}
-			
-			
-//			 if (tmpUpBound2 > intDivinum) {
-//			 dimSign[j] = 0;
-//			 dimSignBound[j] = 0;
-//			
-//			 } 
-//			 
-//			 if (tmpLowBound2 < 1) {
-//				dimSign[j] = 0;
-//				dimSignBound[j] = 0;
-//			} 
-//			 
-////			 else {
-//				if (tmpUpBound2 > tmpTaskCoor) {
-//
-//					dimSign[j] = 1;
-//					dimSignBound[j] = 1;
-//				}
-//				if (tmpLowBound2 < tmpTaskCoor) {
-//
-//					if (dimSign[j] == 1) {
-//						dimSign[j] = 2;
-//						dimSignBound[j] = 2;
-//					} else {
-//						dimSign[j] = -1;
-//						dimSignBound[j] = 1;
-//					}
-//				}
-////			}
+			// else {
+
+			// if (tmpUpBound2 > tmpTaskCoor && tmpUpBound2 <= intDivinum) {
+			// if (tmpUpBound2 > tmpTaskCoor && tmpUpBound2 <= diviNum) { // ++
+			// modified
+
+			if (tmpUpBound2 > tmpTaskCoor && tmpUpBound2 <= subDivNum) {
+
+				dimSign[j] = 1;
+				dimSignBound[j] = 1;
+			}
+			if (tmpLowBound2 < tmpTaskCoor && tmpLowBound2 >= 1) {
+
+				if (dimSign[j] == 1) {
+					dimSign[j] = 2;
+					dimSignBound[j] = 2;
+				} else {
+					dimSign[j] = -1;
+					dimSignBound[j] = 1;
+				}
+			}
+			// }
+
+			// if (tmpUpBound2 > intDivinum) {
+			// dimSign[j] = 0;
+			// dimSignBound[j] = 0;
+			//
+			// }
+			//
+			// if (tmpLowBound2 < 1) {
+			// dimSign[j] = 0;
+			// dimSignBound[j] = 0;
+			// }
+			//
+			// // else {
+			// if (tmpUpBound2 > tmpTaskCoor) {
+			//
+			// dimSign[j] = 1;
+			// dimSignBound[j] = 1;
+			// }
+			// if (tmpLowBound2 < tmpTaskCoor) {
+			//
+			// if (dimSign[j] == 1) {
+			// dimSign[j] = 2;
+			// dimSignBound[j] = 2;
+			// } else {
+			// dimSign[j] = -1;
+			// dimSignBound[j] = 1;
+			// }
+			// }
+			// // }
 
 		}
 		// System.out.printf("\n");
@@ -255,13 +347,9 @@ public class AdjustHashGroupEnh implements CustomStreamGrouping {
 		return;
 	}
 
-	public ArrayList<Integer> emitStack = new ArrayList<Integer>();
-	
-	public Set <Integer> taskSet = new HashSet<Integer>();
-	
-	public int[] direcVec = { -1, 0, 1 };
+	public int[] direcVec = { 0, 1, -1 };
 
-	public void broadcastEmitNoRecur(int orgiCoord[]) {
+	public void broadcastEmitNoRecurSubDimGeneral(int orgiCoord[]) {
 
 		int curlay = 0;
 		int[] tmpCoor = new int[TopologyMain.winSize + 5];
@@ -279,7 +367,7 @@ public class AdjustHashGroupEnh implements CustomStreamGrouping {
 
 			tmpdir = curdir + 1;
 			tmpCoor[curlay] = orgiCoord[curlay] + tmpdir * dimSign[curlay];
-//			tmpCoor[curlay] = orgiCoord[curlay] +  dimSign[curlay];
+			// tmpCoor[curlay] = orgiCoord[curlay] + dimSign[curlay];
 
 			emitStack.add(0);
 			stkSize++;
@@ -296,26 +384,25 @@ public class AdjustHashGroupEnh implements CustomStreamGrouping {
 		curdir = -1;
 		// ...........................//
 
-		int popflag=0;
-		
+		int popflag = 0;
+
 		while (emitStack.size() != 0) {
-			
-			if(popflag==1)
-			{
+
+			if (popflag == 1) {
 				curdir = emitStack.get(stkSize - 1);
 				emitStack.remove(stkSize - 1);
 				stkSize--;
 				curlay--;
-				
-				popflag=0;
+
+				popflag = 0;
 			}
-			
-			if (curlay >= TopologyMain.winSize) {
+
+			if (curlay >= TopologyMain.winh) {
 
 				tmptaskId = tmpCoor[0];
-				for (int j = 1; j < TopologyMain.winSize; ++j) {
+				for (int j = 1; j < TopologyMain.winh; ++j) {
 					tmptaskId = tmptaskId + (tmpCoor[j] - 1)
-							* Math.pow(diviNum, j);
+							* Math.pow(subDivNum, j);
 				}
 
 				if (Math.ceil(tmptaskId) > taskCnt) {
@@ -327,29 +414,26 @@ public class AdjustHashGroupEnh implements CustomStreamGrouping {
 				if (emittask < 0)
 					emittask = 0;
 
-				
-				taskSet.add(_tasks.get(emittask));	
-//				tasklist.add(_tasks.get(emittask));
-				
-				
-//				curdir = emitStack.get(stkSize - 1);
-//				emitStack.remove(stkSize - 1);
-//				stkSize--;
-//				curlay--;
-				
-				popflag=1;
+				taskSet.add(_tasks.get(emittask));
+				// tasklist.add(_tasks.get(emittask));
+
+				// curdir = emitStack.get(stkSize - 1);
+				// emitStack.remove(stkSize - 1);
+				// stkSize--;
+				// curlay--;
+
+				popflag = 1;
 
 			} else {
 
 				if (curdir + 1 > dimSignBound[curlay]) {
 
-//					curdir = emitStack.get(stkSize - 1);
-//					emitStack.remove(stkSize - 1);
-//					stkSize--;
-//					curlay--;
-					
-					
-					popflag=1;
+					// curdir = emitStack.get(stkSize - 1);
+					// emitStack.remove(stkSize - 1);
+					// stkSize--;
+					// curlay--;
+
+					popflag = 1;
 
 					continue;
 				} else {
@@ -363,7 +447,8 @@ public class AdjustHashGroupEnh implements CustomStreamGrouping {
 					} else if (dimSignBound[curlay] == 1) {
 
 						tmpdir = curdir + 1;
-						tmpCoor[curlay] = orgiCoord[curlay] + tmpdir*dimSign[curlay];
+						tmpCoor[curlay] = orgiCoord[curlay] + tmpdir
+								* dimSign[curlay];
 
 						emitStack.add(tmpdir);
 						stkSize++;
@@ -385,7 +470,39 @@ public class AdjustHashGroupEnh implements CustomStreamGrouping {
 
 		return;
 	}
-	public void broadcastEmitNoRecurSubDim(int orgiCoord[]) {
+
+	public void locateTask2Part() {
+
+		int tmpUpBound2 = 0, tmpLowBound2 = 0;
+
+		for (int j = 0; j < TopologyMain.winSize; ++j) {
+
+			dimSign[j] = 0;
+			dimSignBound[j] = 0;
+
+			TaskCoor[j] = (tmpGridCoor[j] > 0 ? 2 : 1);
+
+			tmpUpBound2 = (tmpGridCoor[j] + 2);
+			if (tmpUpBound2 * tmpGridCoor[j] <= 0) {
+				dimSign[j] = 1;
+				dimSignBound[j] = 1;
+			}
+
+			tmpLowBound2 = (tmpGridCoor[j] - 2);
+			if (tmpLowBound2 * tmpGridCoor[j] <= 0) {
+				dimSign[j] = -1;
+				dimSignBound[j] = 1;
+			}
+
+		}
+
+		return;
+	}
+
+	public int[] posDirecVec = { 0, 1 };
+	public int[] negDirecVec = { 0, -1 };
+
+	public void broadcastEmitNoRecurSubDim2Part(int orgiCoord[]) {
 
 		int curlay = 0;
 		int[] tmpCoor = new int[TopologyMain.winSize + 5];
@@ -394,23 +511,22 @@ public class AdjustHashGroupEnh implements CustomStreamGrouping {
 		double tmptaskId = 0.0;
 
 		// .....ini....................//
-		if (dimSignBound[curlay] == 0) {
+		if (dimSign[curlay] == 0) {
 			tmpCoor[curlay] = orgiCoord[curlay];
 
 			emitStack.add(0);
 			stkSize++;
-		} else if (dimSignBound[curlay] == 1) {
+		} else if (dimSign[curlay] == 1) {
 
 			tmpdir = curdir + 1;
-			tmpCoor[curlay] = orgiCoord[curlay] + tmpdir * dimSign[curlay];
-//			tmpCoor[curlay] = orgiCoord[curlay] +  dimSign[curlay];
+			tmpCoor[curlay] = orgiCoord[curlay] + posDirecVec[tmpdir];
 
 			emitStack.add(0);
 			stkSize++;
-		} else if (dimSignBound[curlay] == 2) {
+		} else if (dimSign[curlay] == -1) {
 
 			tmpdir = curdir + 1;
-			tmpCoor[curlay] = orgiCoord[curlay] + direcVec[tmpdir];
+			tmpCoor[curlay] = orgiCoord[curlay] + negDirecVec[tmpdir];
 
 			emitStack.add(0);
 			stkSize++;
@@ -420,26 +536,24 @@ public class AdjustHashGroupEnh implements CustomStreamGrouping {
 		curdir = -1;
 		// ...........................//
 
-		int popflag=0;
-		
+		int popflag = 0;
+
 		while (emitStack.size() != 0) {
-			
-			if(popflag==1)
-			{
+
+			if (popflag == 1) {
 				curdir = emitStack.get(stkSize - 1);
 				emitStack.remove(stkSize - 1);
 				stkSize--;
 				curlay--;
-				
-				popflag=0;
+
+				popflag = 0;
 			}
-			
+
 			if (curlay >= TopologyMain.winh) {
 
 				tmptaskId = tmpCoor[0];
 				for (int j = 1; j < TopologyMain.winh; ++j) {
-					tmptaskId = tmptaskId + (tmpCoor[j] - 1)
-							* Math.pow(subDivNum, j);
+					tmptaskId = tmptaskId + (tmpCoor[j] - 1) * Math.pow(2, j);
 				}
 
 				if (Math.ceil(tmptaskId) > taskCnt) {
@@ -451,50 +565,38 @@ public class AdjustHashGroupEnh implements CustomStreamGrouping {
 				if (emittask < 0)
 					emittask = 0;
 
-				taskSet.add(_tasks.get(emittask));	
-//				tasklist.add(_tasks.get(emittask));
-				
-				
-//				curdir = emitStack.get(stkSize - 1);
-//				emitStack.remove(stkSize - 1);
-//				stkSize--;
-//				curlay--;
-				
-				popflag=1;
+				taskSet.add(_tasks.get(emittask));
+
+				popflag = 1;
 
 			} else {
 
 				if (curdir + 1 > dimSignBound[curlay]) {
 
-//					curdir = emitStack.get(stkSize - 1);
-//					emitStack.remove(stkSize - 1);
-//					stkSize--;
-//					curlay--;
-					
-					popflag=1;
+					popflag = 1;
 
 					continue;
 				} else {
 
-					if (dimSignBound[curlay] == 0) {
-						tmpCoor[curlay] = orgiCoord[curlay];
+					if (dimSign[curlay] == 0) {
 
+						tmpCoor[curlay] = orgiCoord[curlay];
 						emitStack.add(0);
 						stkSize++;
 
-					} else if (dimSignBound[curlay] == 1) {
+					} else if (dimSign[curlay] == 1) {
 
 						tmpdir = curdir + 1;
-						tmpCoor[curlay] = orgiCoord[curlay] + tmpdir*dimSign[curlay];
-
+						tmpCoor[curlay] = orgiCoord[curlay]
+								+ posDirecVec[tmpdir];
 						emitStack.add(tmpdir);
 						stkSize++;
 
-					} else if (dimSignBound[curlay] == 2) {
+					} else if (dimSign[curlay] == -1) {
 
 						tmpdir = curdir + 1;
-						tmpCoor[curlay] = orgiCoord[curlay] + direcVec[tmpdir];
-
+						tmpCoor[curlay] = orgiCoord[curlay]
+								+ negDirecVec[tmpdir];
 						emitStack.add(tmpdir);
 						stkSize++;
 					}
@@ -585,28 +687,32 @@ public class AdjustHashGroupEnh implements CustomStreamGrouping {
 		coorstr = values.get(4).toString();
 		ts = Double.valueOf(values.get(5).toString());
 
-		coorAna(coorstr, tmpGridCoor);
+		// coorAnaWithShift(coorstr, tmpGridCoor);
+		coorAnaWithoutShift(coorstr, tmpGridCoor);
+
 		tasklist.clear();
 
 		gridcnt++;
 
 		if (ts > curtstamp) {
 
-			locateTask();
+			// locateTaskGeneral();
+			locateTask2Part();
 
 			emitStack.clear();
 			taskSet.clear();
-			
-			broadcastEmitNoRecurSubDim(TaskCoor);
-//			broadcastEmitNoRecur(TaskCoor);
-			
-			
+
+			// broadcastEmitNoRecurSubDim(TaskCoor);
+			broadcastEmitNoRecurSubDim2Part(TaskCoor);
+
+			// broadcastEmitNoRecur(TaskCoor);
+
 			for (Integer tmp : taskSet) {
 				tasklist.add(tmp);
 			}
-			
+
 			curtstamp = ts;
-			
+
 			return tasklist;
 
 		} else if (ts < curtstamp) {
@@ -618,14 +724,16 @@ public class AdjustHashGroupEnh implements CustomStreamGrouping {
 
 		} else {
 
-			locateTask();
+			// locateTaskGeneral();
+			locateTask2Part();
 
 			emitStack.clear();
 			taskSet.clear();
-			
-			broadcastEmitNoRecurSubDim(TaskCoor);
-//			broadcastEmitNoRecur(TaskCoor);
-		
+
+			broadcastEmitNoRecurSubDim2Part(TaskCoor);
+			// broadcastEmitNoRecurSubDim(TaskCoor);
+			// broadcastEmitNoRecur(TaskCoor);
+
 			for (Integer tmp : taskSet) {
 				tasklist.add(tmp);
 			}

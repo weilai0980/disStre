@@ -40,24 +40,24 @@ public class TopologyMain {
 
 	public static int tinterval = 2000;
 	
-	public static int winSize = 10; // 20 40 80 160 320 640 1280
-	public static double thre = 0.8; 
+	public static int winSize = 20; // 20 40 80 160 320 640 1280
+	public static double thre = 0.95; 
 
-	public static int wokernum = 40;
+	public static int wokernum = 48;
 	public static int preBoltNum = 8;
-	public static int calBoltNum = 8;
+	public static int calBoltNum = 4;
 	public static int aggreBoltNum = 4;
 	
 	// ..................data set.....................
 	public static int datasrc = 0; // 0: synthetic 1: real
 
 	public static int nstreBolt = 1;
-	public static int nstream = 3800;  //3500, 1700 
-	public static int gridIdxN = 4500;
+	public static int nstream = 1800;  //3500, 1700 
+	public static int gridIdxN = 3000;
 
 	public static int nstrFile = 20;
 	public static int offsetRow = 0;
-	public static int iniWindow = 0;
+	public static int iniWindow = 1;
 
 	// .................DFT approach...........................//
 	

@@ -1,0 +1,325 @@
+package bolts;
+
+import main.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import backtype.storm.task.TopologyContext;
+import backtype.storm.topology.BasicOutputCollector;
+import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.topology.base.BaseBasicBolt;
+import backtype.storm.tuple.Fields;
+import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
+
+public class partCalBolt extends BaseBasicBolt {
+
+	// ............input time order..............//
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	double curtstamp = TopologyMain.winSize - 1;
+	String streType = new String();
+	double ts = 0.0;
+
+	String commandStr = new String();
+	long preTaskId = 0;
+
+	HashSet<Long> preTaskIdx = new HashSet<Long>();
+	// .........memory management for sliding windows.................//
+
+	double[][] streamVec = new double[TopologyMain.nstreBolt + 1][TopologyMain.winSize + 1];
+
+	int[][] cellVec = new int[TopologyMain.gridIdxN + 1][TopologyMain.winSize + 1];
+	int [] cellType= new int[TopologyMain.gridIdxN + 1];
+	HashMap<Integer, Integer> streIdx = new HashMap<Integer, Integer>();
+	HashMap<String, Integer> cellIdx = new HashMap<String, Integer>();
+
+	List<List<Integer>> cellStre = new ArrayList<List<Integer>>(
+			TopologyMain.gridIdxN + 1);
+
+
+	// ...........computation parameter....................//
+	int locTaskId;
+	double disThre = 2 - 2 * TopologyMain.thre;
+	double cellEps = Math.sqrt(disThre);
+
+	int recStreCnt = 0;
+
+	public int vecAna(double streamVec[][], int idx, String vecstr) {
+
+		int len = vecstr.length(), cnt = 0, pre = 0;
+		for (int i = 0; i < len; ++i) {
+			if (vecstr.charAt(i) == ',') {
+				streamVec[idx][cnt++] = Double
+						.valueOf(vecstr.substring(pre, i));
+				pre = i + 1;
+			}
+		}
+		return cnt;
+	}
+
+	public void vecAnaInt(int mem[][], int idx, String vecstr) {
+
+		int len = vecstr.length(), pre = 0, cnt = 0;
+
+		for (int i = 0; i < len; ++i) {
+			if (vecstr.charAt(i) == ',') {
+
+				mem[idx][cnt++] = Integer.valueOf(vecstr.substring(pre, i));
+				pre = i + 1;
+
+			}
+		}
+
+		return;
+	}
+
+	public int cellTypeCal(int memidx)
+	{
+		
+//		TaskCoor[j] = (tmpGridCoor[j] > 0 ? 2 : 1);
+//		
+//		
+//		
+		int taskid=0, taskCoor=0;
+		tmptaskId = tmpCoor[0];
+		
+		
+		
+		for (int j = 1; j < TopologyMain.winSize; ++j) {
+			tmptaskId = tmptaskId + (tmpCoor[j] - 1) * Math.pow(2, j);
+		}
+		return 1;
+	}
+	public void IndexingStre(int streid, String streamStr, String cellStr) {
+
+		int streNo = 0;
+		if (streIdx.containsKey(streid) == true) {
+
+			return;
+
+		} else {
+			streNo = streIdx.size();
+			streIdx.put(streid, streNo);
+		}
+
+		int cellNo = cellIdx.size();
+
+		if (cellIdx.containsKey(cellStr) == true) {
+
+			cellStre.get(cellIdx.get(cellStr)).add(streid);
+		
+		} else {
+
+			cellIdx.put(cellStr, cellNo);
+			cellStre.add(new ArrayList<Integer>());
+
+			cellStre.get(cellIdx.get(cellStr)).add(streid);
+
+		}
+
+		vecAna(streamVec, streNo, streamStr);
+//		vecAna(dftVec, streNo, dftStr);
+		vecAnaInt(cellVec, cellNo, cellStr);
+
+		return;
+	}
+
+	int correCalDisReal(double thre, int streid1, int streid2) {
+
+		int memidx1 = streIdx.get(streid1), memidx2 = streIdx.get(streid2), k = 0;
+
+		double tmpres = 0.0;
+
+		for (k = 0; k < TopologyMain.winSize; ++k) {
+			tmpres = tmpres + (streamVec[memidx1][k] - streamVec[memidx2][k])
+					* (streamVec[memidx1][k] - streamVec[memidx2][k]);
+		}
+
+		return tmpres <= thre ? 1 : 0;
+
+	}
+
+//	int correCalDisDFT(double thre, int streid1, int streid2) {
+//
+//		int memidx1 = streIdx.get(streid1), memidx2 = streIdx.get(streid2), k = 0;
+//
+//		double tmpres = 0.0;
+//
+//		for (k = 0; k < TopologyMain.dftN * 2; ++k) {
+//			tmpres = tmpres + (dftVec[memidx1][k] - dftVec[memidx2][k])
+//					* (dftVec[memidx1][k] - dftVec[memidx2][k]);
+//		}
+//
+//		return tmpres <= thre ? 1 : 0;
+//
+//	}
+
+//	int cellWithinCal(int cellidx, BasicOutputCollector collector) {
+//
+//		int stre1 = 0, stre2 = 0, resCnt = 0;
+//
+//		for (int i = 0; i < cellHostStre.get(cellidx).size(); i++) {
+//			for (int j = i + 1; j < cellHostStre.get(cellidx).size(); j++) {
+//
+//				stre1 = cellHostStre.get(cellidx).get(i);
+//				stre2 = cellHostStre.get(cellidx).get(j);
+//
+//				if (correCalDisDFT(2 - 2 * TopologyMain.thre, stre1, stre2) == 1) {
+//
+//					if (correCalDisReal(2 - 2 * TopologyMain.thre, stre1, stre2) == 1) {
+//
+//						String tmpstr = new String();
+//
+//						if (stre1 > stre2) {
+//							tmpstr = Integer.toString(stre2) + ","
+//									+ Integer.toString(stre1);
+//							// resPair.add(tmpstr);
+//						} else {
+//							tmpstr = Integer.toString(stre1) + ","
+//									+ Integer.toString(stre2);
+//							// resPair.add(tmpstr);
+//						}
+//
+//						resCnt++;
+//						collector.emit(new Values(curtstamp, tmpstr));
+//					}
+//				}
+//
+//			}
+//		}
+//
+//		for (int i = 0; i < cellHostStre.get(cellidx).size(); i++) {
+//			for (int j = 0; j < cellNbStre.get(cellidx).size(); j++) {
+//
+//				stre1 = cellHostStre.get(cellidx).get(i);
+//				stre2 = cellNbStre.get(cellidx).get(j);
+//
+//				if (correCalDisDFT(2 - 2 * TopologyMain.thre, stre1, stre2) == 1) {
+//
+//					if (correCalDisReal(2 - 2 * TopologyMain.thre, stre1, stre2) == 1) {
+//
+//						String tmpstr = new String();
+//
+//						if (stre1 > stre2) {
+//							tmpstr = Integer.toString(stre2) + ","
+//									+ Integer.toString(stre1);
+//							// resPair.add(tmpstr);
+//						} else {
+//							tmpstr = Integer.toString(stre1) + ","
+//									+ Integer.toString(stre2);
+//							// resPair.add(tmpstr);
+//						}
+//
+//						resCnt++;
+//						collector.emit(new Values(curtstamp, tmpstr));
+//					}
+//				}
+//
+//			}
+//		}
+//
+//		return resCnt;
+//	}
+
+	int cellCorrCal(BasicOutputCollector collector) {
+
+		// resPair.clear();
+		int rescnt = 0;
+		int cellcnt = cellIdx.size();
+
+		for (int i = 0; i < cellcnt; ++i) {
+
+//			rescnt += cellWithinCal(i, collector);
+		}
+		return rescnt;
+	}
+
+	public void localIdxRenew() {
+
+		cellIdx.clear();
+		streIdx.clear();
+
+		cellStre.clear();
+//		cellNbStre.clear();
+		// resPair.clear();
+
+		return;
+	}
+
+	@Override
+	public void cleanup() {
+
+	}
+
+	@Override
+	public void declareOutputFields(OutputFieldsDeclarer declarer) {
+		// TODO Auto-generated method stub
+
+		declarer.declare(new Fields("ts", "pair"));
+	}
+
+	@Override
+	public void prepare(Map stormConf, TopologyContext context) {
+
+		locTaskId = context.getThisTaskId();
+
+		return;
+	}
+
+	@Override
+	public void execute(Tuple input, BasicOutputCollector collector) {
+		// TODO Auto-generated method stub
+
+		// declarer.declareStream("interStre", new Fields("id", "strevec",
+		// "cellvec", "ts"));
+
+		// declarer.declareStream("calCommand", new Fields("command",
+		// "taskid"));
+
+		streType = input.getSourceStreamId();
+
+		if (streType.compareTo("interStre") == 0) {
+
+			recStreCnt++;
+
+			ts = input.getDoubleByField("ts");
+			String strestr = input.getStringByField("strevec");
+			String cellstr = input.getStringByField("cellvec");
+			int streid = input.getIntegerByField("id");
+
+			// if (Math.abs(curtstamp - ts) <= 1e-3) {
+			IndexingStre(streid, strestr, cellstr);
+			// }
+
+		} else if (streType.compareTo("calCommand") == 0) {
+
+			commandStr = input.getStringByField("command");
+			preTaskId = input.getLongByField("taskid");
+
+			preTaskIdx.add(preTaskId);
+			if (preTaskIdx.size() < TopologyMain.preBoltNum) {
+				return;
+			}
+
+			recStreCnt = cellCorrCal(collector);
+
+			localIdxRenew();
+
+			curtstamp = ts + 1;
+			preTaskIdx.clear();
+		}
+
+		return;
+	}
+}

@@ -227,12 +227,12 @@ public class streamReader extends BaseRichSpout {
 		for (i = 0; i < stren; ++i) {
 			curStreRand[i] += Math.random() * 5000;
 
-			collector.emit("dataStre", new Values(i, tupTs, Math.random() * 5000),
-					Integer.toString(i) + ',' + Double.toString(tupTs));
+//			collector.emit("dataStre", new Values(i, tupTs, Math.random() * 5000-2500),
+//					Integer.toString(i) + ',' + Double.toString(tupTs));
 
-			// collector.emit("dataStre", new Values(i, tupTs, curStreRand[i]
-			// - tupTs * curStreBias[i] + curStreConst[i]),
-			// Integer.toString(i) + ',' + Double.toString(tupTs));
+			 collector.emit("dataStre", new Values(i, tupTs, curStreRand[i]
+			 - tupTs * curStreBias[i] + curStreConst[i]),
+			 Integer.toString(i) + ',' + Double.toString(tupTs));
 		}
 
 		// ...........test........
@@ -321,6 +321,7 @@ public class streamReader extends BaseRichSpout {
 	@Override
 	public void open(Map conf, TopologyContext context,
 			SpoutOutputCollector coll) {
+		
 
 		if (TopologyMain.datasrc == 1) {
 
