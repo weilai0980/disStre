@@ -1,0 +1,56 @@
+package main;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Random;
+
+public class CommonProjectTool {
+	
+	
+	FileWriter fstream; // =new FileWriter("", true);
+	BufferedWriter out; // = new BufferedWriter(fstream);
+
+	int h= TopologyMain.winSize;
+	double [] vec1=new double [h];
+	double[] vec2=new double[h];
+	
+	public void hyperPlaneBuild(int h) throws IOException
+	{
+		try {
+			fstream = new FileWriter("hyperplane-vectors.txt", false);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		double tmp=0;
+		
+		for(int i=0;i<h;++i)
+		{
+			vec1[i]=  Math.random();
+			vec2[i]=  Math.random();;
+			
+			tmp+= (vec1[i]*vec2[i]);
+		}
+		
+		vec2[h-1]= -(tmp-(vec1[h-1]*vec2[h-1]))/vec1[h-1];
+		
+		BufferedWriter out = new BufferedWriter(fstream);
+		
+		for(int i=0;i<h;++i)
+		{
+			out.write(Double.toString(vec1[i]) +",");
+		}
+		out.write("\n");
+		for(int i=0;i<h;++i)
+		{
+			out.write(Double.toString(vec2[i]) +",");
+		}
+		out.close();
+		
+		return;
+	}
+	
+	
+
+}
