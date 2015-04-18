@@ -1,7 +1,9 @@
 package bolts;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import main.TopologyMain;
 import backtype.storm.task.TopologyContext;
@@ -29,6 +31,7 @@ public class llcorrePre extends BaseBasicBolt {
 	int declrNum = (int) (TopologyMain.nstream / TopologyMain.preBoltNum + 1);
 	double[][] strevec = new double[declrNum][TopologyMain.winSize + 2];
 	double[][] normvec = new double[declrNum][TopologyMain.winSize + 2];
+	int[][] cellvec = new int[declrNum][TopologyMain.winSize + 2];
 
 	int[] streid = new int[declrNum + 1];
 	int streidCnt = 0;
@@ -45,6 +48,13 @@ public class llcorrePre extends BaseBasicBolt {
 	final double disThre = 2 - 2 * TopologyMain.thre;
 	final double epsilon = Math.sqrt(disThre);
 	int localTaskIdx = 0;
+
+	ArrayList<Integer> emitStack = new ArrayList<Integer>();
+	Set<Integer> taskSet = new HashSet<Integer>();
+
+	int[] direcVec = { -1, 0, 1 };
+
+	int taskCnt = TopologyMain.calBoltNum;
 
 	// ............custom metric............
 
@@ -72,9 +82,9 @@ public class llcorrePre extends BaseBasicBolt {
 
 	public String prepCellVec(int memidx, int partDim) {
 
-		int k = 0, dimcnt = 0;
+		int k = 0, dimcnt = 0, tmpdim = 0;
 		String str = new String();
-		k = veced[memidx];
+		k = vecst[memidx];
 		double tmpnorm = 0.0;
 
 		while (k != veced[memidx] && (dimcnt++) < partDim) {
@@ -82,27 +92,32 @@ public class llcorrePre extends BaseBasicBolt {
 			tmpnorm = (strevec[memidx][k] - curexp[memidx])
 					/ Math.sqrt(curdev[memidx]);
 
+			normvec[memidx][k] = tmpnorm;
+
 			if (tmpnorm >= 0) {
 
-				str = str + (int) Math.floor((double) tmpnorm / epsilon) + ",";
+				tmpdim = (int) Math.floor((double) tmpnorm / epsilon);
+				str = str + Integer.toString(tmpdim) + ",";
 				// it is floor here
 
 			} else {
-				str = str + (-1)
-						* (int) Math.ceil((double) -1 * tmpnorm / epsilon)
-						+ ",";
+				tmpdim = (-1)
+						* (int) Math.ceil((double) -1 * tmpnorm / epsilon);
+				str = str + Integer.toString(tmpdim) + ",";
 			}
+
+			cellvec[memidx][dimcnt - 1] = tmpdim;
 
 			k = (k + 1) % queueLen;
 		}
 		return str;
 	}
 
-	public String prepStreVec(int memidx) {
+	public String prepStreVec(int memidx) { // interface for dimension reduction
 
 		int k = 0;
 		String str = new String();
-		k = veced[memidx];
+		k = vecst[memidx];
 		while (k != veced[memidx]) {
 
 			str = str + Double.toString(strevec[memidx][k]) + ",";
@@ -148,6 +163,155 @@ public class llcorrePre extends BaseBasicBolt {
 
 	}
 
+	public int[] posDirecVec = { 0, 1 };
+	public int[] negDirecVec = { 0, -1 };
+
+	public void broadcastEmitNoRecurSubDim2Part(int orgiCoord[], int dimSign[],
+			int dimSignBound[]) {
+
+		int curlay = 0;
+		int[] tmpCoor = new int[TopologyMain.winSize + 5];
+
+		int stkSize = 0, curdir = -1, tmpdir = 0, emittask = 0;
+		double tmptaskId = 0.0;
+
+		// .....ini....................//
+		if (dimSign[curlay] == 0) {
+			tmpCoor[curlay] = orgiCoord[curlay];
+
+			emitStack.add(0);
+			stkSize++;
+		} else if (dimSign[curlay] == 1) {
+
+			tmpdir = curdir + 1;
+			tmpCoor[curlay] = orgiCoord[curlay] + posDirecVec[tmpdir];
+
+			emitStack.add(0);
+			stkSize++;
+		} else if (dimSign[curlay] == -1) {
+
+			tmpdir = curdir + 1;
+			tmpCoor[curlay] = orgiCoord[curlay] + negDirecVec[tmpdir];
+
+			emitStack.add(0);
+			stkSize++;
+		}
+
+		curlay++;
+		curdir = -1;
+		// ...........................//
+
+		int popflag = 0;
+
+		while (emitStack.size() != 0) {
+
+			if (popflag == 1) {
+				curdir = emitStack.get(stkSize - 1);
+				emitStack.remove(stkSize - 1);
+				stkSize--;
+				curlay--;
+
+				popflag = 0;
+			}
+
+			if (curlay >= TopologyMain.winh) {
+
+				tmptaskId = tmpCoor[0];
+				for (int j = 1; j < TopologyMain.winh; ++j) {
+					tmptaskId = tmptaskId + (tmpCoor[j] - 1) * Math.pow(2, j);
+				}
+
+				if (Math.ceil(tmptaskId) > taskCnt) {
+					tmptaskId = taskCnt;
+				}
+
+				emittask = (int) Math.ceil(tmptaskId) - 1;
+
+				if (emittask < 0)
+					emittask = 0;
+
+				taskSet.add(emittask);
+
+				popflag = 1;
+
+			} else {
+
+				if (curdir + 1 > dimSignBound[curlay]) {
+
+					popflag = 1;
+
+					continue;
+				} else {
+
+					if (dimSign[curlay] == 0) {
+
+						tmpCoor[curlay] = orgiCoord[curlay];
+						emitStack.add(0);
+						stkSize++;
+
+					} else if (dimSign[curlay] == 1) {
+
+						tmpdir = curdir + 1;
+						tmpCoor[curlay] = orgiCoord[curlay]
+								+ posDirecVec[tmpdir];
+						emitStack.add(tmpdir);
+						stkSize++;
+
+					} else if (dimSign[curlay] == -1) {
+
+						tmpdir = curdir + 1;
+						tmpCoor[curlay] = orgiCoord[curlay]
+								+ negDirecVec[tmpdir];
+						emitStack.add(tmpdir);
+						stkSize++;
+					}
+
+					curlay++;
+					curdir = -1;
+				}
+			}
+		}
+
+		return;
+	}
+
+	public void locateTask2Part(int memidx, int[] dimSign, int[] dimSignBound) {
+
+		int tmpUpBound2 = 0, tmpLowBound2 = 0;
+
+		int[] TaskCoor = new int[TopologyMain.winSize + 5];
+
+		int k = vecst[memidx];
+		// while (k != veced[memidx]) {
+
+		for (int j = 0; j < TopologyMain.winh; ++j) {
+
+			dimSign[j] = 0;
+			dimSignBound[j] = 0;
+
+			TaskCoor[j] = (cellvec[memidx][k] > 0 ? 2 : 1);
+
+			tmpUpBound2 = (cellvec[memidx][k] + 1);
+			if (tmpUpBound2 * cellvec[memidx][k] <= 0) {
+				dimSign[j] = 1;
+				dimSignBound[j] = 1;
+			}
+
+			tmpLowBound2 = (cellvec[memidx][k] - 1);
+			if (tmpLowBound2 * cellvec[memidx][k] <= 0) {
+				dimSign[j] = -1;
+				dimSignBound[j] = 1;
+			}
+
+			k = (k + 1) % queueLen;
+
+		}
+
+		// broadcastEmitNoRecurSubDim2Part(TaskCoor, dimSign );
+
+		return;
+	}
+
 	@Override
 	public void cleanup() {
 
@@ -184,7 +348,7 @@ public class llcorrePre extends BaseBasicBolt {
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 
 		declarer.declareStream("dataTup", new Fields("id", "strevec",
-				"cellvec", "ts"));
+				"cellvec", "ts", "celltype"));
 
 		declarer.declareStream("calCommand", new Fields("command", "taskid"));
 
@@ -225,7 +389,18 @@ public class llcorrePre extends BaseBasicBolt {
 				// emByte = 0.0; // for window metric
 				dirCnt = 0.0;
 
+				int[] dimSign = new int[TopologyMain.winSize + 5];
+				int[] dimSignBound = new int[TopologyMain.winSize + 5];
+
 				for (i = 0; i < streidCnt; ++i) {
+
+					emitStack.clear();
+					taskSet.clear();
+					
+					locateTask2Part(i, dimSign, dimSignBound);
+
+					broadcastEmitNoRecurSubDim2Part(cellvec[i], dimSign,
+							dimSignBound);
 
 					collector.emit("interStre", new Values(streid[tmppivot],
 							prepStreVec(i), prepCellVec(i, TopologyMain.winh),

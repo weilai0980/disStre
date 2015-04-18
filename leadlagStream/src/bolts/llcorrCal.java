@@ -30,28 +30,18 @@ public class llcorrCal extends BaseBasicBolt {
 	double curtstamp = TopologyMain.winSize - 1;
 	String streType = new String();
 	double ts = 0.0;
-
+    private int celltype=0;
+	
 	String commandStr = new String();
 	long preTaskId = 0;
 
 	HashSet<Long> preTaskIdx = new HashSet<Long>();
 	// .........memory management for sliding windows.................//
 
-	int[] cellType = new int[TopologyMain.gridIdxN + 1];
-	HashMap<Integer, Integer> streIdx = new HashMap<Integer, Integer>();
-	HashMap<String, Integer> cellIdx = new HashMap<String, Integer>();
-	
-	HashMap<String, Queue<String> > cellLagStre = new HashMap<String, Queue<String> >();
-	Queue<Integer> queue = new LinkedList<Integer>();
-	
-	List<List<Double>> streamvec = new ArrayList<List<Double>>(
-			TopologyMain.gridIdxN + 1);
-	
-	List<List<Integer>> cellStre = new ArrayList<List<Integer>>(
-			TopologyMain.gridIdxN + 1);
-
-	List<List<Integer>> cellvec = new ArrayList<List<Integer>>(
-			TopologyMain.gridIdxN + 1);
+	HashMap<String, ArrayList<Integer>> cellVec = new HashMap<String, ArrayList<Integer>>();
+	HashMap<String, ArrayList<Double>> swVec = new HashMap<String, ArrayList<Double>>();
+	HashMap<String, Queue<String>> cellSw = new HashMap<String, Queue<String>>();
+	HashMap<String, Integer> cellType = new HashMap<String, Integer>();
 
 	// ...........computation parameter....................//
 	int locTaskId, locTaskIdx;
@@ -62,75 +52,81 @@ public class llcorrCal extends BaseBasicBolt {
 
 	// ..........................
 
+	public void indexCellSwVec(String swvec, String swcompid, int celltype) {
 
-	public int vecAnaylMap( int streid, String streamstr) {
-
-		int len = streamstr.length(), cnt = 0, pre = 0;
-		double tmpnorm = 0.0;
+		int len = swvec.length(), pre = 0;
+		double tmpdim = 0.0;
 		String cellstr = new String();
-		int cellid=0, tmpcell=0;
-        
-		ArrayList<Integer> tmpCellVec=new ArrayList<Integer>();
-		
+		int  tmpcell = 0;
+
+		ArrayList<Integer> tmpCellVec = new ArrayList<Integer>();
+		ArrayList<Double> tmpSwVec = new ArrayList<Double>();
+		Queue<String> tmpCellSw = new LinkedList<String>();
+
 		for (int i = 0; i < len; ++i) {
-			if (streamstr.charAt(i) == ',') {
+			if (swvec.charAt(i) == ',') {
 
-				
-				tmpnorm = Double.valueOf(streamstr.substring(pre, i));
-				streamvec.get(streid).add(tmpnorm);
+				tmpdim = Double.valueOf(swvec.substring(pre, i));
+				tmpSwVec.add(tmpdim);
 
-				if (tmpnorm >= 0) {
+				if (tmpdim >= 0) {
 
-					
 					// it is floor here
-					tmpcell= (int) Math.floor((double) tmpnorm / cellEps);
+					tmpcell = (int) Math.floor((double) tmpdim / cellEps);
 					tmpCellVec.add(tmpcell);
-					
-					cellstr = cellstr +Integer.toString(tmpcell)+ ",";
-					
+
+					cellstr = cellstr + Integer.toString(tmpcell) + ",";
 
 				} else {
-					
-					tmpcell= (int) (-1)* (int) Math.ceil((double) -1 * tmpnorm / cellEps);
+
+					tmpcell = (int) (-1)
+							* (int) Math.ceil((double) -1 * tmpdim / cellEps);
 					tmpCellVec.add(tmpcell);
-					
-					cellstr = cellstr +Integer.toString(tmpcell)+ ",";
+
+					cellstr = cellstr + Integer.toString(tmpcell) + ",";
 				}
 
 				pre = i + 1;
 			}
 		}
-		
-		
-		if(cellIdx.containsKey(cellstr)==true)
-		{
-			cellid= cellIdx.get(cellstr);
-			cellStre.get(cellid).add(streid);
+
+		if (swVec.containsKey(swcompid) == true) {
+
+			return;
+
+		} else {
+
+			swVec.put(swcompid, tmpSwVec);
+		}
+
+		if (cellVec.containsKey(cellstr) == false) {
+			cellVec.put(cellstr, tmpCellVec);
+			tmpCellSw.add(swcompid);
+			cellSw.put(cellstr, tmpCellSw);
 			
+			cellType.put(cellstr, celltype);
+			
+		} else {
+			cellSw.get(cellstr).add(swcompid);
 		}
-		else
-		{
-			cellid= cellIdx.size();
-			cellIdx.put(cellstr, cellid);
-			cellvec.add(tmpCellVec);
-		}
-		
-		return cellid;
+
+		return;
 	}
 
 	public int cellTypeCal(String cellstr) {
 
 		int taskid = 0, tmp = 0;
-		
-		List<String> list = new ArrayList<String>(Arrays.asList(cellstr.split(",")));
-	    int size=list.size();
-	    tmp= Integer.parseInt( list.get(0) );
-	    
-	    taskid = (tmp > 0 ? 1 : 0);
-	    
+
+		List<String> list = new ArrayList<String>(Arrays.asList(cellstr
+				.split(",")));
+		int size = list.size();
+		tmp = Integer.parseInt(list.get(0));
+
+		taskid = (tmp > 0 ? 1 : 0);
+
 		for (int j = 1; j < size; ++j) {
 
-			tmp= Integer.parseInt( list.get(j) );
+			tmp = Integer.parseInt(list.get(j));
 			tmp = (tmp > 0 ? 2 : 1);
 			taskid = (int) (taskid + (tmp - 1) * Math.pow(2, j));
 		}
@@ -139,64 +135,40 @@ public class llcorrCal extends BaseBasicBolt {
 	}
 
 
-
-	public void IndexingStre(int streid, String streamStr, String cellStr, double stamp) {
-
-		int streNo = 0, cellid=0;
-
-		String swid = streid + "," + Double.toString(stamp);// sliding window id
-
-		if (streIdx.containsKey(swid) == true) {
-
-			return;
-
-		} else {
-			streNo = streIdx.size();
-			streIdx.put(streid, streNo);
-		}
-
-		cellid=vecAnaylMap( streNo, streamStr);
-
-		cellType[cellid] = cellTypeCal(cellStr);
-
-		return;
-	}
-
 	int correCalDisReal(double thre, int streid1, int streid2) {
 
-		int memidx1 = streIdx.get(streid1), memidx2 = streIdx.get(streid2), k = 0;
+//		int memidx1 = streIdx.get(streid1), memidx2 = streIdx.get(streid2), k = 0;
 
 		double tmpres = 0.0;
 
-//		for (k = 0; k < TopologyMain.winSize; ++k) {
-//			tmpres = tmpres + (streamVec[memidx1][k] - streamVec[memidx2][k])
-//					* (streamVec[memidx1][k] - streamVec[memidx2][k]);
-//		}
+		// for (k = 0; k < TopologyMain.winSize; ++k) {
+		// tmpres = tmpres + (streamVec[memidx1][k] - streamVec[memidx2][k])
+		// * (streamVec[memidx1][k] - streamVec[memidx2][k]);
+		// }
 
 		return tmpres <= thre ? 1 : 0;
 
 	}
 
-
 	int cellCorrCal(BasicOutputCollector collector) {
 
 		// resPair.clear();
 		int rescnt = 0;
-		int cellcnt = cellIdx.size();
+//		int cellcnt = cellIdx.size();
 
-		for (int i = 0; i < cellcnt; ++i) {
-
-			// rescnt += cellWithinCal(i, collector);
-		}
+//		for (int i = 0; i < cellcnt; ++i) {
+//
+//			// rescnt += cellWithinCal(i, collector);
+//		}
 		return rescnt;
 	}
 
 	public void localIdxRenew() {
-
-		cellIdx.clear();
-		streIdx.clear();
-
-		cellStre.clear();
+//
+//		cellIdx.clear();
+//		streIdx.clear();
+//
+//		cellStre.clear();
 
 		return;
 	}
@@ -226,8 +198,8 @@ public class llcorrCal extends BaseBasicBolt {
 	public void execute(Tuple input, BasicOutputCollector collector) {
 		// TODO Auto-generated method stub
 
-		// declarer.declareStream("interStre", new Fields("id", "strevec",
-		// "cellvec", "ts"));
+//		declarer.declareStream("dataTup", new Fields("id", "strevec",
+//				"cellvec", "ts","celltype"));
 		// declarer.declareStream("calCommand", new Fields("command",
 		// "taskid"));
 
@@ -238,11 +210,13 @@ public class llcorrCal extends BaseBasicBolt {
 			recStreCnt++;
 
 			ts = input.getDoubleByField("ts");
-			String strestr = input.getStringByField("strevec");
-			String cellstr = input.getStringByField("cellvec");
-			int streid = input.getIntegerByField("id");
-
-			IndexingStre(streid, strestr,cellstr, ts);
+			String swStr = input.getStringByField("strevec");
+			String partCellStr = input.getStringByField("cellvec");
+			int swId = input.getIntegerByField("id");
+			celltype= input.getIntegerByField("celltype");
+			
+			indexCellSwVec(swStr, Double.toString(ts)+Integer.toString(swId), celltype);
+			
 
 		} else if (streType.compareTo("calCommand") == 0) {
 

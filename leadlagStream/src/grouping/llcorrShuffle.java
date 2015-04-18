@@ -103,7 +103,7 @@ public class llcorrShuffle implements CustomStreamGrouping {
 		// tmpLowBound1 = (int) Math.ceil((double) (tmpGridCoor[j] - 1)
 		// / taskGridCap);
 
-		int intDivinum = (int) Math.ceil(diviNum);
+//		int intDivinum = (int) Math.ceil(diviNum);
 
 		for (int j = 0; j < TopologyMain.winSize; ++j) {
 
@@ -142,6 +142,33 @@ public class llcorrShuffle implements CustomStreamGrouping {
 		return;
 	}
 
+	public void locateTask2Part() {
+
+		int tmpUpBound2 = 0, tmpLowBound2 = 0;
+
+		for (int j = 0; j < TopologyMain.winSize; ++j) {
+
+			dimSign[j] = 0;
+			dimSignBound[j] = 0;
+
+			TaskCoor[j] = (tmpGridCoor[j] > 0 ? 2 : 1);
+
+			tmpUpBound2 = (tmpGridCoor[j] + 2);
+			if (tmpUpBound2 * tmpGridCoor[j] <= 0) {
+				dimSign[j] = 1;
+				dimSignBound[j] = 1;
+			}
+
+			tmpLowBound2 = (tmpGridCoor[j] - 2);
+			if (tmpLowBound2 * tmpGridCoor[j] <= 0) {
+				dimSign[j] = -1;
+				dimSignBound[j] = 1;
+			}
+
+		}
+
+		return;
+	}
 	public ArrayList<Integer> emitStack = new ArrayList<Integer>();
 
 	public Set<Integer> taskSet = new HashSet<Integer>();
@@ -453,7 +480,7 @@ public class llcorrShuffle implements CustomStreamGrouping {
 
 		if (ts > curtstamp) {
 
-			locateTask();
+			locateTask2Part();
 
 			emitStack.clear();
 			taskSet.clear();
@@ -478,7 +505,7 @@ public class llcorrShuffle implements CustomStreamGrouping {
 
 		} else {
 
-			locateTask();
+			locateTask2Part();
 
 			emitStack.clear();
 			taskSet.clear();
