@@ -24,6 +24,9 @@ import java.io.*;
 import java.util.ArrayList;
 
 public class TopologyMain {
+	
+//	.............leadlag relation..............//
+	public static int lag=10;
 
 	// .................local parallelism record...........................//
 

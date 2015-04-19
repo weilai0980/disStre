@@ -2,6 +2,8 @@ package bolts;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,11 +52,13 @@ public class llcorrePre extends BaseBasicBolt {
 	int localTaskIdx = 0;
 
 	ArrayList<Integer> emitStack = new ArrayList<Integer>();
-	Set<Integer> taskSet = new HashSet<Integer>();
+	List<Integer> taskSet = new LinkedList<Integer>();
 
 	int[] direcVec = { -1, 0, 1 };
 
 	int taskCnt = TopologyMain.calBoltNum;
+
+	List<Integer> tasks = new LinkedList<Integer>();
 
 	// ............custom metric............
 
@@ -324,6 +328,8 @@ public class llcorrePre extends BaseBasicBolt {
 		taskId = context.getThisTaskId();
 		localTaskIdx = context.getThisTaskIndex();
 
+		tasks = context.getComponentTasks("llPre");
+
 		for (int j = 0; j < declrNum + 1; j++) {
 			vecst[j] = 0;
 			veced[j] = 0;
@@ -347,8 +353,8 @@ public class llcorrePre extends BaseBasicBolt {
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 
-		declarer.declareStream("dataTup", new Fields("id", "strevec",
-				"cellvec", "ts", "celltype"));
+		declarer.declareStream("dataTup", new Fields("id", "strevec", "ts",
+				"celltype"));
 
 		declarer.declareStream("calCommand", new Fields("command", "taskid"));
 
@@ -391,20 +397,40 @@ public class llcorrePre extends BaseBasicBolt {
 
 				int[] dimSign = new int[TopologyMain.winSize + 5];
 				int[] dimSignBound = new int[TopologyMain.winSize + 5];
+				String tmpvec = new String();
 
 				for (i = 0; i < streidCnt; ++i) {
 
 					emitStack.clear();
 					taskSet.clear();
-					
+
 					locateTask2Part(i, dimSign, dimSignBound);
 
 					broadcastEmitNoRecurSubDim2Part(cellvec[i], dimSign,
 							dimSignBound);
 
-					collector.emit("interStre", new Values(streid[tmppivot],
-							prepStreVec(i), prepCellVec(i, TopologyMain.winh),
-							curtstamp)); // modification
+					tmpvec = prepStreVec(i);
+
+					collector.emitDirect(tasks.get(taskSet.get(0)),
+							"interStre", new Values(streid[tmppivot], tmpvec,
+									curtstamp, 1));
+
+					// collector.emit(tasks.get(taskSet.) ,"interStre", new
+					// Values(streid[tmppivot],
+					// prepStreVec(i), prepCellVec(i, TopologyMain.winh),
+					// curtstamp)); // modification
+
+					for (int j = 1; j < taskSet.size(); ++j) {
+
+						collector.emitDirect(tasks.get(taskSet.get(j)),
+								"interStre", new Values(streid[tmppivot],
+										tmpvec, curtstamp, 0));
+						// collector.emit("interStre", new
+						// Values(streid[tmppivot],
+						// prepStreVec(i), prepCellVec(i, TopologyMain.winh),
+						// curtstamp)); // modification
+					}
+
 					iniFlag = 0;
 
 					// .......comm byte metric........

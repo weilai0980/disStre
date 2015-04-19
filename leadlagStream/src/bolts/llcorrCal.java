@@ -17,6 +17,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
 
 public class llcorrCal extends BaseBasicBolt {
 
@@ -30,8 +31,8 @@ public class llcorrCal extends BaseBasicBolt {
 	double curtstamp = TopologyMain.winSize - 1;
 	String streType = new String();
 	double ts = 0.0;
-    private int celltype=0;
-	
+	private int celltype = 0;
+
 	String commandStr = new String();
 	long preTaskId = 0;
 
@@ -57,7 +58,7 @@ public class llcorrCal extends BaseBasicBolt {
 		int len = swvec.length(), pre = 0;
 		double tmpdim = 0.0;
 		String cellstr = new String();
-		int  tmpcell = 0;
+		int tmpcell = 0;
 
 		ArrayList<Integer> tmpCellVec = new ArrayList<Integer>();
 		ArrayList<Double> tmpSwVec = new ArrayList<Double>();
@@ -103,9 +104,9 @@ public class llcorrCal extends BaseBasicBolt {
 			cellVec.put(cellstr, tmpCellVec);
 			tmpCellSw.add(swcompid);
 			cellSw.put(cellstr, tmpCellSw);
-			
+
 			cellType.put(cellstr, celltype);
-			
+
 		} else {
 			cellSw.get(cellstr).add(swcompid);
 		}
@@ -134,41 +135,221 @@ public class llcorrCal extends BaseBasicBolt {
 		return (taskid == locTaskIdx ? 1 : 0);
 	}
 
+	boolean correCalDisApprox(double disthre_sq, String cswid1, String cswid2) {
 
-	int correCalDisReal(double thre, int streid1, int streid2) {
+		double tmpdis = 0.0, tmpval = 0;
+		ArrayList<Double> v1 = swVec.get(cswid1);
+		ArrayList<Double> v2 = swVec.get(cswid1);
 
-//		int memidx1 = streIdx.get(streid1), memidx2 = streIdx.get(streid2), k = 0;
+		int minsize = Math.min(v1.size(), v2.size());
+		for (int i = 0; i < minsize; ++i) {
+			tmpval = (v1.get(i) - v2.get(i));
+			tmpdis += (tmpval * tmpval);
+		}
+		for (int i = minsize; i < v1.size(); ++i) {
+			tmpval = v1.get(i);
+			tmpdis += (tmpval * tmpval);
+		}
+		for (int i = minsize; i < v2.size(); ++i) {
+			tmpval = v2.get(i);
+			tmpdis += (tmpval * tmpval);
+		}
 
-		double tmpres = 0.0;
-
-		// for (k = 0; k < TopologyMain.winSize; ++k) {
-		// tmpres = tmpres + (streamVec[memidx1][k] - streamVec[memidx2][k])
-		// * (streamVec[memidx1][k] - streamVec[memidx2][k]);
-		// }
-
-		return tmpres <= thre ? 1 : 0;
+		return tmpdis <= disthre_sq ? true : false;
 
 	}
 
-	int cellCorrCal(BasicOutputCollector collector) {
+	boolean checkSW_timeinstant(String cswId) {
+		String[] items = cswId.split(",");
+		if (Double.parseDouble(items[0]) > ts - TopologyMain.lag)
+			return false;
+		else
+			return true;
 
-		// resPair.clear();
-		int rescnt = 0;
-//		int cellcnt = cellIdx.size();
+	}
 
-//		for (int i = 0; i < cellcnt; ++i) {
-//
-//			// rescnt += cellWithinCal(i, collector);
-//		}
-		return rescnt;
+	void cellIntraLeadlag(BasicOutputCollector collector) {
+
+		String cswid = new String();
+		int size = 0;
+		String[] csw_arr1 = new String[2];
+		String[] csw_arr2 = new String[2];
+
+		for (Map.Entry<String, Queue<String>> entry : cellSw.entrySet()) {
+			String cellstr = entry.getKey();
+			Queue<String> cellsws = entry.getValue();
+
+			size = cellsws.size();
+			String[] swsArr = new String[size + 1];
+			swsArr = (String[]) cellsws.toArray();
+
+			for (int i = 0; i < size; ++i) {
+
+				cswid = swsArr[i];
+				csw_arr1 = cswid.split(",");
+
+				if (checkSW_timeinstant(cswid) == true) {
+
+					for (int j = i + 1; j < size; j++) {
+
+						if (correCalDisApprox(disThre, swsArr[i], swsArr[j]) == true) {
+							csw_arr2 = swsArr[j].split(",");
+
+							collector.emit(new Values(ts, csw_arr1[1] + ","
+									+ csw_arr2[1], Double
+									.parseDouble(csw_arr2[0])
+									- Double.parseDouble(csw_arr1[1]), 0)); // modification
+
+							// ("ts", "pair","lag","corre"));
+
+						}
+
+					}
+				} else {
+					break;
+				}
+
+			}
+
+		}
+		return;
+	}
+
+	boolean cellInterCheck(String cellstr1, String cellstr2) {
+		ArrayList<Integer> cellvec1 = cellVec.get(cellstr1);
+		ArrayList<Integer> cellvec2 = cellVec.get(cellstr2);
+
+		int minsize = Math.min(cellvec1.size(), cellvec2.size());
+
+		for (int i = 0; i < minsize; ++i) {
+			if (Math.abs((cellvec1.get(i) - cellvec2.get(i))) > 1)
+				return false;
+		}
+		for (int i = minsize; i < cellvec1.size(); ++i) {
+			if (Math.abs((cellvec1.get(i))) > 1)
+				return false;
+		}
+		for (int i = minsize; i < cellvec2.size(); ++i) {
+			if (Math.abs((cellvec2.get(i))) > 1)
+				return false;
+		}
+
+		return true;
+	}
+
+	void cellInterLeadlag(BasicOutputCollector collector) {
+
+		int size = 0;
+
+		String[] csw_arr1 = new String[2];
+		String[] csw_arr2 = new String[2];
+		ArrayList<String> cellList = new ArrayList<String>();
+		cellList.addAll(cellVec.keySet());
+		size = cellList.size();
+
+		Queue<String> cellsws1 = new LinkedList<String>();
+		Queue<String> cellsws2 = new LinkedList<String>();
+
+		boolean flag = false;
+
+		for (int i = 0; i < size; i++) {
+			for (int j = i + 1; j < size; ++j) {
+				if (cellInterCheck(cellList.get(i), cellList.get(j)) == true) {
+
+					cellsws1 = cellSw.get(cellList.get(i));
+					cellsws2 = cellSw.get(cellList.get(j));
+
+
+					flag = false;
+
+					for (String csw_str1 : cellsws1) {
+						csw_arr1 = csw_str1.split(",");
+
+						if (Double.parseDouble(csw_arr1[0]) == ts
+								- TopologyMain.lag) {
+
+							flag = true;
+
+							for (String csw_str2 : cellsws2) {
+
+								if (correCalDisApprox(disThre, csw_str1,
+										csw_str2) == true) {
+									csw_arr2 = csw_str2.split(",");
+
+									collector.emit(new Values(ts, csw_arr1[1]
+											+ "," + csw_arr2[1], Double
+											.parseDouble(csw_arr2[0])
+											- Double.parseDouble(csw_arr1[1]),
+											0));
+
+									// ("ts", "pair","lag","corre"));
+
+								}
+
+							}
+						} else {
+							break;
+						}
+
+					}
+
+					if (flag == false) {
+						for (String csw_str2 : cellsws2) {
+							csw_arr2 = csw_str2.split(",");
+
+							if (Double.parseDouble(csw_arr1[0]) == ts
+									- TopologyMain.lag) {
+
+								flag = true;
+
+								for (String csw_str1 : cellsws1) {
+
+									if (correCalDisApprox(disThre, csw_str1,
+											csw_str2) == true) {
+										csw_arr1 = csw_str1.split(",");
+
+										collector
+												.emit(new Values(
+														ts,
+														csw_arr2[1] + ","
+																+ csw_arr1[1],
+														Double.parseDouble(csw_arr1[0])
+																- Double.parseDouble(csw_arr2[1]),
+														0));
+
+										// ("ts", "pair","lag","corre"));
+
+									}
+
+								}
+							} else {
+								break;
+							}
+
+						}
+					}
+
+				}
+			}
+		}
+
+		return;
+
+	}
+
+	void cellLeadlagCorre(BasicOutputCollector collector) {
+		
+		cellIntraLeadlag( collector) ;
+		cellInterLeadlag( collector);
+		
 	}
 
 	public void localIdxRenew() {
-//
-//		cellIdx.clear();
-//		streIdx.clear();
-//
-//		cellStre.clear();
+		//
+		// cellIdx.clear();
+		// streIdx.clear();
+		//
+		// cellStre.clear();
 
 		return;
 	}
@@ -182,7 +363,7 @@ public class llcorrCal extends BaseBasicBolt {
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		// TODO Auto-generated method stub
 
-		declarer.declare(new Fields("ts", "pair"));
+		declarer.declare(new Fields("ts", "pair", "lag", "corre"));
 	}
 
 	@Override
@@ -198,8 +379,8 @@ public class llcorrCal extends BaseBasicBolt {
 	public void execute(Tuple input, BasicOutputCollector collector) {
 		// TODO Auto-generated method stub
 
-//		declarer.declareStream("dataTup", new Fields("id", "strevec",
-//				"cellvec", "ts","celltype"));
+		// declarer.declareStream("dataTup", new Fields("id", "strevec", "ts",
+		// "celltype"));
 		// declarer.declareStream("calCommand", new Fields("command",
 		// "taskid"));
 
@@ -211,12 +392,11 @@ public class llcorrCal extends BaseBasicBolt {
 
 			ts = input.getDoubleByField("ts");
 			String swStr = input.getStringByField("strevec");
-			String partCellStr = input.getStringByField("cellvec");
 			int swId = input.getIntegerByField("id");
-			celltype= input.getIntegerByField("celltype");
-			
-			indexCellSwVec(swStr, Double.toString(ts)+Integer.toString(swId), celltype);
-			
+			celltype = input.getIntegerByField("celltype");
+
+			indexCellSwVec(swStr, Double.toString(ts) + Integer.toString(swId),
+					celltype);
 
 		} else if (streType.compareTo("calCommand") == 0) {
 
@@ -228,7 +408,7 @@ public class llcorrCal extends BaseBasicBolt {
 				return;
 			}
 
-			recStreCnt = cellCorrCal(collector);
+			cellLeadlagCorre(collector);
 
 			localIdxRenew();
 

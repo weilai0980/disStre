@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workbench progressCount="16" version="2.0">
 <workbenchAdvisor/>
-<window height="768" maximized="true" width="689" x="0" y="0">
+<window height="768" maximized="true" width="685" x="1717" y="326">
 <fastViewData fastViewLocation="1024"/>
 <perspectiveBar>
 <itemSize x="160"/>
@@ -35,21 +35,24 @@
 <part id="2"/>
 <part id="3"/>
 <part id="4"/>
+<part id="5"/>
+<part id="6"/>
+<part id="7"/>
 </presentation>
 </folder>
 </info>
 </editorArea>
 <editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="TopologyMain.java" partName="TopologyMain.java" path="/home/guo/disStre/leadlagStream/src/main/TopologyMain.java" title="TopologyMain.java" tooltip="leadlagStream/src/main/TopologyMain.java" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/leadlagStream/src/main/TopologyMain.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="2456" selectionTopPixel="1028"/>
+<editorState selectionHorizontalPixel="0" selectionLength="3" selectionOffset="772" selectionTopPixel="67"/>
 </editor>
-<editor activePart="true" focus="true" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="llcorrePre.java" partName="llcorrePre.java" path="/home/guo/disStre/leadlagStream/src/bolts/llcorrePre.java" title="llcorrePre.java" tooltip="leadlagStream/src/bolts/llcorrePre.java" workbook="DefaultEditorWorkbook">
+<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="llcorrePre.java" partName="llcorrePre.java" path="/home/guo/disStre/leadlagStream/src/bolts/llcorrePre.java" title="llcorrePre.java" tooltip="leadlagStream/src/bolts/llcorrePre.java" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/leadlagStream/src/bolts/llcorrePre.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="8001" selectionTopPixel="5595"/>
+<editorState selectionHorizontalPixel="0" selectionLength="1" selectionOffset="10526" selectionTopPixel="161"/>
 </editor>
-<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="llcorrCal.java" partName="llcorrCal.java" path="/home/guo/disStre/leadlagStream/src/bolts/llcorrCal.java" title="llcorrCal.java" tooltip="leadlagStream/src/bolts/llcorrCal.java" workbook="DefaultEditorWorkbook">
+<editor activePart="true" focus="true" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="llcorrCal.java" partName="llcorrCal.java" path="/home/guo/disStre/leadlagStream/src/bolts/llcorrCal.java" title="llcorrCal.java" tooltip="leadlagStream/src/bolts/llcorrCal.java" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/leadlagStream/src/bolts/llcorrCal.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="3349" selectionTopPixel="861"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="2365" selectionTopPixel="971"/>
 </editor>
 <editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="llcorrShuffle.java" partName="llcorrShuffle.java" path="/home/guo/disStre/leadlagStream/src/grouping/llcorrShuffle.java" title="llcorrShuffle.java" tooltip="leadlagStream/src/grouping/llcorrShuffle.java" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/leadlagStream/src/grouping/llcorrShuffle.java"/>
@@ -57,14 +60,26 @@
 </editor>
 <editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustHashGroupEnh.java" partName="AdjustHashGroupEnh.java" path="/home/guo/disStre/leadlagStream/src/grouping/AdjustHashGroupEnh.java" title="AdjustHashGroupEnh.java" tooltip="leadlagStream/src/grouping/AdjustHashGroupEnh.java" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/leadlagStream/src/grouping/AdjustHashGroupEnh.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="123" selectionOffset="948" selectionTopPixel="257"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="682" selectionTopPixel="269"/>
+</editor>
+<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="streamReader.java" partName="streamReader.java" path="/home/guo/disStre/leadlagStream/src/spouts/streamReader.java" title="streamReader.java" tooltip="leadlagStream/src/spouts/streamReader.java" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/leadlagStream/src/spouts/streamReader.java"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="1080" selectionTopPixel="469"/>
+</editor>
+<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="dftPreBolt.java" partName="dftPreBolt.java" path="/home/guo/disStre/leadlagStream/src/bolts/dftPreBolt.java" title="dftPreBolt.java" tooltip="leadlagStream/src/bolts/dftPreBolt.java" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/leadlagStream/src/bolts/dftPreBolt.java"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="922" selectionTopPixel="6369"/>
+</editor>
+<editor id="org.eclipse.jdt.ui.CompilationUnitEditor" name="dftCalBolt.java" partName="dftCalBolt.java" path="/home/guo/disStre/leadlagStream/src/bolts/dftCalBolt.java" title="dftCalBolt.java" tooltip="leadlagStream/src/bolts/dftCalBolt.java" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/leadlagStream/src/bolts/dftCalBolt.java"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="0" selectionTopPixel="0"/>
 </editor>
 </editors>
 <views>
 <view id="org.eclipse.search.ui.views.SearchView" partName="Search">
 <viewState isPinned="false">
-<view IMemento.internal.id="org.eclipse.jdt.ui.JavaSearchResultPage" org.eclipse.jdt.search.resultpage.grouping="3" org.eclipse.jdt.search.resultpage.limit="1000" org.eclipse.jdt.search.resultpage.limit_enabled="TRUE" org.eclipse.jdt.search.resultpage.sorting="1" org.eclipse.search.lastActivation="1" org.eclipse.search.resultpage.layout="2"/>
 <view IMemento.internal.id="" org.eclipse.search.lastActivation="0"/>
+<view IMemento.internal.id="org.eclipse.jdt.ui.JavaSearchResultPage" org.eclipse.jdt.search.resultpage.grouping="3" org.eclipse.jdt.search.resultpage.limit="1000" org.eclipse.jdt.search.resultpage.limit_enabled="TRUE" org.eclipse.jdt.search.resultpage.sorting="1" org.eclipse.search.lastActivation="1" org.eclipse.search.resultpage.layout="2"/>
 </viewState>
 </view>
 <view id="org.eclipse.ui.views.ProblemView" partName="Problems">
@@ -224,8 +239,8 @@
 <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory"/>
 </folder>
 </info>
-<info part="org.eclipse.ui.editorss" ratio="0.20451128" ratioLeft="272" ratioRight="1058" relationship="2" relative="left"/>
-<info folder="true" part="bottom" ratio="0.83225805" ratioLeft="645" ratioRight="130" relationship="4" relative="org.eclipse.ui.editorss">
+<info part="org.eclipse.ui.editorss" ratio="0.23458646" ratioLeft="312" ratioRight="1018" relationship="2" relative="left"/>
+<info folder="true" part="bottom" ratio="0.756129" ratioLeft="586" ratioRight="189" relationship="4" relative="org.eclipse.ui.editorss">
 <folder activePageID="org.eclipse.search.ui.views.SearchView" appearance="2" expanded="2">
 <page content="org.eclipse.ui.views.ProblemView" label="Problems"/>
 <page content="org.eclipse.jdt.ui.JavadocView" label="Javadoc"/>
@@ -263,160 +278,163 @@
 <workingSets/>
 <navigationHistory>
 <editors>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/leadlagStream/src/grouping/partAppGroup.java"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/leadlagStream/src/bolts/llcorrePre.java"/>
-<editor factoryID="org.eclipse.jdt.ui.ClassFileEditorInputFactory" id="org.eclipse.jdt.ui.ClassFileEditor" org.eclipse.jdt.ui.ClassFileIdentifier="=leadlagStream/\/usr\/lib\/jvm\/java-7-openjdk-i386\/jre\/lib\/rt.jar&lt;java.lang(Math.class"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/leadlagStream/src/grouping/AdjustHashGroupEnh.java"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/leadlagStream/src/bolts/llcorrCal.java"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/leadlagStream/src/spouts/streamReader.java"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/leadlagStream/src/bolts/AdjustCalBolt.java"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/leadlagStream/src/bolts/AdjustPreBolt.java"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/leadlagStream/src/bolts/dftPreBolt.java"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/leadlagStream/src/bolts/dftCalBolt.java"/>
 </editors>
-<item historyLabel="partAppGroup.java" index="0">
-<position info="not_deleted" x="6392" y="0"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="4688" y="0"/>
 </item>
-<item historyLabel="partAppGroup.java" index="0">
-<position info="not_deleted" x="943" y="122"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="4752" y="0"/>
 </item>
-<item historyLabel="llcorrePre.java" index="1">
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="4010" y="19"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="7903" y="0"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="4010" y="19"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="4113" y="0"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="4010" y="19"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="4860" y="0"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="4871" y="0"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="3455" y="0"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="3411" y="7"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="3625" y="0"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="3948" y="0"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="3734" y="0"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="4302" y="0"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="4327" y="0"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
 <position/>
 </item>
-<item historyLabel="partAppGroup.java" index="0">
-<position info="not_deleted" x="950" y="116"/>
+<item historyLabel="llcorrePre.java" index="0">
+<position info="not_deleted" x="9451" y="184"/>
 </item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="2735" y="0"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position/>
 </item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="2777" y="0"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="4973" y="0"/>
 </item>
-<item historyLabel="Math.class" index="2">
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="5002" y="0"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="5044" y="0"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="5154" y="0"/>
+</item>
+<item historyLabel="llcorrePre.java" index="0">
+<position info="not_deleted" x="9125" y="0"/>
+</item>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="4896" y="0"/>
+</item>
+<item historyLabel="llcorrePre.java" index="0">
+<position info="not_deleted" x="9125" y="0"/>
+</item>
+<item historyLabel="streamReader.java" index="2">
+<position info="not_deleted" x="1080" y="0"/>
+</item>
+<item historyLabel="AdjustCalBolt.java" index="3">
 <position info="not_deleted" x="0" y="0"/>
 </item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="6771" y="0"/>
+<item historyLabel="AdjustPreBolt.java" index="4">
+<position info="not_deleted" x="18021" y="0"/>
 </item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="4896" y="0"/>
+</item>
+<item historyLabel="dftPreBolt.java" index="5">
+<position info="not_deleted" x="922" y="0"/>
+</item>
+<item historyLabel="dftCalBolt.java" index="6">
 <position info="not_deleted" x="0" y="0"/>
 </item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="15590" y="0"/>
+<item historyLabel="AdjustCalBolt.java" index="3">
+<position info="not_deleted" x="0" y="0"/>
 </item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="10471" y="8"/>
+<item historyLabel="AdjustPreBolt.java" index="4">
+<position info="not_deleted" x="18021" y="0"/>
 </item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="6771" y="0"/>
+<item historyLabel="dftCalBolt.java" index="6">
+<position info="not_deleted" x="0" y="0"/>
 </item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="10471" y="8"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="4896" y="0"/>
 </item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="15217" y="0"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="5112" y="0"/>
 </item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="822" y="60"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="4232" y="9"/>
 </item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="6517" y="0"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="5455" y="0"/>
 </item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="822" y="60"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="5804" y="4"/>
 </item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="15078" y="0"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="5553" y="0"/>
 </item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="10309" y="15"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="5514" y="0"/>
 </item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="6517" y="0"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="6145" y="0"/>
 </item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="6752" y="0"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position/>
 </item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="7032" y="12"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="6412" y="0"/>
 </item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="10309" y="15"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position/>
 </item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="10623" y="12"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="6600" y="0"/>
 </item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="10309" y="15"/>
+<item historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="9603" y="0"/>
 </item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="10446" y="12"/>
+<item historyLabel="llcorrePre.java" index="0">
+<position info="not_deleted" x="10526" y="1"/>
 </item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="10897" y="31"/>
-</item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="12275" y="12"/>
-</item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="4441" y="0"/>
-</item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="10858" y="11"/>
-</item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="4441" y="0"/>
-</item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="10806" y="76"/>
-</item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="5544" y="0"/>
-</item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="10806" y="76"/>
-</item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="12053" y="0"/>
-</item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="4605" y="7"/>
-</item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="5557" y="0"/>
-</item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="4605" y="7"/>
-</item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="1967" y="23"/>
-</item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="5586" y="8"/>
-</item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="1967" y="23"/>
-</item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="4659" y="0"/>
-</item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="2038" y="0"/>
-</item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="5586" y="8"/>
-</item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="4579" y="4"/>
-</item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="2110" y="54"/>
-</item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="7035" y="0"/>
-</item>
-<item historyLabel="AdjustHashGroupEnh.java" index="3">
-<position info="not_deleted" x="948" y="123"/>
-</item>
-<item historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="7035" y="0"/>
-</item>
-<item active="true" historyLabel="llcorrePre.java" index="1">
-<position info="not_deleted" x="9073" y="0"/>
+<item active="true" historyLabel="llcorrCal.java" index="1">
+<position info="not_deleted" x="9603" y="0"/>
 </item>
 </navigationHistory>
 <input factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/" type="8"/>
@@ -439,6 +457,24 @@
 </trimLayout>
 </window>
 <mruList>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="dftCalBolt.java" tooltip="leadlagStream/src/bolts/dftCalBolt.java">
+<persistable path="/leadlagStream/src/bolts/dftCalBolt.java"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="dftPreBolt.java" tooltip="leadlagStream/src/bolts/dftPreBolt.java">
+<persistable path="/leadlagStream/src/bolts/dftPreBolt.java"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustPreBolt.java" tooltip="leadlagStream/src/bolts/AdjustPreBolt.java">
+<persistable path="/leadlagStream/src/bolts/AdjustPreBolt.java"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustCalBolt.java" tooltip="leadlagStream/src/bolts/AdjustCalBolt.java">
+<persistable path="/leadlagStream/src/bolts/AdjustCalBolt.java"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="streamReader.java" tooltip="leadlagStream/src/spouts/streamReader.java">
+<persistable path="/leadlagStream/src/spouts/streamReader.java"/>
+</file>
+<file factoryID="org.eclipse.jdt.ui.ClassFileEditorInputFactory" id="org.eclipse.jdt.ui.ClassFileEditor" name="Map$Entry.class" tooltip="java.util.Map$Entry">
+<persistable org.eclipse.jdt.ui.ClassFileIdentifier="=leadlagStream/\/usr\/lib\/jvm\/java-7-openjdk-i386\/jre\/lib\/rt.jar&lt;java.util(Map$Entry.class"/>
+</file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustHashGroupEnh.java" tooltip="leadlagStream/src/grouping/AdjustHashGroupEnh.java">
 <persistable path="/leadlagStream/src/grouping/AdjustHashGroupEnh.java"/>
 </file>
@@ -465,24 +501,6 @@
 </file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="partCalBolt.java" tooltip="leadlagStream/src/baselines/partCalBolt.java">
 <persistable path="/leadlagStream/src/baselines/partCalBolt.java"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="rpPreBolt.java" tooltip="leadlagStream/src/bolts/rpPreBolt.java">
-<persistable path="/leadlagStream/src/bolts/rpPreBolt.java"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="partPreBolt.java" tooltip="leadlagStream/src/baselines/partPreBolt.java">
-<persistable path="/leadlagStream/src/baselines/partPreBolt.java"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustAggreBolt.java" tooltip="leadlagStream/src/bolts/AdjustAggreBolt.java">
-<persistable path="/leadlagStream/src/bolts/AdjustAggreBolt.java"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustCalBolt.java" tooltip="leadlagStream/src/bolts/AdjustCalBolt.java">
-<persistable path="/leadlagStream/src/bolts/AdjustCalBolt.java"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustPreBolt.java" tooltip="leadlagStream/src/bolts/AdjustPreBolt.java">
-<persistable path="/leadlagStream/src/bolts/AdjustPreBolt.java"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="AdjustApproEnhBolt.java" tooltip="leadlagStream/src/bolts/AdjustApproEnhBolt.java">
-<persistable path="/leadlagStream/src/bolts/AdjustApproEnhBolt.java"/>
 </file>
 </mruList>
 </workbench>
