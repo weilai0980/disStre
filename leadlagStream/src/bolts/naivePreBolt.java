@@ -37,6 +37,10 @@ public class naivePreBolt extends BaseBasicBolt {
 	String streType = new String();
 	double ts = 0.0;
 	int localTaskId = 0;
+	
+
+	
+	
 
 	// ............custom metric............
 

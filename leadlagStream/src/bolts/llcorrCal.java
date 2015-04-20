@@ -195,12 +195,13 @@ public class llcorrCal extends BaseBasicBolt {
 						if (correCalDisApprox(disThre, swsArr[i], swsArr[j]) == true) {
 							csw_arr2 = swsArr[j].split(",");
 
-							collector.emit(new Values(ts, csw_arr1[1] + ","
-									+ csw_arr2[1], Double
-									.parseDouble(csw_arr2[0])
-									- Double.parseDouble(csw_arr1[1]), 0)); // modification
+							collector.emit(new Values(ts, csw_arr1[1],
+									csw_arr2[1], Double
+											.parseDouble(csw_arr2[0])
+											- Double.parseDouble(csw_arr1[1]),
+									0)); // modification
 
-							// ("ts", "pair","lag","corre"));
+							// "ts", "leader","follower", "lag", "corre"))
 
 						}
 
@@ -259,7 +260,6 @@ public class llcorrCal extends BaseBasicBolt {
 					cellsws1 = cellSw.get(cellList.get(i));
 					cellsws2 = cellSw.get(cellList.get(j));
 
-
 					flag = false;
 
 					for (String csw_str1 : cellsws1) {
@@ -276,11 +276,14 @@ public class llcorrCal extends BaseBasicBolt {
 										csw_str2) == true) {
 									csw_arr2 = csw_str2.split(",");
 
-									collector.emit(new Values(ts, csw_arr1[1]
-											+ "," + csw_arr2[1], Double
-											.parseDouble(csw_arr2[0])
-											- Double.parseDouble(csw_arr1[1]),
-											0));
+									collector
+											.emit(new Values(
+													ts,
+													csw_arr1[1],
+													csw_arr2[1],
+													Double.parseDouble(csw_arr2[0])
+															- Double.parseDouble(csw_arr1[1]),
+													0));
 
 									// ("ts", "pair","lag","corre"));
 
@@ -311,8 +314,8 @@ public class llcorrCal extends BaseBasicBolt {
 										collector
 												.emit(new Values(
 														ts,
-														csw_arr2[1] + ","
-																+ csw_arr1[1],
+														csw_arr2[1],
+														csw_arr1[1],
 														Double.parseDouble(csw_arr1[0])
 																- Double.parseDouble(csw_arr2[1]),
 														0));
@@ -338,19 +341,17 @@ public class llcorrCal extends BaseBasicBolt {
 	}
 
 	void cellLeadlagCorre(BasicOutputCollector collector) {
-		
-		cellIntraLeadlag( collector) ;
-		cellInterLeadlag( collector);
-		
+
+		cellIntraLeadlag(collector);
+		cellInterLeadlag(collector);
+
 	}
 
 	public void localIdxRenew() {
 		//
 		// cellIdx.clear();
 		// streIdx.clear();
-		//
 		// cellStre.clear();
-
 		return;
 	}
 
@@ -363,7 +364,7 @@ public class llcorrCal extends BaseBasicBolt {
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		// TODO Auto-generated method stub
 
-		declarer.declare(new Fields("ts", "pair", "lag", "corre"));
+		declarer.declare(new Fields("ts", "leader", "follower", "lag", "corre"));
 	}
 
 	@Override
