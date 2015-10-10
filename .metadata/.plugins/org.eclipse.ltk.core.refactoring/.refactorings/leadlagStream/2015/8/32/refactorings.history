@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Move element &apos;&apos; to &apos;bolts.llcorrePre.curexp&apos;&#x0A;- Original project: &apos;leadlagStream&apos;&#x0A;- Destination element: &apos;bolts.llcorrePre.curexp&apos;&#x0A;- Original element: &apos;bolts.llcorrePre.prepare(...)&apos;&#x0A;- Textual move only&#x0A;- Update references to refactored element" description="Move method" destination="/src&lt;bolts{llcorrePre.java[llcorrePre^curexp" element1="/src&lt;bolts{llcorrePre.java[llcorrePre~prepare~QMap;~QTopologyContext;" flags="589830" id="org.eclipse.jdt.ui.move" members="1" policy="org.eclipse.jdt.ui.moveMembers" stamp="1438723087704" version="1.0"/>
+</session>

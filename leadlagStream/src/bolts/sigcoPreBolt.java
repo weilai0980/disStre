@@ -16,7 +16,7 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
-public class llcorrePre extends BaseBasicBolt {
+public class sigcoPreBolt extends BaseBasicBolt {
 
 	public int taskId = 0;
 
@@ -219,10 +219,6 @@ public class llcorrePre extends BaseBasicBolt {
 	public int[] posDirecVec = { 0, 1 };
 	public int[] negDirecVec = { 0, -1 };
 
-	public void locateRepTask(int partVec[], int memidx) {
-
-	}
-
 	public void broadcastEmitNoRecurSubDim2Part(int orgiCoord[], int dimSign[],
 			int dimSignBound[]) {
 
@@ -363,29 +359,34 @@ public class llcorrePre extends BaseBasicBolt {
 			k = (k + 1) % queueLen;
 
 		}
+
 		// broadcastEmitNoRecurSubDim2Part(TaskCoor, dimSign );
+
 		return;
 	}
 
-	public void locateHomePart(int memidx, int[] partVec) {
+	public void locatePartition(int memidx, int[] partVec) {
 
-		// int tmpUpBound2 = 0, tmpLowBound2 = 0;
-		// int[] TaskCoor = new int[TopologyMain.winSize + 5];
+		int tmpUpBound2 = 0, tmpLowBound2 = 0;
+
+		int[] TaskCoor = new int[TopologyMain.winSize + 5];
 
 		int k = vecst[memidx];
+		// while (k != veced[memidx]) {
 
 		for (int j = 0; j < TopologyMain.winh; ++j) {
 
 			// dimSign[j] = 0;
 			// dimSignBound[j] = 0;
-
-			partVec[j] = (normvec[memidx][k] > 0 ? 2 : 1);
-
+			//
+			// TaskCoor[j] = (cellvec[memidx][k] > 0 ? 2 : 1);
+			//
 			// tmpUpBound2 = (cellvec[memidx][k] + 1);
 			// if (tmpUpBound2 * cellvec[memidx][k] <= 0) {
 			// dimSign[j] = 1;
 			// dimSignBound[j] = 1;
 			// }
+			//
 			// tmpLowBound2 = (cellvec[memidx][k] - 1);
 			// if (tmpLowBound2 * cellvec[memidx][k] <= 0) {
 			// dimSign[j] = -1;
@@ -449,28 +450,27 @@ public class llcorrePre extends BaseBasicBolt {
 
 				ststamp++;
 				// emByte = 0.0; // for window metric
-				// dirCnt = 0.0;
+				dirCnt = 0.0;
 
-				int[] tmpPartVec = new int[TopologyMain.winSize + 5];
-				// int[] dimSignBound = new int[TopologyMain.winSize + 5];
-				String tmpStreVec = new String();
+				int[] dimSign = new int[TopologyMain.winSize + 5];
+				int[] dimSignBound = new int[TopologyMain.winSize + 5];
+				String tmpvec = new String();
 
 				for (i = 0; i < streidCnt; ++i) {
 
 					emitStack.clear();
 					taskSet.clear();
 
-					locateHomePart(i, tmpPartVec);
-					locateRepTask(tmpPartVec, i);
+					locateTask2Part(i, dimSign, dimSignBound);
 
-					// locateTask2Part(i, dimSign, dimSignBound);
-					// broadcastEmitNoRecurSubDim2Part(cellvec[i], dimSign,
-					// dimSignBound);
+					broadcastEmitNoRecurSubDim2Part(cellvec[i], dimSign,
+							dimSignBound);
 
-					tmpStreVec = prepStreVec(i);
+					tmpvec = prepStreVec(i);
+
 					collector.emitDirect(tasks.get(taskSet.get(0)),
-							"interStre", new Values(streid[tmppivot],
-									tmpStreVec, curtstamp, 1));
+							"interStre", new Values(streid[tmppivot], tmpvec,
+									curtstamp, 1));
 
 					// collector.emit(tasks.get(taskSet.) ,"interStre", new
 					// Values(streid[tmppivot],
@@ -481,7 +481,7 @@ public class llcorrePre extends BaseBasicBolt {
 
 						collector.emitDirect(tasks.get(taskSet.get(j)),
 								"interStre", new Values(streid[tmppivot],
-										tmpStreVec, curtstamp, 0));
+										tmpvec, curtstamp, 0));
 						// collector.emit("interStre", new
 						// Values(streid[tmppivot],
 						// prepStreVec(i), prepCellVec(i, TopologyMain.winh),

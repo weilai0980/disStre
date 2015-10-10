@@ -13,15 +13,16 @@
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="false" key="wholeword"/>
-		<item value="" key="selection"/>
+		<item value="contrStre" key="selection"/>
 		<list key="findhistory">
+			<item value="contrStre"/>
+			<item value="direct"/>
 			<item value="package bolts;"/>
 			<item value="s"/>
 			<item value="seper"/>
 			<item value="emit"/>
 			<item value="linked"/>
 			<item value="aps"/>
-			<item value="adjust"/>
 		</list>
 		<list key="replacehistory">
 		</list>

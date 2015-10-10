@@ -219,7 +219,7 @@ public class llcorrePre extends BaseBasicBolt {
 	public int[] posDirecVec = { 0, 1 };
 	public int[] negDirecVec = { 0, -1 };
 
-	public void locateRepTask(int partVec[], int memidx) {
+	public void replicateSW(int partVec[], int memidx) {
 
 	}
 
@@ -363,11 +363,13 @@ public class llcorrePre extends BaseBasicBolt {
 			k = (k + 1) % queueLen;
 
 		}
+
 		// broadcastEmitNoRecurSubDim2Part(TaskCoor, dimSign );
+
 		return;
 	}
 
-	public void locateHomePart(int memidx, int[] partVec) {
+	public void locateTask(int memidx, int[] partVec) {
 
 		// int tmpUpBound2 = 0, tmpLowBound2 = 0;
 		// int[] TaskCoor = new int[TopologyMain.winSize + 5];
